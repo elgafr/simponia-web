@@ -41,7 +41,7 @@ export default function AdminCommunityNavbar() {
               <Link href="/" className={isActive('/')}>
                 Home
               </Link>
-              <Link href="/dashboard" className={isActive('/dashboard')}>
+              <Link href="/dashboard-admin-community" className={isActive('/dashboard-admin-community')}>
                 Dashboard
               </Link>
               <Link href="/student" className={isActive('/student')}>
@@ -50,7 +50,7 @@ export default function AdminCommunityNavbar() {
               <Link href="/showcase-admin-community" className={isActive('/showcase-admin-community')}>
                 Showcase
               </Link>
-              <Link href="/faq" className={isActive('/faq')}>
+              <Link href="/faq-admin-community" className={isActive('/faq-admin-community')}>
                 FAQ
               </Link>
               {/* Profile Dropdown */}

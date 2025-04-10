@@ -41,7 +41,7 @@ export default function SuperAdminNavbar() {
               <Link href="/" className={isActive('/')}>
                 Home
               </Link>
-              <Link href="/dashboard" className={isActive('/dashboard')}>
+              <Link href="/dashboard" className={isActive('/dashboard-super-admin')}>
                 Dashboard
               </Link>
               <Link href="/showcase-portfolio" className={isActive('/showcase-portfolio')}>
@@ -50,7 +50,7 @@ export default function SuperAdminNavbar() {
               <Link href="/showcase-community" className={isActive('/showcase-community')}>
                 Showcase Community
               </Link>
-              <Link href="/faq" className={isActive('/faq')}>
+              <Link href="/faq-super-admin" className={isActive('/faq-super-admin')}>
                 FAQ
               </Link>
               {/* Profile Dropdown */}
