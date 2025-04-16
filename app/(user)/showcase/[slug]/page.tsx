@@ -87,13 +87,13 @@ export default function ShowcaseDetailPage({ params }: PageProps) {
       <main className="flex-1 bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-24 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Back Button */}
-          <Link 
+          {/* <Link 
             href="/showcase"
             className="inline-flex items-center text-gray-400 hover:text-white mb-8 transition-colors"
           >
             <ArrowLeft className="h-5 w-5 mr-2" />
             Back
-          </Link>
+          </Link> */}
 
           {/* Hero Image */}
           <div className="rounded-xl overflow-hidden mb-12">
@@ -162,22 +162,23 @@ export default function ShowcaseDetailPage({ params }: PageProps) {
             <div className="space-y-8">
               {/* Project Links */}
               <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6">
-                <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
-                  <LinkIcon className="h-5 w-5" />
-                  Project Links
+                <h2 className="text-xl font-semibold text-white mb-2">
+                  Figma Mobile App
                 </h2>
-                <div className="space-y-3">
-                  {projectData.links.map((link, index) => (
-                    <a
-                      key={index}
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block text-gray-300 hover:text-white transition-colors"
-                    >
-                      → {link.title}
-                    </a>
-                  ))}
+                <div className="flex items-center gap-2 bg-[#011B45] rounded-lg p-4 mb-6">
+                  <LinkIcon className="h-6 w-6 text-blue-500" />
+                  <a href="http://www" target="_blank" rel="noopener noreferrer" className="text-white hover:text-blue-400 transition-colors">
+                    http://www
+                  </a>
+                </div>
+                <h2 className="text-xl font-semibold text-white mb-2">
+                  Medium Study Case
+                </h2>
+                <div className="flex items-center gap-2 bg-[#011B45] rounded-lg p-4">
+                  <LinkIcon className="h-6 w-6 text-blue-500" />
+                  <a href="http://www" target="_blank" rel="noopener noreferrer" className="text-white hover:text-blue-400 transition-colors">
+                    http://www
+                  </a>
                 </div>
               </div>
 
