@@ -162,7 +162,7 @@ export default function ProfilePage() {
                       {profileData.bio}
                     </p>
                     <div className="flex justify-end">
-                      <Button variant="ghost" size="icon" onClick={handleEditBio} className="text-white bg-blue-700 hover:text-white hover:bg-blue-800">
+                      <Button variant="ghost" size="icon" onClick={handleEditBio} className="text-gray-400 hover:text-white hover:bg-transparent">
                         <Pencil className="h-4 w-4" />
                       </Button>
                     </div>
@@ -228,7 +228,7 @@ export default function ProfilePage() {
                   ) : (
                     <div className="flex items-center justify-between">
                       <p className="text-white">{profileData.linkedin}</p>
-                      <Button variant="ghost" size="icon" onClick={() => handleEdit('linkedin', profileData.linkedin)} className="text-white bg-blue-700 hover:text-white hover:bg-blue-800">
+                      <Button variant="ghost" size="icon" onClick={() => handleEdit('linkedin', profileData.linkedin)} className="text-gray-400 hover:text-white hover:bg-transparent">
                         <Pencil className="h-4 w-4" />
                       </Button>
                     </div>
@@ -256,7 +256,7 @@ export default function ProfilePage() {
                   ) : (
                     <div className="flex items-center justify-between">
                       <p className="text-white">{profileData.email}</p>
-                      <Button variant="ghost" size="icon" onClick={() => handleEdit('email', profileData.email)} className="text-white bg-blue-700 hover:text-white hover:bg-blue-800">
+                      <Button variant="ghost" size="icon" onClick={() => handleEdit('email', profileData.email)} className="text-gray-400 hover:text-white hover:bg-transparent">
                         <Pencil className="h-4 w-4" />
                       </Button>
                     </div>
@@ -284,7 +284,7 @@ export default function ProfilePage() {
                   ) : (
                     <div className="flex items-center justify-between">
                       <p className="text-white">{profileData.instagram}</p>
-                      <Button variant="ghost" size="icon" onClick={() => handleEdit('instagram', profileData.instagram)} className="text-white bg-blue-700 hover:text-white hover:bg-blue-800">
+                      <Button variant="ghost" size="icon" onClick={() => handleEdit('instagram', profileData.instagram)} className="text-gray-400 hover:text-white hover:bg-transparent">
                         <Pencil className="h-4 w-4" />
                       </Button>
                     </div>
@@ -312,7 +312,7 @@ export default function ProfilePage() {
                   ) : (
                     <div className="flex items-center justify-between">
                       <p className="text-white">{profileData.github}</p>
-                      <Button variant="ghost" size="icon" onClick={() => handleEdit('github', profileData.github)} className="text-white bg-blue-700 hover:text-white hover:bg-blue-800">
+                      <Button variant="ghost" size="icon" onClick={() => handleEdit('github', profileData.github)} className="text-gray-400 hover:text-white hover:bg-transparent">
                         <Pencil className="h-4 w-4" />
                       </Button>
                     </div>

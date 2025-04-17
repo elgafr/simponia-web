@@ -131,7 +131,7 @@ export default function PortfolioPage() {
                   <div>
                     <p className="text-gray-300 mb-2">Role</p>
                     <Input
-                      placeholder="Mahasiswa Info Angka"
+                      placeholder="Mahasiswa Role Anda"
                       className="bg-white/5 border-0 text-white placeholder:text-gray-400"
                     />
                   </div>
