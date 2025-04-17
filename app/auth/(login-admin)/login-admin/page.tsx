@@ -18,7 +18,7 @@ export default function LoginPage() {
     localStorage.setItem('userRole', '1');
     
     // Redirect to home page
-    router.push('/');
+    router.push('/home-super-admin');
   };
 
   return (

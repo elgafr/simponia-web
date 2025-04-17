@@ -3,7 +3,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import ProfileDropdown from './ProfileDropdown';
+import ProfileDropdownAdmin from './ProfileDropdownAdmin';
+
 
 export default function SuperAdminNavbar() {
   const pathname = usePathname();
@@ -38,23 +39,23 @@ export default function SuperAdminNavbar() {
           {/* Navigation Links */}
           <div className="hidden md:block">
             <div className="flex items-center space-x-4">
-              <Link href="/" className={isActive('/')}>
+              <Link href="/home-super-admin" className={isActive('/home-super-admin')}>
                 Home
               </Link>
-              <Link href="/dashboard" className={isActive('/dashboard-super-admin')}>
+              <Link href="/dashboard-super-admin" className={isActive('/dashboard-super-admin')}>
                 Dashboard
               </Link>
-              <Link href="/showcase-portfolio" className={isActive('/showcase-portfolio')}>
+              <Link href="/showcase-portfolio-super-admin" className={isActive('/showcase-portfolio-super-admin')}>
                 Showcase Portfolio
               </Link>
-              <Link href="/showcase-community" className={isActive('/showcase-community')}>
+              <Link href="/showcase-community-super-admin" className={isActive('/showcase-community-super-admin')}>
                 Showcase Community
               </Link>
-              <Link href="/faq-super-admin" className={isActive('/faq-super-admin')}>
+              <Link href="/FAQ-super-admin" className={isActive('/FAQ-super-admin')}>
                 FAQ
               </Link>
               {/* Profile Dropdown */}
-              <ProfileDropdown />
+              <ProfileDropdownAdmin />
             </div>
           </div>
         </div>
