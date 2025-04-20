@@ -13,7 +13,7 @@ import {
   Linkedin,
   Mail
 } from "lucide-react";
-import Footer from "@/components/landing-page/Footer";
+import Footer from "@/components/user/landing-page/Footer";
 import Image from "next/image";
 
 // Sample data for preview
