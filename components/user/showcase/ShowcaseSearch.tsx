@@ -24,9 +24,10 @@ export function ShowcaseSearch() {
         </SelectTrigger>
         <SelectContent className="bg-[#001233] border-[#001B45]">
           <SelectItem value="all" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">All Categories</SelectItem>
-          <SelectItem value="ui" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">UI/UX Design</SelectItem>
-          <SelectItem value="web" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Web Development</SelectItem>
-          <SelectItem value="mobile" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Mobile App</SelectItem>
+          <SelectItem value="Rekayasa Perangkat Lunak" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Rekayasa Perangkat Lunak</SelectItem>
+          <SelectItem value="Game Cerdas" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Game Cerdas</SelectItem>
+          <SelectItem value="Data Sains" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Data Sains</SelectItem>
+          <SelectItem value="Jaringan dan Keamanan" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Jaringan dan Keamanan</SelectItem>
         </SelectContent>
       </Select>
     </div>

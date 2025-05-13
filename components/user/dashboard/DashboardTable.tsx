@@ -48,6 +48,10 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
     router.push(`/showcase/${id}-ui-ux-healthy-application`);
   };
 
+  const handleEdit = (id: number, name: string) => {
+    router.push(`/portfolio/${id}-${name.toLowerCase().replace(/ /g, '-')}`);
+  };
+
   const handleDelete = (id: number) => {
     console.log('Deleting item with id:', id);
   };
@@ -88,7 +92,10 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
                     </button>
                   )}
                   {item.status === 'Perlu Perubahan' && (
-                    <button className="p-1 text-gray-400 hover:text-white hover:bg-transparent">
+                    <button 
+                      onClick={() => handleEdit(item.id, item.name)}
+                      className="p-1 text-gray-400 hover:text-white hover:bg-transparent"
+                    >
                       <PenLine className="h-4 w-4" />
                     </button>
                   )}

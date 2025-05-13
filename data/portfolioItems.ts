@@ -5,7 +5,7 @@ export const portfolioItems: PortfolioItem[] = [
     id: 1,
     title: 'UI/UX Healthy Application',
     image: '/portfolio-1.png',
-    category: 'UI/UX Design',
+    category: 'Rekayasa Perangkat Lunak',
     tags: ['Mobile Application', 'UI/UX Design', 'Design System'],
     date: 'Released November 21, 2023',
     subtitle: 'Rekayasa Perangkat Lunak - 2022',
@@ -40,7 +40,7 @@ export const portfolioItems: PortfolioItem[] = [
     id: 2,
     title: 'UI/UX Healthy Application',
     image: '/portfolio-1.png',
-    category: 'UI/UX Design',
+    category: 'Game Cerdas',
     tags: ['Mobile Application', 'UI/UX Design', 'Design System'],
     date: 'Released November 21, 2023',
     subtitle: 'Rekayasa Perangkat Lunak - 2022',
@@ -72,9 +72,9 @@ export const portfolioItems: PortfolioItem[] = [
   },
   {
     id: 3,
-    title: 'UI/UX Healthy Application',
+    title: 'Analisis Data Penjualan',
     image: '/portfolio-1.png',
-    category: 'UI/UX Design',
+    category: 'Data Sains',
     tags: ['Mobile Application', 'UI/UX Design', 'Design System'],
     date: 'Released November 21, 2023',
     subtitle: 'Rekayasa Perangkat Lunak - 2022',
@@ -106,9 +106,9 @@ export const portfolioItems: PortfolioItem[] = [
   },
   {
     id: 4,
-    title: 'UI/UX Healthy Application',
+    title: 'Sistem Keamanan Jaringan',
     image: '/portfolio-1.png',
-    category: 'UI/UX Design',
+    category: 'Jaringan dan Keamanan',
     tags: ['Mobile Application', 'UI/UX Design', 'Design System'],
     date: 'Released November 21, 2023',
     subtitle: 'Rekayasa Perangkat Lunak - 2022',
@@ -142,7 +142,7 @@ export const portfolioItems: PortfolioItem[] = [
     id: 5,
     title: 'UI/UX Healthy Application',
     image: '/portfolio-1.png',
-    category: 'UI/UX Design',
+    category: 'Game Cerdas',
     tags: ['Mobile Application', 'UI/UX Design', 'Design System'],
     date: 'Released November 21, 2023',
     subtitle: 'Rekayasa Perangkat Lunak - 2022',
@@ -206,4 +206,11 @@ export const portfolioItems: PortfolioItem[] = [
       id: '202210370311254'
     }
   }
+];
+
+export const showcaseCategories = [
+  'Rekayasa Perangkat Lunak',
+  'Game Cerdas',
+  'Data Sains',
+  'Jaringan dan Keamanan'
 ]; 
