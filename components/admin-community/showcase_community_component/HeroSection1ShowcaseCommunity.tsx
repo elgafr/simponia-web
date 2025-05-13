@@ -120,7 +120,7 @@ const HeroSection1ShowcaseCommunity: React.FC = () => {
                 <td className="px-6 py-4 text-gray-300 text-left">{item.year}</td>
                 <td className="px-6 py-4 text-gray-300 text-left">
 
-                <Link href={`/detail-super-admin/community/view`}>
+                <Link href={`/detail-admin-community/community/view`}>
                   <span className={`px-8 py-2 rounded-2xl font-bold text-black text-left text-base cursor-pointer ${getPerformanceColor(item.performance)}`}>
                     {item.performance}
                   </span>

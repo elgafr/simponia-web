@@ -45,7 +45,7 @@ const HeroSection2Dashboard: React.FC<CategoryCardsProps> = ({ categories = [
         {categories.map((category: Category, index: number) => (
           <div
             key={index}
-            className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:bg-white/10 transition-all duration-300 cursor-pointer"
+            className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:bg-white/10 transition-all duration-300"
           >
             <div className="flex flex-col h-full">
               <div className="flex justify-between items-start mb-4">

@@ -21,7 +21,7 @@ export default function SuperAdminNavbar() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
-            <Link href="/" className="flex items-center">
+            <Link href="/home-super-admin" className="flex items-center">
               <div className="relative w-[150px] h-[50px] mx-2">
                 <Image
                   src="/logo simponia.svg"
