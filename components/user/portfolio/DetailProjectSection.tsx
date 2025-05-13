@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageIcon, Plus, Trash2, X } from "lucide-react";
 import { RequiredLabel } from "./RequiredLabel";
+import { usePortfolioStore } from "@/store/portfolioStore";
+import { useEffect, useState } from 'react';
 
 interface ProjectLink {
   id: number;
@@ -57,6 +59,29 @@ export function DetailProjectSection({
   onImageChange,
   onPreview,
 }: DetailProjectSectionProps) {
+  const [mounted, setMounted] = useState(false);
+  const year = usePortfolioStore((state) => state.year);
+  const description = usePortfolioStore((state) => state.description);
+  const setPortfolioData = usePortfolioStore((state) => state.setPortfolioData);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted) {
+      setPortfolioData({
+        projectLinks: projectLinks.map(link => ({ title: link.title, url: link.url })),
+        tags: tags.map(tag => tag.text),
+        projectImage: projectImage.preview || '',
+      });
+    }
+  }, [projectLinks, tags, projectImage, mounted]);
+
+  if (!mounted) {
+    return null;
+  }
+
   return (
     <div ref={sectionRef} className="mb-8 scroll-mt-24">
       <h2 className="text-xl font-semibold text-white mb-4">Detail Project</h2>
@@ -65,6 +90,8 @@ export function DetailProjectSection({
         <div>
           <RequiredLabel>Tahun Project Dibuat</RequiredLabel>
           <Input
+            value={year}
+            onChange={(e) => setPortfolioData({ year: e.target.value })}
             placeholder="Masukkan Tahun Project Dibuat"
             className="bg-white/5 border-0 text-white placeholder:text-gray-400"
           />
@@ -150,6 +177,8 @@ export function DetailProjectSection({
         <div>
           <RequiredLabel>Description</RequiredLabel>
           <Textarea
+            value={description}
+            onChange={(e) => setPortfolioData({ description: e.target.value })}
             placeholder="Description"
             className="bg-white/5 border-0 text-white placeholder:text-gray-400 min-h-[150px]"
           />
