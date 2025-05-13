@@ -7,6 +7,7 @@ export interface PortfolioItem {
   category: string;
   tags: string[];
   date: string;
+  tahun:string ;
   subtitle: string;
   description: string | string[];
   links?: {

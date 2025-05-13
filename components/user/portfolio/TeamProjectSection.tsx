@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Trash2 } from "lucide-react";
 import { RequiredLabel } from "./RequiredLabel";
+import { usePortfolioStore } from "@/store/portfolioStore";
+import { useEffect } from "react";
 
 interface TeamMember {
   id: number;
@@ -27,6 +29,18 @@ export function TeamProjectSection({
   onDeleteMember, 
   onMemberChange 
 }: TeamProjectSectionProps) {
+  const setPortfolioData = usePortfolioStore((state) => state.setPortfolioData);
+
+  useEffect(() => {
+    setPortfolioData({
+      teamMembers: teamMembers.map(member => ({
+        name: member.name,
+        role: member.role,
+        nim: member.nim
+      }))
+    });
+  }, [teamMembers]);
+
   return (
     <div ref={sectionRef} className="mb-8 scroll-mt-24">
       <h2 className="text-xl font-semibold text-white mb-4">Team Project</h2>

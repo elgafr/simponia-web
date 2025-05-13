@@ -20,6 +20,7 @@ import { CategorySection } from "@/components/user/portfolio/CategorySection";
 import { ProfileSection } from "@/components/user/portfolio/ProfileSection";
 import { TeamProjectSection } from "@/components/user/portfolio/TeamProjectSection";
 import { DetailProjectSection } from "@/components/user/portfolio/DetailProjectSection";
+import { usePortfolioStore } from "@/store/portfolioStore";
 
 interface TeamMember {
   id: number;
@@ -67,6 +68,7 @@ export default function PortfolioPage() {
     preview: ""
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [warning, setWarning] = useState<string | null>(null);
 
   const sections = {
     projectName: useRef<HTMLDivElement>(null!),
@@ -165,8 +167,94 @@ export default function PortfolioPage() {
     }
   };
 
+  const nameRef = useRef<HTMLDivElement>(null!);
+  const categoryRef = useRef<HTMLDivElement>(null!);
+  const profileRef = useRef<HTMLDivElement>(null!);
+  const teamRef = useRef<HTMLDivElement>(null!);
+  const detailRef = useRef<HTMLDivElement>(null!);
+
+  const title = usePortfolioStore((state) => state.title);
+  const category = usePortfolioStore((state) => state.category);
+  const year = usePortfolioStore((state) => state.year);
+  const description = usePortfolioStore((state) => state.description);
+  const storedTags = usePortfolioStore((state) => state.tags);
+  const storedProjectLinks = usePortfolioStore((state) => state.projectLinks);
+  const contact = usePortfolioStore((state) => state.contact);
+  const storedTeamMembers = usePortfolioStore((state) => state.teamMembers);
+  const storedProjectImage = usePortfolioStore((state) => state.projectImage);
+
+  const setPortfolioData = usePortfolioStore((state) => state.setPortfolioData);
+
+  // Load data from store when component mounts
+  useEffect(() => {
+    if (storedTags.length > 0) {
+      setTags(storedTags.map((text, index) => ({ id: index + 1, text })));
+    }
+    if (storedProjectLinks.length > 0) {
+      setProjectLinks(storedProjectLinks.map((link, index) => ({ id: index + 1, ...link })));
+    }
+    if (storedTeamMembers.length > 0) {
+      setTeamMembers(storedTeamMembers.map((member, index) => ({ id: index + 1, ...member })));
+    }
+    if (storedProjectImage) {
+      setProjectImage({ file: null, preview: storedProjectImage });
+    }
+  }, []);
+
+  // Sync local state with store
+  useEffect(() => {
+    setPortfolioData({
+      tags: tags.map(tag => tag.text),
+      projectLinks: projectLinks.map(link => ({ title: link.title, url: link.url })),
+      projectImage: projectImage.preview || '',
+      teamMembers: teamMembers.map(member => ({ name: member.name, role: member.role, nim: member.nim }))
+    });
+  }, [tags, projectLinks, projectImage, teamMembers]);
+
+  const validateAndScroll = () => {
+    if (!title) {
+      setWarning("Nama project harus diisi.");
+      nameRef.current?.scrollIntoView({ behavior: "smooth" });
+      return false;
+    }
+    if (!category) {
+      setWarning("Kategori harus diisi.");
+      categoryRef.current?.scrollIntoView({ behavior: "smooth" });
+      return false;
+    }
+    if (!contact?.name || !contact?.id) {
+      setWarning("Profil (nama/NIM) harus diisi.");
+      profileRef.current?.scrollIntoView({ behavior: "smooth" });
+      return false;
+    }
+    if (!year) {
+      setWarning("Tahun project harus diisi.");
+      detailRef.current?.scrollIntoView({ behavior: "smooth" });
+      return false;
+    }
+    if (!description) {
+      setWarning("Deskripsi project harus diisi.");
+      detailRef.current?.scrollIntoView({ behavior: "smooth" });
+      return false;
+    }
+    if (!storedTags || storedTags.length === 0) {
+      setWarning("Minimal satu tag harus diisi.");
+      detailRef.current?.scrollIntoView({ behavior: "smooth" });
+      return false;
+    }
+    if (!storedProjectLinks || storedProjectLinks.length === 0 || !storedProjectLinks[0].title || !storedProjectLinks[0].url) {
+      setWarning("Minimal satu link project harus diisi.");
+      detailRef.current?.scrollIntoView({ behavior: "smooth" });
+      return false;
+    }
+    setWarning(null);
+    return true;
+  };
+
   const handlePreview = () => {
-    router.push('/preview');
+    if (validateAndScroll()) {
+      router.push('/preview');
+    }
   };
 
   useEffect(() => {
@@ -194,6 +282,20 @@ export default function PortfolioPage() {
     <div className="min-h-screen flex flex-col">
       <main className="flex-grow bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-24 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Warning Banner */}
+          {warning && (
+            <div className="bg-red-500/20 backdrop-blur-sm rounded-xl p-4 mb-8">
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 rounded-full text-xs text-white bg-red-500">
+                  Harus Diisi
+                </span>
+                <span className="text-white">
+                  {warning}
+                </span>
+              </div>
+            </div>
+          )}
+
           <div className="flex gap-8">
             <SideMenu 
               activeSection={activeSection}
@@ -202,18 +304,18 @@ export default function PortfolioPage() {
             />
 
             <div className="flex-grow">
-              <ProjectNameSection sectionRef={sections.projectName} />
-              <CategorySection sectionRef={sections.category} />
-              <ProfileSection sectionRef={sections.profile} />
+              <ProjectNameSection sectionRef={nameRef} />
+              <CategorySection sectionRef={categoryRef} />
+              <ProfileSection sectionRef={profileRef} />
               <TeamProjectSection 
-                sectionRef={sections.teamProject}
+                sectionRef={teamRef}
                 teamMembers={teamMembers}
                 onAddMember={handleAddMember}
                 onDeleteMember={handleDeleteMember}
                 onMemberChange={handleMemberChange}
               />
               <DetailProjectSection 
-                sectionRef={sections.detailProject}
+                sectionRef={detailRef}
                 projectLinks={projectLinks}
                 tags={tags}
                 tagInput={tagInput}

@@ -15,7 +15,7 @@ export function ProjectSidebar({ project }: ProjectSidebarProps) {
               <h2 className="text-xl font-semibold text-white mb-2">
                 {link.title}
               </h2>
-              <div className="flex items-center gap-2 bg-[#011B45] rounded-lg p-4 mb-6">
+              <div className="flex items-center gap-2 bg-[#011B45] rounded-lg p-4 mb-4">
                 <LinkIcon className="h-6 w-6 text-blue-500" />
                 <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-white hover:text-blue-400 transition-colors">
                   {link.url}
