@@ -31,6 +31,14 @@ const dummyData = {
   ]
 };
 
+const menuItems = [
+  { id: 'projectName', label: 'Nama Project' },
+  { id: 'category', label: 'Kategori' },
+  { id: 'profile', label: 'Profile' },
+  { id: 'teamProject', label: 'Team Project' },
+  { id: 'detailProject', label: 'Detail Project' },
+];
+
 export default function EditPortfolioPage({ params }: { params: { slug: string } }) {
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<string>('projectName');
@@ -164,7 +172,7 @@ export default function EditPortfolioPage({ params }: { params: { slug: string }
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [sections]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -188,6 +196,7 @@ export default function EditPortfolioPage({ params }: { params: { slug: string }
                 activeSection={activeSection}
                 scrollToSection={scrollToSection}
                 sections={sections}
+                menuItems={menuItems}
               />
               
               {/* Reviewer Notes */}
