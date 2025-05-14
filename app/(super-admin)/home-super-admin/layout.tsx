@@ -1,6 +1,6 @@
 // app/home/layout.tsx
 import Navbar from "@/components/navbar/SuperAdminNavbar";
-import Footer from "@/components/landing-page/Footer";
+import Footer from "@/components/user/landing-page/Footer";
 
 export default function HomeLayout({ children }: { children: React.ReactNode }) {
   return (

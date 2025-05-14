@@ -36,8 +36,16 @@ export const portfolioItems: PortfolioItem[] = [
       name: 'Krisna Bimantoro',
       id: '202210370311254'
     }
+    /* main branch commented out
+    title: 'UI/UX Healthy Application',
+    image: '/portfolio-1.png',
+    category: 'Rekayasa Perangkat Lunak',
+    tags: ['Mobile Application', 'UI/UX Design', 'Design System'],
+    date: 'Released November 21, 2023',
+    tahun: '2022',
+    subtitle: 'Rekayasa Perangkat Lunak - 2022',
+    */
   },
-  // Duplicate item dengan id berbeda untuk contoh
   {
     id: 2,
     name: 'Heykal',
@@ -73,6 +81,15 @@ export const portfolioItems: PortfolioItem[] = [
       name: 'Krisna Bimantoro',
       id: '202210370311254'
     }
+    /* main branch commented out
+    title: 'Analisis Game',
+    image: '/portfolio-1.png',
+    category: 'Game Cerdas',
+    tags: ['Mobile Application', 'UI/UX Design', 'Design System'],
+    date: 'Released November 21, 2023',
+    tahun: '2022',
+    subtitle: 'Game Cerdas - 2022',
+    */
   },
   {
     id: 3,
@@ -109,6 +126,15 @@ export const portfolioItems: PortfolioItem[] = [
       name: 'Krisna Bimantoro',
       id: '202210370311254'
     }
+    /* main branch commented out
+    title: 'Analisis Data Penjualan',
+    image: '/portfolio-1.png',
+    category: 'Data Sains',
+    tags: ['Mobile Application', 'UI/UX Design', 'Design System'],
+    date: 'Released November 21, 2023',
+    tahun: '2022',
+    subtitle: 'Data Sains - 2022',
+    */
   },
   {
     id: 4,
@@ -145,6 +171,15 @@ export const portfolioItems: PortfolioItem[] = [
       name: 'Krisna Bimantoro',
       id: '202210370311254'
     }
+    /* main branch commented out
+    title: 'Sistem Keamanan Jaringan',
+    image: '/portfolio-1.png',
+    category: 'Keamanan Jaringan',
+    tags: ['Mobile Application', 'UI/UX Design', 'Design System'],
+    date: 'Released November 21, 2023',
+    tahun: '2022',
+    subtitle: 'Keamanan Jaringan - 2022',
+    */
   },
   {
     id: 5,
@@ -181,6 +216,14 @@ export const portfolioItems: PortfolioItem[] = [
       name: 'Krisna Bimantoro',
       id: '202210370311254'
     }
+    /* main branch commented out
+    title: 'UI/UX Healthy Application',
+    image: '/portfolio-1.png',
+    category: 'Rekayasa Perangkat Lunak',
+    tags: ['Mobile Application', 'UI/UX Design', 'Design System'],
+    date: 'Released November 21, 2023',
+    tahun: '2022',
+    */
   },
   {
     id: 6,
@@ -217,8 +260,15 @@ export const portfolioItems: PortfolioItem[] = [
       name: 'Krisna Bimantoro',
       id: '202210370311254'
     }
+    /* main branch commented out
+    title: 'UI/UX Healthy Application',
+    image: '/portfolio-1.png',
+    category: 'Rekayasa Perangkat Lunak',
+    tags: ['Mobile Application', 'UI/UX Design', 'Design System'],
+    date: 'Released November 21, 2023',
+    tahun: '2022',
+    */
   },
-
   {
     id: 7,
     name: 'Krisna Bimantoro',
@@ -254,5 +304,20 @@ export const portfolioItems: PortfolioItem[] = [
       name: 'Krisna Bimantoro',
       id: '202210370311254'
     }
+    /* main branch commented out
+    title: 'UI/UX Healthy Application',
+    image: '/portfolio-1.png',
+    category: 'Rekayasa Perangkat Lunak',
+    tags: ['Mobile Application', 'UI/UX Design', 'Design System'],
+    date: 'Released November 21, 2023',
+    tahun: '2022',
+    */
   }
-]; 
+];
+
+export const showcaseCategories = [
+  'Rekayasa Perangkat Lunak',
+  'Game Cerdas',
+  'Data Sains',
+  'Keamanan Jaringan'
+];

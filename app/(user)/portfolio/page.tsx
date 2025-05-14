@@ -11,9 +11,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ImageIcon, Plus, Trash2, X } from "lucide-react";
-import Footer from "@/components/landing-page/Footer";
+import Footer from "@/components/user/landing-page/Footer";
 import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { SideMenu } from "@/components/user/portfolio/SideMenu";
+import { ProjectNameSection } from "@/components/user/portfolio/ProjectNameSection";
+import { CategorySection } from "@/components/user/portfolio/CategorySection";
+import { ProfileSection } from "@/components/user/portfolio/ProfileSection";
+import { TeamProjectSection } from "@/components/user/portfolio/TeamProjectSection";
+import { DetailProjectSection } from "@/components/user/portfolio/DetailProjectSection";
+import { usePortfolioStore } from "@/store/portfolioStore";
 
 interface TeamMember {
   id: number;
@@ -45,6 +52,14 @@ const RequiredLabel = ({ children }: { children: React.ReactNode }) => (
   </div>
 );
 
+const menuItems = [
+  { id: 'projectName', label: 'Nama Project' },
+  { id: 'category', label: 'Kategori' },
+  { id: 'profile', label: 'Profile' },
+  { id: 'teamProject', label: 'Team Project' },
+  { id: 'detailProject', label: 'Detail Project' },
+];
+
 export default function PortfolioPage() {
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<string>('projectName');
@@ -61,6 +76,7 @@ export default function PortfolioPage() {
     preview: ""
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [warning, setWarning] = useState<string | null>(null);
 
   const sections = {
     projectName: useRef<HTMLDivElement>(null!),
@@ -159,13 +175,99 @@ export default function PortfolioPage() {
     }
   };
 
+  const nameRef = useRef<HTMLDivElement>(null!);
+  const categoryRef = useRef<HTMLDivElement>(null!);
+  const profileRef = useRef<HTMLDivElement>(null!);
+  const teamRef = useRef<HTMLDivElement>(null!);
+  const detailRef = useRef<HTMLDivElement>(null!);
+
+  const title = usePortfolioStore((state) => state.title);
+  const category = usePortfolioStore((state) => state.category);
+  const year = usePortfolioStore((state) => state.year);
+  const description = usePortfolioStore((state) => state.description);
+  const storedTags = usePortfolioStore((state) => state.tags);
+  const storedProjectLinks = usePortfolioStore((state) => state.projectLinks);
+  const contact = usePortfolioStore((state) => state.contact);
+  const storedTeamMembers = usePortfolioStore((state) => state.teamMembers);
+  const storedProjectImage = usePortfolioStore((state) => state.projectImage);
+
+  const setPortfolioData = usePortfolioStore((state) => state.setPortfolioData);
+
+  // Load data from store when component mounts
+  useEffect(() => {
+    if (storedTags.length > 0) {
+      setTags(storedTags.map((text, index) => ({ id: index + 1, text })));
+    }
+    if (storedProjectLinks.length > 0) {
+      setProjectLinks(storedProjectLinks.map((link, index) => ({ id: index + 1, ...link })));
+    }
+    if (storedTeamMembers.length > 0) {
+      setTeamMembers(storedTeamMembers.map((member, index) => ({ id: index + 1, ...member })));
+    }
+    if (storedProjectImage) {
+      setProjectImage({ file: null, preview: storedProjectImage });
+    }
+  }, []);
+
+  // Sync local state with store
+  useEffect(() => {
+    setPortfolioData({
+      tags: tags.map(tag => tag.text),
+      projectLinks: projectLinks.map(link => ({ title: link.title, url: link.url })),
+      projectImage: projectImage.preview || '',
+      teamMembers: teamMembers.map(member => ({ name: member.name, role: member.role, nim: member.nim }))
+    });
+  }, [tags, projectLinks, projectImage, teamMembers]);
+
+  const validateAndScroll = () => {
+    if (!title) {
+      setWarning("Nama project harus diisi.");
+      nameRef.current?.scrollIntoView({ behavior: "smooth" });
+      return false;
+    }
+    if (!category) {
+      setWarning("Kategori harus diisi.");
+      categoryRef.current?.scrollIntoView({ behavior: "smooth" });
+      return false;
+    }
+    if (!contact?.name || !contact?.id) {
+      setWarning("Profil (nama/NIM) harus diisi.");
+      profileRef.current?.scrollIntoView({ behavior: "smooth" });
+      return false;
+    }
+    if (!year) {
+      setWarning("Tahun project harus diisi.");
+      detailRef.current?.scrollIntoView({ behavior: "smooth" });
+      return false;
+    }
+    if (!description) {
+      setWarning("Deskripsi project harus diisi.");
+      detailRef.current?.scrollIntoView({ behavior: "smooth" });
+      return false;
+    }
+    if (!storedTags || storedTags.length === 0) {
+      setWarning("Minimal satu tag harus diisi.");
+      detailRef.current?.scrollIntoView({ behavior: "smooth" });
+      return false;
+    }
+    if (!storedProjectLinks || storedProjectLinks.length === 0 || !storedProjectLinks[0].title || !storedProjectLinks[0].url) {
+      setWarning("Minimal satu link project harus diisi.");
+      detailRef.current?.scrollIntoView({ behavior: "smooth" });
+      return false;
+    }
+    setWarning(null);
+    return true;
+  };
+
   const handlePreview = () => {
-    router.push('/preview');
+    if (validateAndScroll()) {
+      router.push('/preview');
+    }
   };
 
   useEffect(() => {
     const handleScroll = () => {
-      const scrollPosition = window.scrollY + 120; // 120px offset for navbar and some padding
+      const scrollPosition = window.scrollY + 120; // offset navbar
 
       Object.entries(sections).forEach(([sectionName, ref]) => {
         if (ref.current) {
@@ -182,328 +284,73 @@ export default function PortfolioPage() {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [sections]);
 
-  const getButtonClass = (sectionName: string) => {
-    return `w-full text-left px-4 py-2 rounded-lg transition-colors ${
-      activeSection === sectionName
-        ? 'text-white bg-blue-500'
-        : 'text-gray-300 hover:bg-white/5'
-    }`;
-  };
+  const getButtonClass = (sectionName: string) => (
+    `w-full text-left px-4 py-2 rounded-lg 
+     transition-colors duration-300 ease-in-out
+     ${
+       activeSection === sectionName
+         ? 'text-white bg-blue-500'
+         : 'text-gray-300 hover:bg-white/5'
+     }`
+  );
 
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-grow bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-24 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex gap-8">
-            {/* Side Menu */}
-            <div className="w-64 flex-shrink-0">
-              <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 sticky top-24">
-                <h2 className="text-white font-semibold mb-4">Side Menu</h2>
-                <nav className="space-y-2">
-                  <button 
-                    onClick={() => scrollToSection(sections.projectName, 'projectName')}
-                    className={getButtonClass('projectName')}
-                  >
-                    Nama Project
-                  </button>
-                  <button 
-                    onClick={() => scrollToSection(sections.category, 'category')}
-                    className={getButtonClass('category')}
-                  >
-                    Kategori
-                  </button>
-                  <button 
-                    onClick={() => scrollToSection(sections.profile, 'profile')}
-                    className={getButtonClass('profile')}
-                  >
-                    Profile
-                  </button>
-                  <button 
-                    onClick={() => scrollToSection(sections.teamProject, 'teamProject')}
-                    className={getButtonClass('teamProject')}
-                  >
-                    Team Project
-                  </button>
-                  <button 
-                    onClick={() => scrollToSection(sections.detailProject, 'detailProject')}
-                    className={getButtonClass('detailProject')}
-                  >
-                    Detail Project
-                  </button>
-                </nav>
+          {/* Warning Banner */}
+          {warning && (
+            <div className="bg-red-500/20 backdrop-blur-sm rounded-xl p-4 mb-8">
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 rounded-full text-xs text-white bg-red-500">
+                  Harus Diisi
+                </span>
+                <span className="text-white">
+                  {warning}
+                </span>
               </div>
             </div>
+          )}
 
-            {/* Main Content */}
+          <div className="flex gap-8">
+            <SideMenu 
+              activeSection={activeSection}
+              scrollToSection={scrollToSection}
+              sections={sections}
+              menuItems={menuItems}
+              getButtonClass={getButtonClass}
+            />
+
             <div className="flex-grow">
-              {/* Nama Project Section */}
-              <div ref={sections.projectName} className="mb-8 scroll-mt-24">
-                <h2 className="text-xl font-semibold text-white mb-4">Nama Project</h2>
-                <RequiredLabel>Judul Project</RequiredLabel>
-                <Input
-                  placeholder="Judul"
-                  className="bg-white/5 border-0 text-white placeholder:text-gray-400"
-                />
-              </div>
-
-              {/* Kategori Section */}
-              <div ref={sections.category} className="mb-8 scroll-mt-24">
-                <h2 className="text-xl font-semibold text-white mb-4">Kategori</h2>
-                <RequiredLabel>Kategori Bidang Minat</RequiredLabel>
-                <Select>
-                  <SelectTrigger className="w-[180px] bg-white/5 border-0 text-white hover:bg-white/10 transition-colors">
-                    <SelectValue placeholder="Pilih Kategori Bidang Minat" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#001233] border-[#001B45]">
-                    <SelectItem value="rpl" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Rekayasa Perangkat Lunak</SelectItem>
-                    <SelectItem value="game" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Game Intelligence</SelectItem>
-                    <SelectItem value="data" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Data Science</SelectItem>
-                    <SelectItem value="network" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Network and Security</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Profile Section */}
-              <div ref={sections.profile} className="mb-8 scroll-mt-24">
-                <h2 className="text-xl font-semibold text-white mb-4">Profile</h2>
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <p className="text-gray-300 mb-2">Nama Lengkap</p>
-                    <Input
-                      value="Elga Putri"
-                      disabled
-                      className="bg-white/5 border-0 text-white placeholder:text-gray-400"
-                    />
-                  </div>
-                  <div>
-                    <p className="text-gray-300 mb-2">NIM</p>
-                    <Input
-                      value="202210370311449"
-                      disabled
-                      className="bg-white/5 border-0 text-white placeholder:text-gray-400"
-                    />
-                  </div>
-                  <div>
-                    <p className="text-gray-300 mb-2">Email</p>
-                    <Input
-                      value="elga@email.com"
-                      disabled
-                      className="bg-white/5 border-0 text-white placeholder:text-gray-400"
-                    />
-                  </div>
-                  <div>
-                    <p className="text-gray-300 mb-2">Angkatan</p>
-                    <Input
-                      value="22"
-                      disabled
-                      className="bg-white/5 border-0 text-white placeholder:text-gray-400"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Team Project Section */}
-              <div ref={sections.teamProject} className="mb-8 scroll-mt-24">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-semibold text-white">Team Project</h2>
-                  <Button 
-                    onClick={handleAddMember}
-                    variant="outline" 
-                    className="bg-white/5 border-white/20 text-white hover:bg-white/10 flex items-center gap-2"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Add Member
-                  </Button>
-                </div>
-                <div className="space-y-6">
-                  {teamMembers.map((member, index) => (
-                    <div key={member.id} className="flex gap-6">
-                      <div className="flex-1">
-                        <RequiredLabel>Nama Lengkap</RequiredLabel>
-                        <Input
-                          value={member.name}
-                          disabled={index === 0}
-                          onChange={(e) => handleMemberChange(member.id, 'name', e.target.value)}
-                          className="bg-white/5 border-0 text-white placeholder:text-gray-400"
-                          placeholder={index === 0 ? "" : "Masukkan Nama Lengkap"}
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <RequiredLabel>NIM</RequiredLabel>
-                        <Input
-                          value={member.nim}
-                          disabled={index === 0}
-                          onChange={(e) => handleMemberChange(member.id, 'nim', e.target.value)}
-                          className="bg-white/5 border-0 text-white placeholder:text-gray-400"
-                          placeholder={index === 0 ? "" : "Masukkan NIM"}
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <RequiredLabel>Role</RequiredLabel>
-                        <Input
-                          value={member.role}
-                          onChange={(e) => handleMemberChange(member.id, 'role', e.target.value)}
-                          className="bg-white/5 border-0 text-white placeholder:text-gray-400"
-                          placeholder="Masukkan Role"
-                        />
-                      </div>
-                      {index > 0 && (
-                        <div className="flex items-end">
-                          <Button
-                            onClick={() => handleDeleteMember(member.id)}
-                            variant="ghost"
-                            className="text-red-500 hover:text-red-600 hover:bg-red-500/10 h-10 w-10 p-0"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      )}
-                      {index === 0 && <div className="w-10" />}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Detail Project Section */}
-              <div ref={sections.detailProject} className="mb-8 scroll-mt-24">
-                <h2 className="text-xl font-semibold text-white mb-4">Detail Project</h2>
-                <div className="space-y-6">
-                  <div>
-                    <RequiredLabel>Tahun Project Dibuat</RequiredLabel>
-                    <Input
-                      placeholder="Masukkan Tahun Project Dibuat"
-                      className="bg-white/5 border-0 text-white placeholder:text-gray-400"
-                    />
-                  </div>
-
-                  <div className="space-y-6">
-                    {projectLinks.map((link) => (
-                      <div key={link.id} className="flex gap-6">
-                        <div className="flex-1">
-                          <RequiredLabel>Judul Link</RequiredLabel>
-                          <Input
-                            value={link.title}
-                            onChange={(e) => handleLinkChange(link.id, 'title', e.target.value)}
-                            className="bg-white/5 border-0 text-white placeholder:text-gray-400"
-                            placeholder="Masukkan Judul Link"
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <RequiredLabel>Link Project</RequiredLabel>
-                          <Input
-                            value={link.url}
-                            onChange={(e) => handleLinkChange(link.id, 'url', e.target.value)}
-                            className="bg-white/5 border-0 text-white placeholder:text-gray-400"
-                            placeholder="Masukkan Link Project"
-                          />
-                        </div>
-                        {projectLinks.length > 1 && (
-                          <div className="flex items-end">
-                            <Button
-                              onClick={() => handleDeleteLink(link.id)}
-                              variant="ghost"
-                              className="text-red-500 hover:text-red-600 hover:bg-red-500/10 h-10 w-10 p-0"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        )}
-                        {projectLinks.length === 1 && <div className="w-10" />}
-                      </div>
-                    ))}
-                    <Button 
-                      onClick={handleAddLink}
-                      variant="outline" 
-                      className="bg-white/5 border-white/20 text-white hover:bg-white/10 flex items-center gap-2"
-                    >
-                      <Plus className="h-4 w-4" />
-                      Add New Link
-                    </Button>
-                  </div>
-
-                  <div>
-                    <RequiredLabel>Tag</RequiredLabel>
-                    <div className="space-y-3">
-                      <div className="flex flex-wrap gap-2">
-                        {tags.map((tag) => (
-                          <div
-                            key={tag.id}
-                            className="flex items-center gap-1 bg-blue-500/20 text-white px-2 py-1 rounded-lg"
-                          >
-                            <span>{tag.text}</span>
-                            <button
-                              onClick={() => handleTagDelete(tag.id)}
-                              className="text-white/80 hover:text-white"
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                      <Input
-                        value={tagInput}
-                        onChange={(e) => setTagInput(e.target.value)}
-                        onKeyDown={handleTagKeyDown}
-                        placeholder="Ketik tag dan tekan enter"
-                        className="bg-white/5 border-0 text-white placeholder:text-gray-400"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <RequiredLabel>Description</RequiredLabel>
-                    <Textarea
-                      placeholder="Description"
-                      className="bg-white/5 border-0 text-white placeholder:text-gray-400 min-h-[150px]"
-                    />
-                  </div>
-
-                  <div>
-                    <RequiredLabel>Image</RequiredLabel>
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={handleImageChange}
-                      accept="image/*"
-                      className="hidden"
-                    />
-                    <div
-                      onClick={handleImageClick}
-                      className="bg-white/5 border-2 border-dashed border-white/20 rounded-lg p-8 cursor-pointer hover:bg-white/10 transition-colors"
-                    >
-                      {projectImage.preview ? (
-                        <div className="relative aspect-video w-full">
-                          <img
-                            src={projectImage.preview}
-                            alt="Preview"
-                            className="w-full h-full object-contain"
-                          />
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center justify-center text-gray-400">
-                          <ImageIcon className="h-16 w-16 mb-4" />
-                          <p>Click to upload image</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end gap-4">
-                    <Button 
-                      variant="outline" 
-                      className="bg-blue-500 text-white hover:bg-blue-600 border-0"
-                      onClick={handlePreview}
-                    >
-                      Preview Portfolio
-                    </Button>
-                    <Button className="bg-green-500 text-white hover:bg-green-600">
-                      Submit Portfolio
-                    </Button>
-                  </div>
-                </div>
-              </div>
+              <ProjectNameSection sectionRef={sections.projectName} />
+              <CategorySection sectionRef={sections.category} />
+              <ProfileSection sectionRef={sections.profile} />
+              <TeamProjectSection 
+                sectionRef={sections.teamProject}
+                teamMembers={teamMembers}
+                onAddMember={handleAddMember}
+                onDeleteMember={handleDeleteMember}
+                onMemberChange={handleMemberChange}
+              />
+              <DetailProjectSection 
+                sectionRef={sections.detailProject}
+                projectLinks={projectLinks}
+                tags={tags}
+                tagInput={tagInput}
+                projectImage={projectImage}
+                fileInputRef={fileInputRef}
+                onAddLink={handleAddLink}
+                onDeleteLink={handleDeleteLink}
+                onLinkChange={handleLinkChange}
+                onTagInputChange={setTagInput}
+                onTagKeyDown={handleTagKeyDown}
+                onTagDelete={handleTagDelete}
+                onImageClick={handleImageClick}
+                onImageChange={handleImageChange}
+                onPreview={handlePreview}
+              />
             </div>
           </div>
         </div>
