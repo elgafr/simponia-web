@@ -6,15 +6,16 @@ interface ReviewerNotesProps {
 
 export function ReviewerNotes({ notes }: ReviewerNotesProps) {
   return (
-    <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4">
-      <h2 className="text-white font-semibold mb-4">Catatan dari Reviewer</h2>
+    <div className="bg-yellow-500/20 backdrop-blur-sm rounded-xl p-4">
+      <h3 className="text-white text-lg font-semibold mb-3">Catatan Reviewer</h3>
       <div className="space-y-3">
         {notes.map((note, index) => (
           <div
             key={index}
-            className="bg-blue-500/20 text-white p-3 rounded-lg text-sm"
+            className="flex gap-3 text-white p-3 rounded-lg text-md"
           >
-            {note}
+            <span className="flex-shrink-0">•</span>
+            <div className="flex-grow">{note}</div>
           </div>
         ))}
       </div>

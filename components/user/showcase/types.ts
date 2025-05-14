@@ -1,10 +1,12 @@
 import { LucideIcon } from 'lucide-react';
 
 export interface PortfolioItem {
+  name?: string;
   id: number;
   title: string;
   image: string;
   category: string;
+  status?: string;
   tags: string[];
   date: string;
   tahun:string ;

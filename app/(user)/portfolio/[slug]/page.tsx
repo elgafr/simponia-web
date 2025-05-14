@@ -10,6 +10,7 @@ import { ProfileSection } from "@/components/user/portfolio/ProfileSection";
 import { TeamProjectSection } from "@/components/user/portfolio/TeamProjectSection";
 import { DetailProjectSection } from "@/components/user/portfolio/DetailProjectSection";
 import { ReviewerNotes } from "@/components/user/portfolio/ReviewerNotes";
+import { Maximize2, Minimize2 } from "lucide-react";
 
 // Data dummy untuk contoh
 const dummyData = {
@@ -26,11 +27,16 @@ const dummyData = {
     { id: 1, name: "Elga Putri", nim: "202210370311449", role: "UI/UX Designer" }
   ],
   reviewerNotes: [
-    "Judulnya kurang tepat, diperbaiki lagi",
-    
+    "Judulnya kurang tepat, diperbaiki lagi. lorem ipsum lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.",
+    "Judulnya kurang tepat, diperbaiki lagi. lorem ipsum lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.",
+
   ]
+  // reviewerNotes: [
+  //   "Judulnya kurang tepat, diperbaiki lagi. ",
+  // ]
 };
 
+// Tambahkan menuItems
 const menuItems = [
   { id: 'projectName', label: 'Nama Project' },
   { id: 'category', label: 'Kategori' },
@@ -42,7 +48,11 @@ const menuItems = [
 export default function EditPortfolioPage({ params }: { params: { slug: string } }) {
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<string>('projectName');
-  const [teamMembers, setTeamMembers] = useState(dummyData.teamMembers);
+  const [teamMembers, setTeamMembers] = useState(
+    Array.isArray(dummyData.teamMembers) && dummyData.teamMembers.length > 0
+      ? dummyData.teamMembers
+      : [{ id: 1, name: "", nim: "", role: "" }]
+  );
   const [projectLinks, setProjectLinks] = useState([{ id: 1, title: "", url: "" }]);
   const [tags, setTags] = useState<{ id: number; text: string; }[]>([]);
   const [tagInput, setTagInput] = useState('');
@@ -51,6 +61,15 @@ export default function EditPortfolioPage({ params }: { params: { slug: string }
     preview: ""
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [warning, setWarning] = useState<string | null>(null);
+  const [showReviewerNotes, setShowReviewerNotes] = useState(true);
+
+  // Tambahkan ref untuk validasi scroll
+  const nameRef = useRef<HTMLDivElement>(null!);
+  const categoryRef = useRef<HTMLDivElement>(null!);
+  const profileRef = useRef<HTMLDivElement>(null!);
+  const teamRef = useRef<HTMLDivElement>(null!);
+  const detailRef = useRef<HTMLDivElement>(null!);
 
   const sections = {
     projectName: useRef<HTMLDivElement>(null!),
@@ -149,8 +168,42 @@ export default function EditPortfolioPage({ params }: { params: { slug: string }
     }
   };
 
+  // Validasi field wajib
+  const validateAndScroll = () => {
+    if (!dummyData.title && !projectLinks[0].title) {
+      setWarning("Nama project harus diisi.");
+      nameRef.current?.scrollIntoView({ behavior: "smooth" });
+      return false;
+    }
+    if (!dummyData.category) {
+      setWarning("Kategori harus diisi.");
+      categoryRef.current?.scrollIntoView({ behavior: "smooth" });
+      return false;
+    }
+    if (!dummyData.profile?.name || !dummyData.profile?.nim) {
+      setWarning("Profil (nama/NIM) harus diisi.");
+      profileRef.current?.scrollIntoView({ behavior: "smooth" });
+      return false;
+    }
+    if (!tags || tags.length === 0) {
+      setWarning("Minimal satu tag harus diisi.");
+      detailRef.current?.scrollIntoView({ behavior: "smooth" });
+      return false;
+    }
+    if (!projectLinks || projectLinks.length === 0 || !projectLinks[0].title || !projectLinks[0].url) {
+      setWarning("Minimal satu link project harus diisi.");
+      detailRef.current?.scrollIntoView({ behavior: "smooth" });
+      return false;
+    }
+    setWarning(null);
+    return true;
+  };
+
+  // Update handlePreview
   const handlePreview = () => {
-    router.push('/preview');
+    if (validateAndScroll()) {
+      router.push('/preview');
+    }
   };
 
   useEffect(() => {
@@ -172,14 +225,14 @@ export default function EditPortfolioPage({ params }: { params: { slug: string }
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [sections]);
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col">
-      <main className="flex-grow bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-24 pb-16">
+      <main className="flex-grow bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-24 pb-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Status Banner */}
-          <div className="bg-yellow-500/20 backdrop-blur-sm rounded-xl p-4 mb-8">
+          {/* Status Banner: Perlu Perubahan */}
+          <div className="bg-yellow-500/20 backdrop-blur-sm rounded-xl p-4 mb-4">
             <div className="flex items-center gap-2">
               <span className="px-3 py-1 rounded-full text-xs text-white bg-yellow-500">
                 Perlu Perubahan
@@ -190,47 +243,127 @@ export default function EditPortfolioPage({ params }: { params: { slug: string }
             </div>
           </div>
 
+          {/* Reviewer Notes Popup */}
+          {showReviewerNotes && (
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+              <div className="bg-yellow-500/20 rounded-xl p-6 max-w-2xl w-full mx-4 transition-all duration-300">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-white text-2xl font-semibold">Catatan Reviewer</h3>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => setShowReviewerNotes(false)}
+                      className="text-white hover:text-gray-300 transition-colors"
+                    >
+                      <Minimize2 size={24} />
+                    </button>
+                  </div>
+                </div>
+                <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                  {dummyData.reviewerNotes.map((note, index) => (
+                    <div key={index} className="flex gap-3 text-white text-xl">
+                      <span className="flex-shrink-0">•</span>
+                      <div className="flex-grow">{note}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Status Banner: Wajib diisi */}
+          {warning && (
+            <div className="bg-red-500/20 backdrop-blur-sm rounded-xl p-4 mb-4">
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 rounded-full text-xs text-white bg-red-500">
+                  Wajib diisi
+                </span>
+                <span className="text-white">
+                  {warning}
+                </span>
+              </div>
+            </div>
+          )}
+
           <div className="flex gap-8">
-            <div className="w-64 flex-shrink-0 space-y-6">
-              <SideMenu 
-                activeSection={activeSection}
-                scrollToSection={scrollToSection}
-                sections={sections}
-                menuItems={menuItems}
-              />
-              
-              {/* Reviewer Notes */}
-              <ReviewerNotes notes={dummyData.reviewerNotes} />
+            <div className="w-64 flex-shrink-0">
+              <div className="sticky top-24 space-y-6">
+                <SideMenu 
+                  activeSection={activeSection}
+                  scrollToSection={scrollToSection}
+                  sections={sections}
+                  menuItems={menuItems}
+                />
+                
+                {/* Reviewer Notes in sidebar with maximize button */}
+                {!showReviewerNotes && (
+                  <div className="relative">
+                    <div className="bg-yellow-500/20 backdrop-blur-sm rounded-xl p-4">
+                      <div className="flex justify-between items-center mb-3">
+                        <h3 className="text-white text-lg font-semibold">Catatan Reviewer</h3>
+                        <button 
+                          onClick={() => setShowReviewerNotes(true)}
+                          className="text-white hover:text-gray-300 transition-colors"
+                        >
+                          <Maximize2 size={20} />
+                        </button>
+                      </div>
+                      <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                        {dummyData.reviewerNotes.map((note, index) => (
+                          <div
+                            key={index}
+                            className="flex gap-3 text-white p-3 rounded-lg text-md"
+                          >
+                            <span className="flex-shrink-0">•</span>
+                            <div className="flex-grow">{note}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
-            <div className="flex-grow">
-              <ProjectNameSection sectionRef={sections.projectName} />
-              <CategorySection sectionRef={sections.category} />
-              <ProfileSection sectionRef={sections.profile} />
-              <TeamProjectSection 
-                sectionRef={sections.teamProject}
-                teamMembers={teamMembers}
-                onAddMember={handleAddMember}
-                onDeleteMember={handleDeleteMember}
-                onMemberChange={handleMemberChange}
-              />
-              <DetailProjectSection 
-                sectionRef={sections.detailProject}
-                projectLinks={projectLinks}
-                tags={tags}
-                tagInput={tagInput}
-                projectImage={projectImage}
-                fileInputRef={fileInputRef}
-                onAddLink={handleAddLink}
-                onDeleteLink={handleDeleteLink}
-                onLinkChange={handleLinkChange}
-                onTagInputChange={setTagInput}
-                onTagKeyDown={handleTagKeyDown}
-                onTagDelete={handleTagDelete}
-                onImageClick={handleImageClick}
-                onImageChange={handleImageChange}
-                onPreview={handlePreview}
-              />
+            <div className="flex-grow min-h-screen">
+              <div className="space-y-8">
+                <div ref={nameRef}>
+                  <ProjectNameSection sectionRef={sections.projectName} />
+                </div>
+                <div ref={categoryRef}>
+                  <CategorySection sectionRef={sections.category} />
+                </div>
+                <div ref={profileRef}>
+                  <ProfileSection sectionRef={sections.profile} />
+                </div>
+                <div ref={teamRef}>
+                  <TeamProjectSection 
+                    sectionRef={sections.teamProject}
+                    teamMembers={Array.isArray(teamMembers) ? teamMembers : []}
+                    onAddMember={handleAddMember}
+                    onDeleteMember={handleDeleteMember}
+                    onMemberChange={handleMemberChange}
+                  />
+                </div>
+                <div ref={detailRef}>
+                  <DetailProjectSection 
+                    sectionRef={sections.detailProject}
+                    projectLinks={projectLinks}
+                    tags={tags}
+                    tagInput={tagInput}
+                    projectImage={projectImage}
+                    fileInputRef={fileInputRef}
+                    onAddLink={handleAddLink}
+                    onDeleteLink={handleDeleteLink}
+                    onLinkChange={handleLinkChange}
+                    onTagInputChange={setTagInput}
+                    onTagKeyDown={handleTagKeyDown}
+                    onTagDelete={handleTagDelete}
+                    onImageClick={handleImageClick}
+                    onImageChange={handleImageChange}
+                    onPreview={handlePreview}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>

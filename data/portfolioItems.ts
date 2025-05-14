@@ -10,6 +10,7 @@ export const portfolioItems: PortfolioItem[] = [
     status: 'Verified',
     tags: ['Mobile Application', 'UI/UX Design', 'Design System'],
     date: 'Released November 21, 2023',
+    tahun: '2022',
     subtitle: 'Rekayasa Perangkat Lunak - 2022',
     description: [
       'Lorem ipsum dolor sit amet consectetur. In non iaculis scelerisque feugiat urna. Neque curabitur ac pretium ut elementum sed vel lobortis. Dui turpis nisl facilisis in vitae consectetur accumsan in. Sed tristique est sit semper. Scelerisque dui nunc mi gravida dignissim erat ipsum consequat aliquam.',
@@ -55,6 +56,7 @@ export const portfolioItems: PortfolioItem[] = [
     status: 'Need Revision',
     tags: ['Mobile Application', 'UI/UX Design', 'Design System'],
     date: 'Released November 21, 2023',
+    tahun: '2022',
     subtitle: 'Rekayasa Perangkat Lunak - 2022',
     description: [
       'Lorem ipsum dolor sit amet consectetur. In non iaculis scelerisque feugiat urna. Neque curabitur ac pretium ut elementum sed vel lobortis. Dui turpis nisl facilisis in vitae consectetur accumsan in. Sed tristique est sit semper. Scelerisque dui nunc mi gravida dignissim erat ipsum consequat aliquam.',
@@ -100,6 +102,7 @@ export const portfolioItems: PortfolioItem[] = [
     status: 'Unverified',
     tags: ['Mobile Application', 'UI/UX Design', 'Design System'],
     date: 'Released November 21, 2023',
+    tahun: '2022',
     subtitle: 'Rekayasa Perangkat Lunak - 2022',
     description: [
       'Lorem ipsum dolor sit amet consectetur. In non iaculis scelerisque feugiat urna. Neque curabitur ac pretium ut elementum sed vel lobortis. Dui turpis nisl facilisis in vitae consectetur accumsan in. Sed tristique est sit semper. Scelerisque dui nunc mi gravida dignissim erat ipsum consequat aliquam.',
@@ -145,6 +148,7 @@ export const portfolioItems: PortfolioItem[] = [
     status: 'Verified',
     tags: ['Mobile Application', 'UI/UX Design', 'Design System'],
     date: 'Released November 21, 2023',
+    tahun: '2022',
     subtitle: 'Rekayasa Perangkat Lunak - 2022',
     description: [
       'Lorem ipsum dolor sit amet consectetur. In non iaculis scelerisque feugiat urna. Neque curabitur ac pretium ut elementum sed vel lobortis. Dui turpis nisl facilisis in vitae consectetur accumsan in. Sed tristique est sit semper. Scelerisque dui nunc mi gravida dignissim erat ipsum consequat aliquam.',
@@ -190,6 +194,7 @@ export const portfolioItems: PortfolioItem[] = [
     status: 'Unverified',
     tags: ['Mobile Application', 'UI/UX Design', 'Design System'],
     date: 'Released November 21, 2023',
+    tahun: '2022',
     subtitle: 'Rekayasa Perangkat Lunak - 2022',
     description: [
       'Lorem ipsum dolor sit amet consectetur. In non iaculis scelerisque feugiat urna. Neque curabitur ac pretium ut elementum sed vel lobortis. Dui turpis nisl facilisis in vitae consectetur accumsan in. Sed tristique est sit semper. Scelerisque dui nunc mi gravida dignissim erat ipsum consequat aliquam.',
@@ -234,6 +239,7 @@ export const portfolioItems: PortfolioItem[] = [
     status: 'Need Revision',
     tags: ['Mobile Application', 'UI/UX Design', 'Design System'],
     date: 'Released November 21, 2023',
+    tahun: '2022',
     subtitle: 'Rekayasa Perangkat Lunak - 2022',
     description: [
       'Lorem ipsum dolor sit amet consectetur. In non iaculis scelerisque feugiat urna. Neque curabitur ac pretium ut elementum sed vel lobortis. Dui turpis nisl facilisis in vitae consectetur accumsan in. Sed tristique est sit semper. Scelerisque dui nunc mi gravida dignissim erat ipsum consequat aliquam.',
@@ -279,6 +285,7 @@ export const portfolioItems: PortfolioItem[] = [
     tags: ['Mobile Application', 'UI/UX Design', 'Design System'],
     date: 'Released November 21, 2023',
     subtitle: 'Rekayasa Perangkat Lunak - 2022',
+    tahun: '2022',
     description: [
       'Lorem ipsum dolor sit amet consectetur. In non iaculis scelerisque feugiat urna. Neque curabitur ac pretium ut elementum sed vel lobortis. Dui turpis nisl facilisis in vitae consectetur accumsan in. Sed tristique est sit semper. Scelerisque dui nunc mi gravida dignissim erat ipsum consequat aliquam.',
       'Porttitor molestie tincidunt neque turpis feugiat mattis. Diam arcu sed mi fusce vestibulum eu neque sed. Dis hendrerit ultrices ac sodales. Justo mauris elementum scelerisque convallis.',
