@@ -52,6 +52,14 @@ const RequiredLabel = ({ children }: { children: React.ReactNode }) => (
   </div>
 );
 
+const menuItems = [
+  { id: 'projectName', label: 'Nama Project' },
+  { id: 'category', label: 'Kategori' },
+  { id: 'profile', label: 'Profile' },
+  { id: 'teamProject', label: 'Team Project' },
+  { id: 'detailProject', label: 'Detail Project' },
+];
+
 export default function PortfolioPage() {
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<string>('projectName');
@@ -259,7 +267,7 @@ export default function PortfolioPage() {
 
   useEffect(() => {
     const handleScroll = () => {
-      const scrollPosition = window.scrollY + 120; // 120px offset for navbar and some padding
+      const scrollPosition = window.scrollY + 120; // offset navbar
 
       Object.entries(sections).forEach(([sectionName, ref]) => {
         if (ref.current) {
@@ -276,7 +284,17 @@ export default function PortfolioPage() {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [sections]);
+
+  const getButtonClass = (sectionName: string) => (
+    `w-full text-left px-4 py-2 rounded-lg 
+     transition-colors duration-300 ease-in-out
+     ${
+       activeSection === sectionName
+         ? 'text-white bg-blue-500'
+         : 'text-gray-300 hover:bg-white/5'
+     }`
+  );
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -301,21 +319,23 @@ export default function PortfolioPage() {
               activeSection={activeSection}
               scrollToSection={scrollToSection}
               sections={sections}
+              menuItems={menuItems}
+              getButtonClass={getButtonClass}
             />
 
             <div className="flex-grow">
-              <ProjectNameSection sectionRef={nameRef} />
-              <CategorySection sectionRef={categoryRef} />
-              <ProfileSection sectionRef={profileRef} />
+              <ProjectNameSection sectionRef={sections.projectName} />
+              <CategorySection sectionRef={sections.category} />
+              <ProfileSection sectionRef={sections.profile} />
               <TeamProjectSection 
-                sectionRef={teamRef}
+                sectionRef={sections.teamProject}
                 teamMembers={teamMembers}
                 onAddMember={handleAddMember}
                 onDeleteMember={handleDeleteMember}
                 onMemberChange={handleMemberChange}
               />
               <DetailProjectSection 
-                sectionRef={detailRef}
+                sectionRef={sections.detailProject}
                 projectLinks={projectLinks}
                 tags={tags}
                 tagInput={tagInput}

@@ -47,6 +47,12 @@ export function AccountDetails({
             disabled={isEditing !== 'email'}
             className="bg-white/5 border-0 text-white"
           />
+          {isEditing === 'email' && (
+            <div className="flex gap-2 mt-2 justify-end">
+              <Button size="sm" variant="outline" className="text-white border-white/20 text-blue-500 hover:text-blue-600" onClick={onCancel}>Batal</Button>
+              <Button size="sm" className="bg-blue-500 text-white hover:bg-blue-600" onClick={() => onSave('email')}>Simpan</Button>
+            </div>
+          )}
         </div>
 
         {/* LinkedIn */}
@@ -68,6 +74,12 @@ export function AccountDetails({
             disabled={isEditing !== 'linkedin'}
             className="bg-white/5 border-0 text-white"
           />
+          {isEditing === 'linkedin' && (
+            <div className="flex gap-2 mt-2 justify-end">
+              <Button size="sm" className="bg-blue-500 text-white" onClick={() => onSave('linkedin')}>Simpan</Button>
+              <Button size="sm" variant="outline" className="text-white border-white/20" onClick={onCancel}>Batal</Button>
+            </div>
+          )}
         </div>
 
         {/* Instagram */}
@@ -89,6 +101,12 @@ export function AccountDetails({
             disabled={isEditing !== 'instagram'}
             className="bg-white/5 border-0 text-white"
           />
+          {isEditing === 'instagram' && (
+            <div className="flex gap-2 mt-2 justify-end">
+              <Button size="sm" className="bg-blue-500 text-white" onClick={() => onSave('instagram')}>Simpan</Button>
+              <Button size="sm" variant="outline" className="text-white border-white/20" onClick={onCancel}>Batal</Button>
+            </div>
+          )}
         </div>
 
         {/* Github */}
@@ -110,6 +128,12 @@ export function AccountDetails({
             disabled={isEditing !== 'github'}
             className="bg-white/5 border-0 text-white"
           />
+          {isEditing === 'github' && (
+            <div className="flex gap-2 mt-2 justify-end">
+              <Button size="sm" className="bg-blue-500 text-white" onClick={() => onSave('github')}>Simpan</Button>
+              <Button size="sm" variant="outline" className="text-white border-white/20" onClick={onCancel}>Batal</Button>
+            </div>
+          )}
         </div>
       </div>
     </div>

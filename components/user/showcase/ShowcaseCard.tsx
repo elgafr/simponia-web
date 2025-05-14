@@ -40,7 +40,7 @@ export function ShowcaseCard({ item }: ShowcaseCardProps) {
         </div>
         <CardHeader className="pt-2">
           <h3 className="text-xl font-bold text-white">{item.title}</h3>
-          <p className="text-gray-400 text-sm">{item.subtitle}</p>
+          <p className="text-gray-400 text-sm">{item.category} - {item.tahun}</p>
         </CardHeader>
         <CardContent className="text-gray-300">
           <p className="text-sm leading-relaxed line-clamp-2">
