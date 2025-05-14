@@ -1,158 +1,220 @@
 "use client";
 
 import React from "react";
-import { FaArrowLeft, FaGlobe } from "react-icons/fa";
+import { FaArrowLeft } from "react-icons/fa";
 import Image from "next/image";
 import Link from "next/link";
-import { IoLogoWhatsapp } from "react-icons/io5";
-import { FiGithub } from "react-icons/fi";
-import { IoLogoInstagram } from "react-icons/io5";
-import { SlSocialLinkedin } from "react-icons/sl";
-import { TbBrandGmail } from "react-icons/tb";
+import { useParams } from "next/navigation";
+import { portfolioItems } from '@/data/portfolioItems';
+import { MessageSquare, LinkIcon, Users, MessageCircle, Github, Instagram, Linkedin, Mail } from 'lucide-react';
 
+interface PortfolioItem {
+  id: number;
+  title: string;
+  image: string;
+  category: string;
+  tags: string[];
+  date: string;
+  subtitle: string;
+  description: string | string[];
+  links?: {
+    title: string;
+    url: string;
+  }[];
+  teamMembers?: {
+    name: string;
+    role: string;
+  }[];
+  contact?: {
+    name: string;
+    id: string;
+  };
+}
+
+interface SocialIcon {
+  icon: React.ComponentType<{ className?: string }>;
+  name: string;
+}
+
+// ProjectHeader Component
+const ProjectHeader: React.FC<{ project: PortfolioItem }> = ({ project }) => {
+  return (
+    <>
+      <div className="rounded-xl overflow-hidden mb-12">
+        <Image
+          src={project.image}
+          alt={project.title}
+          width={1200}
+          height={600}
+          className="w-full object-cover h-130"
+        />
+      </div>
+      <div className="mb-12">
+        <h1 className="text-4xl font-bold text-white mb-4">{project.title}</h1>
+        <div className="flex flex-wrap gap-3 mb-6">
+          {project.tags.map((tag, index) => (
+            <span
+              key={index}
+              className="px-4 py-1 bg-white/5 backdrop-blur-sm rounded-full text-sm text-white"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+};
+
+// SocialLinks Component
+const SocialLinks: React.FC = () => {
+  const socialIcons: SocialIcon[] = [
+    { icon: MessageCircle, name: 'whatsapp' },
+    { icon: Github, name: 'github' },
+    { icon: Instagram, name: 'instagram' },
+    { icon: Linkedin, name: 'linkedin' },
+    { icon: Mail, name: 'email' }
+  ];
+
+  return (
+    <div className="flex gap-3">
+      {socialIcons.map((social, index) => {
+        const Icon = social.icon;
+        return (
+          <a
+            key={index}
+            href="#"
+            className="text-gray-400 hover:text-white transition-colors"
+          >
+            <Icon className="h-5 w-5" />
+          </a>
+        );
+      })}
+    </div>
+  );
+};
+
+// ProjectContent Component
+const ProjectContent: React.FC<{ project: PortfolioItem }> = ({ project }) => {
+  return (
+    <div className="lg:col-span-2">
+      <div className="space-y-6 mb-12">
+        {Array.isArray(project.description) ? (
+          project.description.map((paragraph, index) => (
+            <p key={index} className="text-gray-300">{paragraph}</p>
+          ))
+        ) : (
+          <p className="text-gray-300">{project.description}</p>
+        )}
+      </div>
+
+      <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6">
+        <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
+          <MessageSquare className="h-5 w-5" />
+          Get in Touch
+        </h2>
+        {project.contact && (
+          <p className="text-gray-300 mb-4">
+            {project.contact.name}/{project.contact.id}
+          </p>
+        )}
+        <SocialLinks />
+      </div>
+    </div>
+  );
+};
+
+// ProjectSidebar Component
+const ProjectSidebar: React.FC<{ project: PortfolioItem }> = ({ project }) => {
+  return (
+    <div className="space-y-8">
+      {project.links && (
+        <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6">
+          {project.links.map((link, index) => (
+            <div key={index}>
+              <h2 className="text-xl font-semibold text-white mb-2">
+                {link.title}
+              </h2>
+              <div className="flex items-center gap-2 bg-[#011B45] rounded-lg p-4 mb-6">
+                <LinkIcon className="h-6 w-6 text-blue-500" />
+                <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-white hover:text-blue-400 transition-colors">
+                  {link.url}
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {project.teamMembers && (
+        <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6">
+          <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Team Project
+          </h2>
+          <div className="space-y-4">
+            {project.teamMembers.map((member, index) => (
+              <div key={index} className="text-gray-300">
+                <p className="text-white">{member.name}</p>
+                <p className="text-sm">{member.role}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const HeroSection1DetailPortfolioView: React.FC = () => {
+  const params = useParams();
+  const idParam = params.id; // Extract the id from the URL (e.g., "1-ui-ux-healthy-application")
+
+  // Extract the numeric id from the URL parameter
+  const id = idParam
+    ? typeof idParam === 'string'
+      ? parseInt(idParam.split('-')[0])
+      : 1
+    : null; // Set to null if idParam is undefined
+
+  // Find the portfolio item matching the id
+  const portfolioItem: PortfolioItem | undefined = id
+    ? portfolioItems.find((item) => item.id === id) || portfolioItems[0]
+    : undefined;
+
+  // Handle case where no id is provided
+  if (!id || !portfolioItem) {
     return (
-        <section className="bg-gradient-to-b from-[#0B1623] to-blue-950 lg:px-60 py-30">
-          {/* Navigation Bar */}
-          <div className="flex justify-between items-center mb-6">
-            <Link href={'/dashboard-super-admin'}>
-                <button className="flex items-center text-white bg-gray-700 px-4 py-2 rounded-lg hover:bg-gray-600 hover:scale-110 transition">
+      <section className="bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] lg:px-60 py-30">
+        <div className="flex justify-between items-center mb-6">
+          <Link href={'/showcase-portfolio-super-admin'}>
+            <button className="flex items-center text-white bg-gray-700 px-4 py-2 rounded-lg hover:bg-gray-600 hover:scale-110 transition">
               <FaArrowLeft className="mr-2" /> Back
-                </button>
-            </Link>
+            </button>
+          </Link>
+        </div>
+        <div className="text-white text-center py-10">
+          <h1 className="text-3xl md:text-5xl font-bold mb-4">Portfolio Details</h1>
+          <p>Please select a portfolio item to view its details.</p>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <main className="flex-1 bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-24 pb-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <ProjectHeader project={portfolioItem} />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <ProjectContent project={portfolioItem} />
+            <ProjectSidebar project={portfolioItem} />
           </div>
-      
-          {/* Header Image */}
-          <div className="w-full h-64 md:h-80 bg-gray-500 rounded-lg overflow-hidden">
-            <Image
-              src="/images/portfolio.png"
-              alt="Portfolio Preview"
-              width={1200}
-              height={500}
-              className="w-full h-full object-cover"
-            />
-          </div>
-      
-          {/* Content Layout */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-15">
-            {/* Left Side - Description */}
-            <div className="md:col-span-2">
-              <h1 className="text-white text-3xl md:text-6xl font-bold">
-                UI/UX Healthy Application
-              </h1>
-              <p className="text-gray-400 text-xl mt-3">Software Engineering - 2022</p>
-      
-              {/* Tags */}
-              <div className="flex space-x-3 mt-4">
-                <span className="px-3 py-1  bg-gradient-to-r from-indigo-800 to-red-600 text-lg font-semibold text-white rounded-2xl">
-                  Mobile Application
-                </span>
-                <span className="px-3 py-1  bg-gradient-to-r from-indigo-800 to-red-600 text-lg font-semibold text-white rounded-2xl">
-                  UI/UX Designer
-                </span>
-                <span className="px-3 py-1  bg-gradient-to-r from-indigo-900 to-red-600 text-lg font-semibold text-white rounded-2xl">
-                  Design System
-                </span>
-              </div>
-      
-              {/* Description */}
-              <p className="text-gray-300 mt-4 text-lg">
-                Lorem ipsum dolor sit amet consectetur. Quisque purus risus in purus at a.
-                Tincidunt et sapien donec id integer pulvinar. Eu purus accumsan a ornare dictum massa mattis.
-                Suspendisse at dolor. Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                Aliquam voluptas incidunt quaerat enim inventore illo rerum dolorem temporibus atque accusantium,
-                omnis, praesentium distinctio non esse itaque! At rem quam minima!
-              </p>
-      
-              {/* Contact */}
-              <div className="bg-gradient-to-b from-indigo-950 to-gray-700 shadow-2xl p-6 rounded-lg mt-38 w-100">
-                <h3 className="text-white text-2xl font-semibold mb-2">Get in Touch</h3>
-                <p className="text-gray-300 text-xl">Krisna Bimantoro / 202210730311254</p>
-      
-                <div className="flex space-x-3 mt-7">
-                  {/* Whatsapp */}
-                  <a href="https://wa.me/62XXXXXXXXXX" target="_blank" rel="noopener noreferrer">
-                    <IoLogoWhatsapp size={30} className="transition transform duration-300 ease-in-out hover:scale-130 hover:text-green-500" />
-                  </a>
+        </div>
+      </main>
 
-                  {/* Github */}
-                  <a href="https://github.com/username" target="_blank" rel="noopener noreferrer">
-                    <FiGithub size={30} className="transition transform duration-300 ease-in-out hover:scale-130 hover:text-indigo-500" />
-                  </a>
-
-                  {/* Instagram */}
-                  <a href="https://www.instagram.com/username" target="_blank" rel="noopener noreferrer">
-                  <IoLogoInstagram size={30}className="text-white transition duration-300 ease-in-out hover:scale-130 hover:text-purple-500"/>
-                  </a>
-
-                  {/* LinkedIn */}
-                  <a href="https://www.linkedin.com/in/username" target="_blank" rel="noopener noreferrer">
-                    <SlSocialLinkedin size={28} className="transition transform duration-300 ease-in-out hover:scale-130 hover:text-blue-800" />
-                     
-                  </a>
-
-                  {/* Gmail */}
-                  <a href="mailto:youremail@gmail.com">
-                    <TbBrandGmail size={31} className="transition transform duration-300 ease-in-out hover:scale-130 hover:text-red-700" />
-                      
-                  </a>
-                </div>
-
-              </div>
-            </div>
-      
-            {/* Right Side - Additional Info & Team Project */}
-            <div className="md:col-span-1 space-y-10 mt-35 w-85 ml-30">
-              {/* Additional Info */}
-              
-              <div className="shadow-2xl bg-gradient-to-l from-indigo-950 to-gray-800 p-6 rounded-lg">
-                <h3 className="text-white font-semibold mb-2 text-xl">Figma Mobile App</h3>
-                <a
-                  href="http://www"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center bg-gray-700 px-4 py-2 rounded-lg text-white hover:underline cursor-pointer"
-                >
-                  <FaGlobe className="mr-2" />
-                  http://www
-                </a>
-
-                <h3 className="text-white font-semibold mt-4 mb-2 text-xl">
-                  Medium Study Case
-                </h3>
-                <a
-                  href="http://www"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center bg-gray-700 px-4 py-2 rounded-lg text-white hover:underline cursor-pointer"
-                >
-                  <FaGlobe className="mr-2" />
-                  http://www
-                </a>
-              </div>
-
-      
-              {/* Team Project */}
-              <div className="shadow-2xl bg-gradient-to-l from-indigo-950 to-gray-800 p-6 rounded-lg">
-                <h3 className="text-white font-semibold mb-4 text-xl">Team Project</h3>
-                {Array(3)
-                  .fill("Krisna Bimantoro")
-                  .map((name, index) => (
-                    <p key={index} className="text-gray-300 text-lg">
-                      {name} <span className="text-gray-500 text-lg">UI/UX Designer</span>
-                    </p>
-                  ))}
-              </div>
-      
-            </div>
-
-          </div>
-          
-
-        </section>
-      );
-
+    </div>
+  );
 };
 
 export default HeroSection1DetailPortfolioView;

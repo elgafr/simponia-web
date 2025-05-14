@@ -28,10 +28,10 @@ export default function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease: "easeOut", delay: 0.8 }}
           >
-            <Image src="Source Code.svg" alt="Icon 1" width={100} height={100} />
-            <Image src="Game Controller.svg" alt="Icon 2" width={100} height={100} />
-            <Image src="Slice.svg" alt="Icon 3" width={100} height={100} />
-            <Image src="Network.svg" alt="Icon 4" width={100} height={100} />
+            <Image src="/images/Source Code.png" alt="Icon 1" width={100} height={100} />
+            <Image src="/images/Game Controller.png" alt="Icon 2" width={100} height={100} />
+            <Image src="/images/Slice.png" alt="Icon 3" width={100} height={100} />
+            <Image src="/images/Network.png" alt="Icon 4" width={100} height={100} />
           </motion.div>
 
           {/* Bagian Teks */}
@@ -59,7 +59,7 @@ export default function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, ease: "easeOut", delay: 1.5 }}
           >
-            <Link href={"/dashboard-super-admin"}>
+            <Link href={"/dashboard-admin-community"}>
               <button className="text-xl px-8 py-4 bg-white text-gray-900 font-semibold rounded-4xl mt-10 cursor-pointer hover:scale-110 transition">
                 Go To Dashboard
               </button>

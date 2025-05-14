@@ -1,126 +1,168 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useState } from "react";
-import Image from "next/image"; // Tambahkan import ini
-import { IoSearchOutline } from "react-icons/io5";
-import { IoIosArrowForward } from "react-icons/io";
+// Import necessary modules and components
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
+import { Search } from 'lucide-react';
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { portfolioItems } from '@/data/portfolioItems'; // Import the provided data
 
 
-const portfolios = [
-  { id: 1, name: "M. Heykal Dhafariel Rajendra", project: "Menguasai Rekayasa Perangkat Lunak: Kumpulan Proyek dan Pencapaian", year: 2024, category: "Software Engineering", tag: "Mobile Application, UI/UX Designer, Design System", image: "/images/portfolio2.png" },
-  { id: 2, name: "Fitra Romeo Winky", project: "Transformasi Digital: Inovasi dalam Rekayasa Perangkat Lunak", year: 2024, category: "Software Engineering", tag: "Backend Developer, Cloud Computing", image: "/images/portfolio.png" },
-  { id: 3, name: "Nadira Ulya Nisa", project: "Dari Konsep ke Realisasi: Portofolio Proyek Rekayasa Perangkat Lunak", year: 2024, category: "Software Engineering", tag: "Frontend Developer, Web Design", image: "/images/portfolio.png" },
-  { id: 4, name: "Krisna Bimantoro", project: "Perjalanan Karier dalam Rekayasa Perangkat Lunak: Studi Kasus dan Aplikasi", year: 2024, category: "Game Intelligence", tag: "Game Developer, AI Programmer", image: "/images/portfolio2.png" },
-];
+// Define interfaces
+export interface PortfolioItem {
+  id: number;
+  title: string;
+  image: string;
+  category: string;
+  tags: string[];
+  date: string;
+  subtitle: string;
+  description: string | string[];
+  links?: {
+    title: string;
+    url: string;
+  }[];
+  teamMembers?: {
+    name: string;
+    role: string;
+  }[];
+  contact?: {
+    name: string;
+    id: string;
+  };
+}
 
-const HeroSection1ShowcasePortfolio = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-
-  const filteredPortfolios = portfolios.filter(
-    (portfolio) =>
-      (selectedCategory === "" || portfolio.category === selectedCategory) &&
-      portfolio.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
+// ShowcaseHeader Component
+export function ShowcaseHeader() {
   return (
-    <section className="flex flex-col items-center py-20 justify-center min-h-screen w-full text-center bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C]">
-      <div className="p-6 rounded-lg pb-8 max-w-5xl text-center">
-        <h1 className="text-6xl font-bold text-white mb-10 mt-20">Portofolio Showcase</h1>
-        <p className="text-lg mt-2 text-gray-300 leading-relaxed">
-          Lorem ipsum dolor sit amet consectetur. Quisque purus risus in purus at a.
-        </p>
-      </div>
-
-      <div className="my-6 border-b border-gray-300 w-3/5"></div>
-
-      {/* Search & Category Filter */}
-      <div className="w-full max-w-6xl flex flex-wrap items-center justify-center gap-4 px-4">
-        <div className="relative flex items-center w-2/3 hover:scale-101 transition">
-          <input
-            type="text"
-            placeholder="Search Portofolio"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="bg-gray-200 w-full p-3 pl-10 text-gray-800 rounded-xl shadow-lg outline-none focus:ring-2 focus:ring-blue-400"
-          />
-          <IoSearchOutline className="absolute left-3 text-gray-500" size={20} />
-        </div>
-        <select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          className="p-3 bg-gray-200 text-gray-800 rounded-xl shadow-lg outline-none"
-        >
-          <option value="">All Category</option>
-          <option value="Software Engineering">Software Engineering</option>
-          <option value="Game Intelligence">Game Intelligence</option>
-          <option value="Data Science">Data Science</option>
-          <option value="Network and Security">Network and Security</option>
-          <option value="Artificial Intelligence">Artificial Intelligence</option>
-          <option value="Cyber Security">Cyber Security</option>
-        </select>
-      </div>
-
-      <h2 className="text-3xl font-semibold text-white mt-5 mb-10">{selectedCategory || "All Category"}</h2>
-
-      {/* Grid Card Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-70">
-        
-        {filteredPortfolios.map((portfolio) => (
-          <div key={portfolio.id} className="border-transparent border-1 hover:border-white bg-gradient-to-b from-indigo-900 to-gray-800 rounded-2xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105 hover:bg-gray-700">
-            <Image 
-              src={portfolio.image} 
-              alt={portfolio.project} 
-              width={500} 
-              height={300} 
-              className="w-full h-48 object-cover" 
-            />
-
-            <div className="p-5 text-left">
-
-             {/* Tag */}
-              <div className="flex flex-wrap gap-1 mt-2">
-                {portfolio.tag.split(", ").map((tag, index) => (
-                  <span 
-                    key={index} 
-                    className="text-white font-semibold text-sm 
-                              bg-gradient-to-r from-indigo-800 to-red-600 
-                              px-2 py-2 rounded-2xl cursor-pointer"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-
-              {/* Project Title */}
-              <h3 className="text-white text-xl font-bold mt-2">{portfolio.project}</h3>
-
-              {/* Category */}
-              <h2 className="text-gray-300 text-base font-semibold mt-2">{portfolio.category}</h2>
-              
-              
-              {/* Name & Year */}
-              <p className="text-gray-400 mt-1 mb-3">{portfolio.name} - {portfolio.year}</p>
-
-              <p className="text-sm">Lorem ipsum dolor sit amet consectetur adipisicing elit. Earum illum doloremque ex repellat temporibus voluptatum libero incidunt nisi repellendus mollitia optio quibusdam voluptatem et, unde qui? Molestiae, fuga? Dolorem, quae.</p>
-              
-              <div className="text-right">
-              <Link href={`/detail-super-admin/portfolio/view`} className="inline-block mt-4">
-                <IoIosArrowForward size={'30'} className="text-white mt-10 hover:text-gray-500"/>
-              </Link>
-              </div>
-            </div>
-            
-          </div>
-        ))}
-      </div>
-
-      {filteredPortfolios.length === 0 && (
-        <p className="text-gray-300 mt-10">No portfolio found</p>
-      )}
-    </section>
+    <div className="text-center mb-16">
+      <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
+        Portfolio Showcase
+      </h1>
+      <p className="text-gray-300 max-w-3xl mx-auto">
+        Lorem ipsum dolor sit amet consectetur. Quisque purus risus in purus at a. Tincidunt et sapien donec id integer pulvinar. Eu purus accumsan a ornare dictum massa mattis. Suspendisse at dolor
+      </p>
+    </div>
   );
-};
+}
 
-export default HeroSection1ShowcasePortfolio;
+// ShowcaseSearch Component
+export function ShowcaseSearch() {
+  return (
+    <div className="flex flex-col md:flex-row gap-4 mb-12">
+      <div className="relative flex-grow">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+        <Input
+          placeholder="Search project or name"
+          className="pl-10 bg-white/5 border-0 text-white placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-blue-500"
+        />
+      </div>
+      <Select>
+        <SelectTrigger className="w-[180px] bg-white/5 border-0 text-white hover:bg-white/10 transition-colors">
+          <SelectValue placeholder="Category" />
+        </SelectTrigger>
+        <SelectContent className="bg-[#001233] border-[#001B45]">
+          <SelectItem value="all" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">All Categories</SelectItem>
+          <SelectItem value="ui" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">UI/UX Design</SelectItem>
+          <SelectItem value="web" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Web Development</SelectItem>
+          <SelectItem value="mobile" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Mobile App</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+// ShowcaseCard Component
+interface ShowcaseCardProps {
+  item: PortfolioItem;
+}
+
+export function ShowcaseCard({ item }: ShowcaseCardProps) {
+  return (
+    <Link
+      href={`/detail-super-admin/portfolio/view/${item.id}-${item.title.toLowerCase().replace(/[^\w\s]/g, '-').replace(/\s+/g, '-')}`}
+      className="group"
+    >
+      <Card className="py-0 bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10 transition-all duration-300 overflow-hidden flex flex-col">
+        <div className="w-full h-52 flex">
+          <Image
+            src={item.image}
+            alt={item.title}
+            width={400}
+            height={208}
+            className="w-full h-full object-fill"
+          />
+        </div>
+        <div className="flex flex-wrap gap-2 px-6 mt-1">
+          {item.tags.map((tag, index) => (
+            <span
+              key={index}
+              className="px-2 py-1 bg-white/5 backdrop-blur-sm rounded-full text-xs text-white"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+        <CardHeader className="pt-2">
+          <h3 className="text-xl font-bold text-white">{item.title}</h3>
+          <p className="text-gray-400 text-sm">{item.subtitle}</p>
+        </CardHeader>
+        <CardContent className="text-gray-300">
+          <p className="text-sm leading-relaxed line-clamp-2">
+            {typeof item.description === 'string' ? item.description : item.description[0]}
+          </p>
+        </CardContent>
+        <CardFooter className="pt-0 pb-4 flex justify-end">
+          <span className="text-white text-sm font-medium group-hover:text-blue-400 transition-colors">
+            See More
+          </span>
+        </CardFooter>
+      </Card>
+    </Link>
+  );
+}
+
+// ShowcaseGrid Component
+interface ShowcaseGridProps {
+  items: PortfolioItem[];
+}
+
+export function ShowcaseGrid({ items }: ShowcaseGridProps) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {items.map((item) => (
+        <ShowcaseCard key={item.id} item={item} />
+      ))}
+    </div>
+  );
+}
+
+// Main HeroSection1ShowcasePortfolio Component
+export default function HeroSection1ShowcasePortfolio() {
+  return (
+    <div className="min-h-screen flex flex-col">
+      <main className="flex-grow bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-24 pb-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <ShowcaseHeader />
+          <ShowcaseSearch />
+          <ShowcaseGrid items={portfolioItems} />
+        </div>
+      </main>
+    </div>
+  );
+}

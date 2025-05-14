@@ -8,7 +8,7 @@ const HeroSection2DetailCommunity = () => {
         <hr className="mb-6" />
 
         {/* Activity 1 */}
-        <div className="flex flex-col md:flex-row items-center rounded-lg p-4 mb-6 shadow-2xl bg-white/9 hover:scale-105 transition hover:bg-gradient-to-r from-red-400 to-blue-950 transition">
+        <div className="flex flex-col md:flex-row items-center rounded-lg p-4 mb-6 shadow-2xl hover:scale-105 transition hover:bg-gradient-to-r from-red-400 to-blue-950 transition">
           <Image
             src="/images/portfolio.png" // Ganti dengan path gambar yang sesuai
             alt="Upgrading Event Caslab"
@@ -31,7 +31,7 @@ const HeroSection2DetailCommunity = () => {
         </div>
 
         {/* Activity 2 */}
-        <div className="flex flex-col md:flex-row-reverse items-center rounded-lg p-4 shadow-2xl bg-white/9 hover:scale-105 transition hover:bg-gradient-to-l from-red-400 to-blue-950 transition">
+        <div className="flex flex-col md:flex-row-reverse items-center rounded-lg p-4 shadow-2xl hover:scale-105 transition hover:bg-gradient-to-l from-red-400 to-blue-950 transition">
           <Image
             src="/images/portfolio2.png" // Ganti dengan path gambar yang sesuai
             alt="IT Character Building 2024"

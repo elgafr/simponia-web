@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import ProfileDropdown from './ProfileDropdown';
+import ProfileDropdown from './ProfileDropdownAdminCommunity';
 
 export default function AdminCommunityNavbar() {
   const pathname = usePathname();
@@ -20,7 +20,7 @@ export default function AdminCommunityNavbar() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
-            <Link href="/" className="flex items-center">
+            <Link href="/home-admin-community" className="flex items-center">
               <div className="relative w-[150px] h-[50px] mx-2">
                 <Image
                   src="/logo simponia.svg"
@@ -38,19 +38,19 @@ export default function AdminCommunityNavbar() {
           {/* Navigation Links */}
           <div className="hidden md:block">
             <div className="flex items-center space-x-4">
-              <Link href="/" className={isActive('/')}>
+              <Link href="/home-admin-community" className={isActive('/home-admin-community')}>
                 Home
               </Link>
               <Link href="/dashboard-admin-community" className={isActive('/dashboard-admin-community')}>
                 Dashboard
               </Link>
-              <Link href="/student" className={isActive('/student')}>
+              <Link href="/dashboard" className={isActive('/dashboard')}>
                 Student
               </Link>
-              <Link href="/showcase-admin-community" className={isActive('/showcase-admin-community')}>
+              <Link href="/showcase-community-admin-community" className={isActive('/showcase-community-admin-community')}>
                 Showcase
               </Link>
-              <Link href="/faq-admin-community" className={isActive('/faq-admin-community')}>
+              <Link href="/FAQ-admin-community" className={isActive('/FAQ-admin-community')}>
                 FAQ
               </Link>
               {/* Profile Dropdown */}
