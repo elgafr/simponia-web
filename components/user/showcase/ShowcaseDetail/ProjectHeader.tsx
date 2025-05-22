@@ -23,7 +23,7 @@ export function ProjectHeader({ project }: ProjectHeaderProps) {
           {project.tags.map((tag, index) => (
             <span
               key={index}
-              className="px-4 py-1 bg-white/5 backdrop-blur-sm rounded-full text-sm text-white"
+              className="px-4 py-2 bg-white/5 backdrop-blur-sm rounded-full text-sm text-white"
             >
               {tag}
             </span>

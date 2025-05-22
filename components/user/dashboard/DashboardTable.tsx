@@ -130,7 +130,7 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
   };
 
   const handleEdit = (id: string, name: string) => {
-    router.push(`/portfolio/${id}-${name.toLowerCase().replace(/ /g, '-')}`);
+    router.push(`/portfolio/${id}`);
   };
 
   const handleDelete = async (id: string) => {

@@ -34,7 +34,7 @@ export function ShowcaseCard({ item }: ShowcaseCardProps) {
           {item.tags.map((tag, index) => (
             <span
               key={index}
-              className="px-2 py-1 bg-white/5 backdrop-blur-sm rounded-full text-xs text-white flex items-center justify-center"
+              className="px-4 py-1 bg-white/5 backdrop-blur-sm rounded-full text-xs text-white flex items-center justify-center"
             >
               {tag}
             </span>

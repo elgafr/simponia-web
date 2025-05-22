@@ -227,7 +227,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
 
   return (
     <div className="min-h-screen flex flex-col">
-      <main className="flex-grow bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-24 pb-32">
+      <main className="flex-grow bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-8 pb-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Status Banner: Perlu Perubahan */}
           <div className="bg-yellow-500/20 backdrop-blur-sm rounded-xl p-4 mb-4">
@@ -360,6 +360,25 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
                     onImageChange={handleImageChange}
                     onPreview={handlePreview}
                   />
+                </div>
+                <div className="flex justify-end gap-4 mt-8">
+                  <button
+                    type="button"
+                    className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition"
+                    onClick={handlePreview}
+                  >
+                    Preview Portfolio
+                  </button>
+                  <button
+                    type="button"
+                    className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition"
+                    onClick={() => {
+                      // TODO: Ganti dengan handleSubmit jika sudah ada
+                      alert('Submit Portfolio (implementasi handleSubmit di sini)');
+                    }}
+                  >
+                    Submit Portfolio
+                  </button>
                 </div>
               </div>
             </div>

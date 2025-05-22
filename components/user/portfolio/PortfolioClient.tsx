@@ -27,6 +27,8 @@ interface TeamMember {
   name: string;
   nim: string;
   role: string;
+  id_user: string;
+  angkatan?: string;
 }
 
 interface ProjectLink {
@@ -64,7 +66,7 @@ export default function PortfolioClient() {
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<string>('projectName');
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([
-    { id: 1, name: "Elga Putri", nim: "202210370311449", role: "" }
+    { id: 1, name: "", nim: "", role: "", id_user: "" }
   ]);
   const [projectLinks, setProjectLinks] = useState<ProjectLink[]>([
     { id: 1, title: "", url: "" }
@@ -86,6 +88,8 @@ export default function PortfolioClient() {
     detailProject: useRef<HTMLDivElement>(null!),
   };
 
+  const topRef = useRef<HTMLDivElement>(null);
+
   const scrollToSection = (ref: React.RefObject<HTMLDivElement>, sectionName: string) => {
     if (ref.current) {
       const navbarHeight = 96;
@@ -105,7 +109,9 @@ export default function PortfolioClient() {
       id: teamMembers.length + 1,
       name: "",
       nim: "",
-      role: ""
+      role: "",
+      id_user: "",
+      angkatan: "",
     };
     setTeamMembers([...teamMembers, newMember]);
   };
@@ -202,7 +208,16 @@ export default function PortfolioClient() {
       setProjectLinks(storedProjectLinks.map((link, index) => ({ id: index + 1, ...link })));
     }
     if (storedTeamMembers.length > 0) {
-      setTeamMembers(storedTeamMembers.map((member, index) => ({ id: index + 1, ...member })));
+      setTeamMembers(
+        storedTeamMembers.map((member, index) => ({
+          id: index + 1,
+          name: member.name,
+          role: member.role,
+          nim: member.nim,
+          id_user: member.name ?? "",
+          
+        }))
+      );
     }
     if (storedProjectImage) {
       setProjectImage({ file: null, preview: storedProjectImage });
@@ -219,40 +234,82 @@ export default function PortfolioClient() {
     });
   }, [tags, projectLinks, projectImage, teamMembers]);
 
+  useEffect(() => {
+    // Fetch profile user
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          // Set baris pertama teamMembers dengan data user
+          setTeamMembers((prev) => [
+            {
+              ...prev[0],
+              name: data.nama || "",
+              nim: data.user?.nim || "",
+              role: prev[0].role || "", // biarkan role bisa diisi user
+              id_user: data.user?.id || "",
+              angkatan: data.user?.angkatan || ""
+            },
+            ...prev.slice(1)
+          ]);
+        }
+      } catch (err) {
+        console.error('Failed to fetch profile user', err);
+      }
+    };
+    fetchProfile();
+  }, []);
+
   const validateAndScroll = () => {
+    const navbarHeight = 96; // Height of the navbar
+
     if (!title) {
       setWarning("Nama project harus diisi.");
-      nameRef.current?.scrollIntoView({ behavior: "smooth" });
+      nameRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.scrollBy(0, -navbarHeight); // Add offset for navbar
       return false;
     }
     if (!category) {
       setWarning("Kategori harus diisi.");
-      categoryRef.current?.scrollIntoView({ behavior: "smooth" });
+      categoryRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.scrollBy(0, -navbarHeight);
       return false;
     }
     if (!contact?.name || !contact?.id) {
       setWarning("Profil (nama/NIM) harus diisi.");
-      profileRef.current?.scrollIntoView({ behavior: "smooth" });
+      profileRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.scrollBy(0, -navbarHeight);
       return false;
     }
     if (!year) {
       setWarning("Tahun project harus diisi.");
-      detailRef.current?.scrollIntoView({ behavior: "smooth" });
+      detailRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.scrollBy(0, -navbarHeight);
       return false;
     }
     if (!description) {
       setWarning("Deskripsi project harus diisi.");
-      detailRef.current?.scrollIntoView({ behavior: "smooth" });
+      detailRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.scrollBy(0, -navbarHeight);
       return false;
     }
     if (!storedTags || storedTags.length === 0) {
       setWarning("Minimal satu tag harus diisi.");
-      detailRef.current?.scrollIntoView({ behavior: "smooth" });
+      detailRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.scrollBy(0, -navbarHeight);
       return false;
     }
     if (!storedProjectLinks || storedProjectLinks.length === 0 || !storedProjectLinks[0].title || !storedProjectLinks[0].url) {
       setWarning("Minimal satu link project harus diisi.");
-      detailRef.current?.scrollIntoView({ behavior: "smooth" });
+      detailRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.scrollBy(0, -navbarHeight);
       return false;
     }
     setWarning(null);
@@ -286,26 +343,76 @@ export default function PortfolioClient() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [sections]);
 
-  const getButtonClass = (sectionName: string) => (
-    `w-full text-left px-4 py-2 rounded-lg 
+  const handleSubmit = async () => {
+    if (!validateAndScroll()) {
+      setTimeout(() => {
+        topRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100); // slight delay to ensure banner is rendered
+      return;
+    }
+    // Ambil data dari state/store
+    const payload = {
+      nama_projek: title,
+      kategori: category,
+      tahun: Number(year),
+      gambar: projectImage.preview, // atau nama file jika upload ke server
+      deskripsi: description,
+      anggota: teamMembers.map(member => ({
+        id_user: member.id_user, // pastikan field ini ada di state
+        role: member.role,
+       
+      })),
+      detail_project: projectLinks.map(link => ({
+        judul_link: link.title,
+        link_project: link.url
+      })),
+      tags: tags.map(tag => ({ nama: tag.text }))
+    };
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/portofolio`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        throw new Error('Gagal submit portfolio');
+      }
+      alert('Portfolio berhasil dikirim!');
+      // Redirect atau reset form jika perlu
+    } catch (err) {
+      alert('Terjadi kesalahan saat submit portfolio');
+      console.error(err);
+    }
+  };
+
+  const getButtonClass = (sectionName: string) => {
+    return `w-full text-left px-4 py-2 rounded-lg 
      transition-colors duration-300 ease-in-out
      ${
        activeSection === sectionName
          ? 'text-white bg-blue-500'
          : 'text-gray-300 hover:bg-white/5'
-     }`
-  );
+     }`;
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
-      <main className="flex-grow bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-24 pb-16">
+      <main className="flex-grow bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-10 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Warning Banner */}
+          <div ref={topRef}></div>
+
+          {/* Status Banner: Wajib diisi */}
           {warning && (
-            <div className="bg-red-500/20 backdrop-blur-sm rounded-xl p-4 mb-8">
+            <div className="bg-red-500/20 backdrop-blur-sm rounded-xl p-4 mb-4">
               <div className="flex items-center gap-2">
                 <span className="px-3 py-1 rounded-full text-xs text-white bg-red-500">
-                  Harus Diisi
+                  Wajib diisi
                 </span>
                 <span className="text-white">
                   {warning}
@@ -351,6 +458,19 @@ export default function PortfolioClient() {
                 onImageChange={handleImageChange}
                 onPreview={handlePreview}
               />
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-4 mt-8">
+                <Button 
+                  variant="outline" 
+                  className="bg-blue-500 text-white hover:bg-blue-600 border-0 hover:text-white"
+                  onClick={handlePreview}
+                >
+                  Preview Portfolio
+                </Button>
+                <Button className="bg-green-500 text-white hover:bg-green-600" onClick={handleSubmit}>
+                  Submit Portfolio
+                </Button>
+              </div>
             </div>
           </div>
         </div>

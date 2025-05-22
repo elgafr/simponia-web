@@ -136,10 +136,10 @@ export function DetailProjectSection({
           <Button 
             onClick={onAddLink}
             variant="outline" 
-            className="bg-white/5 border-white/20 text-white hover:bg-white/10 flex items-center gap-2"
+            className="bg-white/5 border-white/20 text-white hover:bg-white/10 flex hover:text-blue-500 items-center gap-2"
           >
             <Plus className="h-4 w-4" />
-            Add New Link
+            Tambah Link Baru
           </Button>
         </div>
 
@@ -216,7 +216,7 @@ export function DetailProjectSection({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-end gap-4">
+        {/* <div className="flex justify-end gap-4">
           <Button 
             variant="outline" 
             className="bg-blue-500 text-white hover:bg-blue-600 border-0 hover:text-white"
@@ -227,7 +227,7 @@ export function DetailProjectSection({
           <Button className="bg-green-500 text-white hover:bg-green-600">
             Submit Portfolio
           </Button>
-        </div>
+        </div> */}
       </div>
     </div>
   );
