@@ -1,7 +1,16 @@
 import type { ProfileData } from './types';
 
+interface MyProfileData {
+  name: string;
+  gender: string;
+  nim: string;
+  dateOfBirth: string;
+  mobileNumber: string;
+  state: string;
+}
+
 interface MyProfileProps {
-  profileData: ProfileData;
+  profileData: MyProfileData;
 }
 
 export function MyProfile({ profileData }: MyProfileProps) {

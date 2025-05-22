@@ -127,7 +127,7 @@ const HeroSection1Dashboard = () => {
             </SelectTrigger>
             <SelectContent className="bg-[#001233] border-[#001B45]">
               <SelectItem value="all" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">
-                All Categories
+                Semua Kategori
               </SelectItem>
               {uniqueCategories.map((category) => (
                 <SelectItem

@@ -31,12 +31,8 @@ export function ProfileBio({
             rows={4}
           />
           <div className="flex gap-2 justify-end">
-            <Button onClick={onCancel} className="bg-red-600 text-white hover:bg-red-700 transition-colors">
-              Batal
-            </Button>
-            <Button onClick={onSave} className="bg-emerald-600 text-white hover:bg-emerald-700 transition-colors">
-              Simpan
-            </Button>
+            <Button size="sm" variant="outline" className="text-white border-white/20 text-blue-500 hover:text-blue-600" onClick={onCancel}>Batal</Button>
+            <Button size="sm" className="bg-blue-500 text-white" onClick={onSave}>Simpan</Button>
           </div>
         </div>
       ) : (

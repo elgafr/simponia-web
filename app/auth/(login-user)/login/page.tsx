@@ -2,23 +2,52 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { FormEvent } from 'react';
-import { useUser } from '../../../../context/UserContext';
+import { FormEvent, useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function LoginPage() {
-  const router = useRouter();
-  const { setUserRole } = useUser();
+  const { login, error, isLoading } = useAuth();
+  const [formErrors, setFormErrors] = useState<{
+    nim?: string;
+    password?: string;
+  }>({});
 
-  const handleSubmit = (e: FormEvent) => {
+  const validateForm = (formData: FormData) => {
+    const errors: { nim?: string; password?: string } = {};
+    const nim = formData.get('nim') as string;
+    const password = formData.get('password') as string;
+
+    if (!nim) {
+      errors.nim = 'NIM harus diisi';
+    }
+    if (!password) {
+      errors.password = 'Password harus diisi';
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
-    // Set user role to 3 in both context and localStorage
-    setUserRole(3);
-    localStorage.setItem('userRole', '3');
+    const formData = new FormData(e.target as HTMLFormElement);
     
-    // Redirect to home page
-    router.push('/');
+    if (!validateForm(formData)) {
+      return;
+    }
+
+    const credentials = {
+      nim: formData.get('nim') as string,
+      password: formData.get('password') as string,
+      rememberMe: formData.get('remember') === 'on',
+    };
+
+    try {
+      await login(credentials);
+    } catch (err) {
+      // Error handling sudah dihandle di useAuth hook
+    }
   };
 
   return (
@@ -66,18 +95,29 @@ export default function LoginPage() {
         <div className="max-w-md w-full">
           <h1 className="text-2xl font-bold text-gray-900 mb-8">Log in to Simponia!</h1>
           
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">
+              {error}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="nim" className="block text-sm font-medium text-gray-700 mb-2">
-                NIM / Username
+                NIM 
               </label>
               <input
                 type="text"
                 id="nim"
                 name="nim"
                 placeholder="Input your NIM/Username"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full px-4 py-2 border text-black ${
+                  formErrors.nim ? 'border-red-500' : 'border-gray-300'
+                } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
               />
+              {formErrors.nim && (
+                <p className="mt-1 text-sm text-red-600">{formErrors.nim}</p>
+              )}
             </div>
 
             <div>
@@ -89,8 +129,13 @@ export default function LoginPage() {
                 id="password"
                 name="password"
                 placeholder="Input your password"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full px-4 py-2 border text-black ${
+                  formErrors.password ? 'border-red-500' : 'border-gray-300'
+                } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500`}
               />
+              {formErrors.password && (
+                <p className="mt-1 text-sm text-red-600">{formErrors.password}</p>
+              )}
             </div>
 
             <div className="flex items-center">
@@ -107,9 +152,12 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200"
+              disabled={isLoading}
+              className={`w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200 ${
+                isLoading ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
-              Login
+              {isLoading ? 'Loading...' : 'Login'}
             </button>
 
             <div className="text-center">

@@ -1,4 +1,4 @@
-import { Eye, PenLine, Trash2, Search } from 'lucide-react';
+import { Eye, PenLine, Trash2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,13 +20,37 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 
 interface PortfolioItem {
-  id: number;
-  name: string;
-  category: string;
-  year: string;
+  id: string;
+  nama_projek: string;
+  kategori: string;
+  tahun: number;
   status: string;
+  gambar: string;
+  deskripsi: string;
+  created_at: string;
+  updated_at: string;
+  anggota: Array<{
+    id: string;
+    user: {
+      id: string;
+      nim: string;
+      role: string;
+    };
+    role: string;
+    angkatan: string;
+  }>;
+  detail_project: Array<{
+    id: string;
+    judul_link: string;
+    link_project: string;
+  }>;
+  tags: Array<{
+    id: string;
+    nama: string;
+  }>;
 }
 
 interface DashboardTableProps {
@@ -39,22 +63,26 @@ const getStatusColor = (status: string) => {
       return 'bg-green-500';
     case 'Proses Verifikasi':
       return 'bg-gray-500';
-    case 'Ditolak':
+    case 'Dihapus':
       return 'bg-red-500';
     case 'Perlu Perubahan':
       return 'bg-yellow-500';
-    case 'Belum Diverifikasi':
+    case 'Belum di Verifikasi':
       return 'bg-blue-400';
     default:
       return 'bg-gray-500';
   }
 };
 
+const ITEMS_PER_PAGE = 5;
+
 export function DashboardTable({ portfolioData }: DashboardTableProps) {
   const router = useRouter();
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Filter data based on selected filters and search query
   const filteredData = portfolioData.filter(item => {
@@ -66,26 +94,67 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
       (statusFilter === 'unverified' && item.status === 'Belum Diverifikasi');
     
     const categoryMatch = categoryFilter === 'all' || 
-      (categoryFilter === 'rpl' && item.category === 'Rekayasa Perangkat Lunak') ||
-      (categoryFilter === 'game' && item.category === 'Game Cerdas') ||
-      (categoryFilter === 'data' && item.category === 'Data Sains') ||
-      (categoryFilter === 'network' && item.category === 'Keamanan Jaringan');
+      (categoryFilter === 'rpl' && item.kategori === 'Rekayasa Perangkat Lunak') ||
+      (categoryFilter === 'game' && item.kategori === 'Game Cerdas') ||
+      (categoryFilter === 'data' && item.kategori === 'Data Sains') ||
+      (categoryFilter === 'network' && item.kategori === 'Keamanan Jaringan');
     
-    const searchMatch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const searchMatch = item.nama_projek.toLowerCase().includes(searchQuery.toLowerCase());
     
     return statusMatch && categoryMatch && searchMatch;
   });
 
-  const handleView = (id: number) => {
-    router.push(`/showcase/${id}-ui-ux-healthy-application`);
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentItems = filteredData.slice(startIndex, endIndex);
+
+  // Reset to first page when filters change
+  const handleFilterChange = (value: string, type: 'status' | 'category') => {
+    setCurrentPage(1);
+    if (type === 'status') {
+      setStatusFilter(value);
+    } else {
+      setCategoryFilter(value);
+    }
   };
 
-  const handleEdit = (id: number, name: string) => {
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCurrentPage(1);
+    setSearchQuery(e.target.value);
+  };
+
+  const handleView = (id: string) => {
+    router.push(`/showcase/${id}`);
+  };
+
+  const handleEdit = (id: string, name: string) => {
     router.push(`/portfolio/${id}-${name.toLowerCase().replace(/ /g, '-')}`);
   };
 
-  const handleDelete = (id: number) => {
-    console.log('Deleting item with id:', id);
+  const handleDelete = async (id: string) => {
+    try {
+      setIsDeleting(true);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/portofolio/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete portfolio');
+      }
+
+      toast.success('Portfolio berhasil dihapus');
+      router.refresh(); // Refresh the page to update the table
+    } catch (error) {
+      console.error('Error deleting portfolio:', error);
+      toast.error('Gagal menghapus portfolio');
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -96,12 +165,12 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
           <Input
             placeholder="Cari nama project..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleSearchChange}
             className="pl-10 bg-white/5 border-0 text-white placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-blue-500"
           />
         </div>
         <div className="flex gap-4">
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <Select value={categoryFilter} onValueChange={(value) => handleFilterChange(value, 'category')}>
             <SelectTrigger className="w-[180px] bg-white/5 border-0 text-white hover:bg-white/10 transition-colors">
               <SelectValue placeholder="Kategori Portfolio" />
             </SelectTrigger>
@@ -113,7 +182,7 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
               <SelectItem value="network" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Keamanan Jaringan</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter} onValueChange={(value) => handleFilterChange(value, 'status')}>
             <SelectTrigger className="w-[180px] bg-white/5 border-0 text-white hover:bg-white/10 transition-colors">
               <SelectValue placeholder="Status Portfolio" />
             </SelectTrigger>
@@ -142,12 +211,12 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
             </tr>
           </thead>
           <tbody>
-            {filteredData.map((item) => (
+            {currentItems.map((item, index) => (
               <tr key={item.id} className="border-b border-gray-700/50 hover:bg-white/5">
-                <td className="px-6 py-4 text-gray-300 w-12">{item.id}</td>
-                <td className="px-6 py-4 text-white w-64 truncate">{item.name}</td>
-                <td className="px-6 py-4 text-gray-300 w-40 truncate">{item.category}</td>
-                <td className="px-6 py-4 text-gray-300 w-24">{item.year}</td>
+                <td className="px-6 py-4 text-gray-300 w-12">{startIndex + index + 1}</td>
+                <td className="px-6 py-4 text-white w-64 truncate">{item.nama_projek}</td>
+                <td className="px-6 py-4 text-gray-300 w-40 truncate">{item.kategori}</td>
+                <td className="px-6 py-4 text-gray-300 w-24">{item.tahun}</td>
                 <td className="px-6 py-4 w-40">
                   <span className={`px-3 py-1 rounded-full text-xs text-white ${getStatusColor(item.status)}`}>
                     {item.status}
@@ -165,7 +234,7 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
                     )}
                     {item.status === 'Perlu Perubahan' && (
                       <button 
-                        onClick={() => handleEdit(item.id, item.name)}
+                        onClick={() => handleEdit(item.id, item.nama_projek)}
                         className="p-1 text-gray-400 hover:text-white hover:bg-transparent"
                       >
                         <PenLine className="h-4 w-4" />
@@ -174,7 +243,10 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
                     {(item.status === 'Terverifikasi' || item.status === 'Belum Diverifikasi') && (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <button className="p-1 text-gray-400 hover:text-white hover:bg-transparent">
+                          <button 
+                            className="p-1 text-gray-400 hover:text-white hover:bg-transparent"
+                            disabled={isDeleting}
+                          >
                             <Trash2 className="h-4 w-4" />
                           </button>
                         </AlertDialogTrigger>
@@ -190,8 +262,9 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
                             <AlertDialogAction 
                               onClick={() => handleDelete(item.id)}
                               className="bg-red-600 text-white hover:bg-red-700"
+                              disabled={isDeleting}
                             >
-                              Hapus
+                              {isDeleting ? 'Menghapus...' : 'Hapus'}
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
@@ -203,6 +276,46 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
             ))}
           </tbody>
         </table>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-700/50">
+            <div className="text-sm text-gray-400">
+              Showing {startIndex + 1} to {Math.min(endIndex, filteredData.length)} of {filteredData.length} entries
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="p-2 text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-3 py-1 rounded-md text-sm ${
+                      currentPage === page
+                        ? 'bg-blue-500 text-white'
+                        : 'text-gray-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="p-2 text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
