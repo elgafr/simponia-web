@@ -1,5 +1,6 @@
-import Footer from "@/components/landing-page/Footer";
+
 import Navbar from "@/components/navbar/AdminCommunityNavbar";
+import Footer from "@/components/user/landing-page/Footer";
 import { ReactNode } from "react";
 
 

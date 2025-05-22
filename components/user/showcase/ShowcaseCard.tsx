@@ -15,40 +15,48 @@ interface ShowcaseCardProps {
 export function ShowcaseCard({ item }: ShowcaseCardProps) {
   return (
     <Link
-      href={`/showcase/${item.id}-${item.title.toLowerCase().replace(/[^\w\s]/g, '-').replace(/\s+/g, '-')}`}
-      className="group"
+      href={`/showcase/${item.id}`}
+      className="group h-full"
     >
-      <Card className="py-0 bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10 transition-all duration-300 overflow-hidden flex flex-col">
-        <div className="w-full h-52 flex">
+      <Card className="py-0 h-full flex flex-col bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10 transition-all duration-300 rounded-t-xl">
+        {/* Image Container - Fixed Height */}
+        <div className="w-full h-52 relative rounded-t-xl overflow-hidden">
           <Image
             src={item.image}
             alt={item.title}
-            width={400}
-            height={208}
-            className="w-full h-full object-fill"
+            fill
+            className="object-cover"
           />
         </div>
-        <div className="flex flex-wrap gap-2 px-6 mt-1">
+
+        {/* Tags - Fixed Height */}
+        <div className="flex flex-wrap gap-2 px-6 mt-0 min-h-[2rem]">
           {item.tags.map((tag, index) => (
             <span
               key={index}
-              className="px-2 py-1 bg-white/5 backdrop-blur-sm rounded-full text-xs text-white"
+              className="px-2 py-1 bg-white/5 backdrop-blur-sm rounded-full text-xs text-white flex items-center justify-center"
             >
               {tag}
             </span>
           ))}
         </div>
-        <CardHeader className="pt-2">
-          <h3 className="text-xl font-bold text-white">{item.title}</h3>
-          <p className="text-gray-400 text-sm">{item.category} - {item.tahun}</p>
+
+        {/* Header - Fixed Height */}
+        <CardHeader className="pt-0 pb-0">
+          <h3 className="text-xl font-bold text-white line-clamp-1">{item.title}</h3>
+          <p className="text-gray-400 text-sm line-clamp-1">{item.subtitle}</p>
         </CardHeader>
-        <CardContent className="text-gray-300">
-          <p className="text-sm leading-relaxed line-clamp-2">
+
+        {/* Content - Flexible Height */}
+        <CardContent className="flex-grow">
+          <p className="text-sm leading-relaxed line-clamp-2 text-gray-300">
             {typeof item.description === 'string' ? item.description : item.description[0]}
           </p>
         </CardContent>
-        <CardFooter className="pt-0 pb-4 flex justify-end">
-          <span className="text-white text-sm font-medium group-hover:text-blue-400 transition-colors">
+
+        {/* Footer - Fixed Height */}
+        <CardFooter className="pt-4 pb-4 mt-auto">
+          <span className="text-white text-sm font-medium group-hover:text-blue-400 transition-colors ml-auto">
             See More
           </span>
         </CardFooter>

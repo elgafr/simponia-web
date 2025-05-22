@@ -1,10 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PenLine } from "lucide-react";
-import type { ProfileData } from "./types";
+
+interface AccountDetailsData {
+  linkedin: string;
+  email: string;
+  instagram: string;
+  github: string;
+}
 
 interface AccountDetailsProps {
-  profileData: ProfileData;
+  profileData: AccountDetailsData;
   isEditing: string | null;
   editValue: string;
   onEdit: (field: string, value: string) => void;
@@ -76,8 +82,9 @@ export function AccountDetails({
           />
           {isEditing === 'linkedin' && (
             <div className="flex gap-2 mt-2 justify-end">
+              <Button size="sm" variant="outline" className="text-white border-white/20 text-blue-500 hover:text-blue-600" onClick={onCancel}>Batal</Button>
               <Button size="sm" className="bg-blue-500 text-white" onClick={() => onSave('linkedin')}>Simpan</Button>
-              <Button size="sm" variant="outline" className="text-white border-white/20" onClick={onCancel}>Batal</Button>
+              
             </div>
           )}
         </div>
@@ -103,8 +110,9 @@ export function AccountDetails({
           />
           {isEditing === 'instagram' && (
             <div className="flex gap-2 mt-2 justify-end">
+              <Button size="sm" variant="outline" className="text-white border-white/20 text-blue-500 hover:text-blue-600" onClick={onCancel}>Batal</Button>
               <Button size="sm" className="bg-blue-500 text-white" onClick={() => onSave('instagram')}>Simpan</Button>
-              <Button size="sm" variant="outline" className="text-white border-white/20" onClick={onCancel}>Batal</Button>
+
             </div>
           )}
         </div>
@@ -130,8 +138,8 @@ export function AccountDetails({
           />
           {isEditing === 'github' && (
             <div className="flex gap-2 mt-2 justify-end">
+              <Button size="sm" variant="outline" className="text-white border-white/20 text-blue-500 hover:text-blue-600" onClick={onCancel}>Batal</Button>
               <Button size="sm" className="bg-blue-500 text-white" onClick={() => onSave('github')}>Simpan</Button>
-              <Button size="sm" variant="outline" className="text-white border-white/20" onClick={onCancel}>Batal</Button>
             </div>
           )}
         </div>

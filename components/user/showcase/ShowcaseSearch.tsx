@@ -32,7 +32,7 @@ export function ShowcaseSearch({ searchQuery, onSearchChange, category, onCatego
           <SelectValue placeholder="Category" />
         </SelectTrigger>
         <SelectContent className="bg-[#001233] border-[#001B45]">
-          <SelectItem value="all" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">All Categories</SelectItem>
+          <SelectItem value="all" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Semua Kategori</SelectItem>
           <SelectItem value="Rekayasa Perangkat Lunak" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Rekayasa Perangkat Lunak</SelectItem>
           <SelectItem value="Game Cerdas" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Game Cerdas</SelectItem>
           <SelectItem value="Data Sains" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Data Sains</SelectItem>
