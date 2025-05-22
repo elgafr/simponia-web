@@ -93,10 +93,10 @@ export function TeamProjectSection({
         <Button 
           onClick={onAddMember}
           variant="outline" 
-          className="bg-white/5 border-white/20 text-white hover:bg-white/10 flex items-center gap-2"
+          className="bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-blue-500 flex items-center gap-2"
         >
           <Plus className="h-4 w-4" />
-          Add Member
+          Tambah Anggota
         </Button>
       </div>
     </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   ArrowLeft, Link as LinkIcon, Users, MessageSquare,
   MessageCircle, Github, Instagram, Linkedin, Mail
@@ -18,8 +18,46 @@ interface ShowcaseDetailClientProps {
   data: PortfolioItem | null;
 }
 
+interface ProfileData {
+  nama: string;
+  user: {
+    nim: string;
+  };
+  noHandphone: string;
+  linkedin: string;
+  instagram: string;
+  email: string;
+  github: string;
+}
+
 export default function ShowcaseDetailClient({ data }: ShowcaseDetailClientProps) {
   const [isImageOpen, setIsImageOpen] = useState(false);
+  const [profileData, setProfileData] = useState<ProfileData | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setProfileData(data);
+        }
+      } catch (error) {
+        console.error('Error fetching profile data:', error);
+      }
+    };
+
+    fetchProfileData();
+  }, []);
 
   if (!data) {
     return (
@@ -52,6 +90,13 @@ export default function ShowcaseDetailClient({ data }: ShowcaseDetailClientProps
       default:
         return value;
     }
+  };
+
+  const handleEmailClick = (e: React.MouseEvent, email: string) => {
+    e.preventDefault();
+    navigator.clipboard.writeText(email);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000); // Reset copied state after 2 seconds
   };
 
   return (
@@ -104,7 +149,7 @@ export default function ShowcaseDetailClient({ data }: ShowcaseDetailClientProps
                 {data?.tags && data.tags.map((tag: string, index: number) => (
                   <span
                     key={index}
-                    className="px-4 py-1 bg-white/5 backdrop-blur-sm rounded-full text-sm text-white"
+                    className="px-4 py-2 bg-white/5 backdrop-blur-sm rounded-full text-sm text-white"
                   >
                     {tag}
                   </span>
@@ -123,20 +168,35 @@ export default function ShowcaseDetailClient({ data }: ShowcaseDetailClientProps
                   Get in Touch
                 </h2>
                 <p className="text-gray-300 mb-4">
-                  {data.contact?.name && data.contact?.id 
-                    ? `${data.contact.name}/${data.contact.id}`
-                    : 'nama/nim'}
+                  {profileData ? `${profileData.nama}/${profileData.user.nim}` : 'Loading...'}
                 </p>
                 <div className="flex gap-3">
                   {socialIcons.map((social, index) => {
                     const Icon = social.icon;
+                    const socialLink = {
+                      whatsapp: `https://wa.me/${profileData?.noHandphone}`,
+                      github: profileData?.github ? `https://github.com/${profileData.github}` : '#',
+                      instagram: profileData?.instagram ? `https://instagram.com/${profileData.instagram}` : '#',
+                      linkedin: profileData?.linkedin ? `https://linkedin.com/in/${profileData.linkedin}` : '#',
+                      email: profileData?.email ? profileData.email : '#'
+                    }[social.name];
+
                     return (
                       <a
                         key={index}
-                        href="#"
-                        className="text-gray-400 hover:text-white transition-colors"
+                        href={socialLink || '#'}
+                        target={social.name === 'email' ? undefined : '_blank'}
+                        rel={social.name === 'email' ? undefined : 'noopener noreferrer'}
+                        onClick={social.name === 'email' && profileData?.email ? 
+                          (e) => handleEmailClick(e, profileData.email) : undefined}
+                        className="text-gray-400 hover:text-white transition-colors relative"
                       >
                         <Icon className="h-5 w-5" />
+                        {social.name === 'email' && copied && (
+                          <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-[#011B45]   px-2 py-1 rounded text-sm text-white">
+                            Email copied!
+                          </span>
+                        )}
                       </a>
                     );
                   })}
@@ -147,15 +207,20 @@ export default function ShowcaseDetailClient({ data }: ShowcaseDetailClientProps
             {/* Sidebar */}
             <div className="space-y-8">
               {/* Project Links */}
-              <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6">
+              <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4">
                 {data?.links && data.links.map((link: { title: string; url: string }, index: number) => (
                   <div key={index}>
                     <h2 className="text-xl font-semibold text-white mb-2">
                       {link.title}
                     </h2>
-                    <div className="flex items-center gap-2 bg-[#011B45] rounded-lg p-4 mb-4">
-                      <LinkIcon className="h-6 w-6 text-blue-500" />
-                      <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-white hover:text-blue-400 transition-colors">
+                    <div className="grid grid-cols-[auto_1fr] items-center gap-2 bg-[#011B45] rounded-lg p-4 mb-4">
+                      <LinkIcon className="w-5 h-5 text-blue-500" />
+                      <a
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-white hover:text-blue-400 transition-colors break-all"
+                      >
                         {link.url}
                       </a>
                     </div>

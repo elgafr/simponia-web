@@ -45,7 +45,7 @@ export function SideMenu({ activeSection, scrollToSection, sections, menuItems, 
   return (
     <div className="w-64 flex-shrink-0">
       <div ref={menuRef} className="bg-white/5 backdrop-blur-sm rounded-xl p-4 sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto">
-        <h2 className="text-white font-semibold mb-4">Side Menu</h2>
+        <h2 className="text-white text-2xl font-semibold mb-4">Menu</h2>
         <nav className="space-y-2">
           {menuItems.map((item) => (
             <button 
