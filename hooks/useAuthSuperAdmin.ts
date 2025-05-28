@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { LoginCredentials, LoginResponse, ROLES, ROUTES } from '@/types/auth';
 
-const publicRoutes = ['/', '/auth/login'];
+const publicRoutes = ['/', '/auth/login-admin'];
 
-export const useAuth = () => {
+export const useAuthSuperAdmin = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
@@ -35,18 +35,17 @@ export const useAuth = () => {
       document.cookie = `token=${data.access_token}; path=/`;
       document.cookie = `userRole=${data.role}; path=/`;
 
-      // Redirect ke halaman yang diinginkan atau berdasarkan role
+      // Hanya izinkan SUPERADMIN (role = '1')
+      if (data.role !== ROLES.SUPERADMIN) {
+        throw new Error('Akses ditolak. Hanya Super Admin yang dapat login.');
+      }
+
+      // Redirect ke halaman Super Admin
       const callbackUrl = searchParams.get('callbackUrl');
       if (callbackUrl) {
         router.push(callbackUrl);
       } else {
-        if (data.role === ROLES.SUPERADMIN) {
-          router.push(ROUTES.SUPERADMIN);
-        } else if (data.role === ROLES.ADMINCOM) {
-          router.push(ROUTES.ADMINCOM);
-        } else if (data.role === ROLES.USER) {
-          router.push(ROUTES.USER);
-        }
+        router.push(ROUTES.SUPERADMIN);
       }
 
       return data;
@@ -65,7 +64,7 @@ export const useAuth = () => {
     localStorage.removeItem('userRole');
     document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
     document.cookie = 'userRole=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-
+    
     // Redirect ke home page
     router.push('/');
   };

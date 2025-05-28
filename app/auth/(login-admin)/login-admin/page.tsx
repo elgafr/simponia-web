@@ -3,22 +3,35 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FormEvent } from 'react';
-import { useUser } from '../../../../context/UserContext';
+import { FormEvent, useState } from 'react';
+import { useAuthSuperAdmin } from '@/hooks/useAuthSuperAdmin';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { setUserRole } = useUser();
+  const { login, error, isLoading } = useAuthSuperAdmin();
+  const [credentials, setCredentials] = useState({ nim: '', password: '', rememberMe: false });
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    
-    // Set user role to 3 in both context and localStorage
-    setUserRole(1);
-    localStorage.setItem('userRole', '1');
-    
-    // Redirect to home page
-    router.push('/home-super-admin');
+
+    try {
+      await login({
+        nim: credentials.nim,
+        password: credentials.password,
+        rememberMe: credentials.rememberMe,
+      });
+    } catch (err) {
+      console.error(err);
+      // Error is already set by useAuthSuperAdmin hook
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    setCredentials((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
   };
 
   return (
@@ -75,8 +88,10 @@ export default function LoginPage() {
                 type="text"
                 id="nim"
                 name="nim"
+                value={credentials.nim}
+                onChange={handleInputChange}
                 placeholder="Input your NIM/Username"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border text-black border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -88,8 +103,10 @@ export default function LoginPage() {
                 type="password"
                 id="password"
                 name="password"
+                value={credentials.password}
+                onChange={handleInputChange}
                 placeholder="Input your password"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border text-black border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -98,6 +115,8 @@ export default function LoginPage() {
                 type="checkbox"
                 id="remember"
                 name="remember"
+                checked={credentials.rememberMe}
+                onChange={handleInputChange}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
               <label htmlFor="remember" className="ml-2 block text-sm text-gray-700">
@@ -107,10 +126,13 @@ export default function LoginPage() {
 
             <button
               type="submit"
+              disabled={isLoading}
               className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200"
             >
-              Login
+              {isLoading ? 'Logging in...' : 'Login'}
             </button>
+
+            {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
 
             <div className="text-center">
               <Link 

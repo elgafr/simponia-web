@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PenLine, Pencil, User, Upload } from "lucide-react";
@@ -9,6 +9,7 @@ import { useRef } from 'react';
 
 // Define interfaces
 export interface ProfileData {
+  id: string; // Added from response
   name: string;
   gender: string;
   nim: string;
@@ -22,6 +23,10 @@ export interface ProfileData {
   bio: string;
   profileImage: string;
   avatar?: string;
+  noHandphone?: string; // Optional, matches response
+  keterangan?: string;  // Optional, matches response
+  createdAt?: string;   // Optional, matches response
+  updatedAt?: string;   // Optional, matches response
 }
 
 // ProfileImage Component
@@ -97,14 +102,14 @@ export function ProfileBio({
   onChange,
 }: ProfileBioProps) {
   return (
-    <div className="flex-grow">
+    <div className="flex-grow min-w-[300px] md:min-w-[600px]">
       {isEditing ? (
         <div className="flex flex-col gap-2">
           <textarea
             value={bioValue}
             onChange={(e) => onChange(e.target.value)}
-            className="bg-white/10 text-white px-3 py-2 rounded w-full resize-none"
-            rows={4}
+            className="bg-white/10 text-white px-4 py-3 rounded w-full resize-none text-base"
+            rows={5}
           />
           <div className="flex gap-2 justify-end">
             <Button onClick={onCancel} className="bg-red-600 text-white hover:bg-red-700 transition-colors">
@@ -157,7 +162,7 @@ export function MyProfile({ profileData }: MyProfileProps) {
         </div>
         <div>
           <p className="text-gray-400 mb-1">Mobile Number</p>
-          <p className="text-white">{profileData.mobileNumber}</p>
+          <p className="text-white">{profileData.mobileNumber || profileData.noHandphone}</p>
         </div>
         <div>
           <p className="text-gray-400 mb-1">State</p>
@@ -247,19 +252,24 @@ export function AccountDetails({
 
 // Main ProfilePage Component (renamed to HeroSection1Profile)
 const initialProfileData: ProfileData = {
-  name: 'Nadhira Ulya Nisa',
-  gender: 'Female',
-  nim: '202210370311079',
-  dateOfBirth: '07/03/2004',
-  mobileNumber: '+6281242979421',
-  state: 'Malang',
-  linkedin: 'Nadhira Ulya Nisa',
-  email: 'nadhiraulyanisa0207@gmail.com',
-  instagram: '@nadhiraulya_',
-  github: '---',
-  bio: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+  id: '',
+  name: '',
+  gender: '',
+  nim: '',
+  dateOfBirth: '',
+  mobileNumber: '',
+  state: '',
+  linkedin: '',
+  email: '',
+  instagram: '',
+  github: '',
+  bio: '',
   profileImage: '/default-avatar.png',
-  avatar: '/default-avatar.png'
+  avatar: '/default-avatar.png',
+  noHandphone: '',
+  keterangan: '',
+  createdAt: '',
+  updatedAt: ''
 };
 
 export default function HeroSection1Profile() {
@@ -269,17 +279,103 @@ export default function HeroSection1Profile() {
   const [editValue, setEditValue] = useState('');
   const [bioValue, setBioValue] = useState('');
 
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('No token found');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text(); // Get error details
+          throw new Error(`Failed to fetch profile: ${response.status} - ${errorText}`);
+        }
+
+        const data = await response.json();
+        setProfileData({
+          id: data.id,
+          name: data.nama,
+          gender: data.gender,
+          nim: data.user.nim,
+          dateOfBirth: data.tanggalLahir,
+          mobileNumber: data.noHandphone,
+          state: data.kota,
+          linkedin: data.linkedin,
+          email: data.email,
+          instagram: data.instagram,
+          github: data.github,
+          bio: data.keterangan || '',
+          profileImage: '/default-avatar.png', // Placeholder; update with actual image URL if provided
+          avatar: '/default-avatar.png',
+          noHandphone: data.noHandphone,
+          keterangan: data.keterangan,
+          createdAt: data.createdAt,
+          updatedAt: data.updatedAt,
+        });
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
   const handleEdit = (field: string, value: string) => {
     setIsEditing(field);
     setEditValue(value);
   };
 
-  const handleSave = (field: string) => {
-    setProfileData(prev => ({
-      ...prev,
-      [field]: editValue
-    }));
-    setIsEditing(null);
+  const handleSave = async (field: string) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('No token found');
+      return;
+    }
+
+    if (!profileData.id) {
+      console.error('Profile ID not found');
+      return;
+    }
+
+    // Prepare the data to send to the backend
+    const updatedData = {
+      [field]: editValue,
+    };
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin/${profileData.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedData),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to update profile: ${response.status} - ${errorText}`);
+      }
+
+      // Update the local state only if the request is successful
+      setProfileData(prev => ({
+        ...prev,
+        [field]: editValue
+      }));
+      setIsEditing(null);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+    }
   };
 
   const handleCancel = () => {
@@ -291,12 +387,48 @@ export default function HeroSection1Profile() {
     setIsEditingBio(true);
   };
 
-  const handleSaveBio = () => {
-    setProfileData(prev => ({
-      ...prev,
-      bio: bioValue
-    }));
-    setIsEditingBio(false);
+  const handleSaveBio = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('No token found');
+      return;
+    }
+
+    if (!profileData.id) {
+      console.error('Profile ID not found');
+      return;
+    }
+
+    // Prepare the data to send to the backend
+    const updatedData = {
+      keterangan: bioValue,
+    };
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin/${profileData.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedData),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to update bio: ${response.status} - ${errorText}`);
+      }
+
+      // Update the local state only if the request is successful
+      setProfileData(prev => ({
+        ...prev,
+        bio: bioValue,
+        keterangan: bioValue, // Update keterangan as well to keep it in sync
+      }));
+      setIsEditingBio(false);
+    } catch (error) {
+      console.error('Error updating bio:', error);
+    }
   };
 
   const handleCancelBio = () => {
