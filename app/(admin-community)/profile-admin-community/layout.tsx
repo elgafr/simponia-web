@@ -1,6 +1,6 @@
 // profile/layout.tsx
-import Footer from "@/components/landing-page/Footer";
-import Navbar from "@/components/navbar/AdminCommunityNavbar";
+import Footer from "@/components/user/landing-page/Footer";
+
 import { ReactNode } from "react";
 
 
@@ -11,7 +11,7 @@ interface ProfileLayoutProps {
 const ProfileLayout = ({ children }: ProfileLayoutProps) => {
   return (
     <div className="bg-gray-950 text-white min-h-screen w-full">
-      <Navbar />
+     
       <main >{children}</main>
       <Footer />
     </div>

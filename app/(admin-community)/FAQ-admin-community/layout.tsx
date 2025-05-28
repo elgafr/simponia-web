@@ -1,7 +1,7 @@
 "use client";
 
-import Footer from "@/components/landing-page/Footer";
-import Navbar from "@/components/navbar/AdminCommunityNavbar";
+import Footer from "@/components/user/landing-page/Footer";
+
 import { ReactNode } from "react";
 
 
@@ -13,7 +13,7 @@ const FAQLayout = ({ children }: FAQLayoutProps) => {
   return (
     <html lang="id">
       <body className="min-h-screen bg-gray-950">
-        <Navbar />
+        
         <main>{children}</main>
         <Footer />
       </body>

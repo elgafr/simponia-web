@@ -3,7 +3,7 @@
 
 import { ReactNode } from "react";
 import Navbar from "@/components/navbar/SuperAdminNavbar";
-import Footer from "@/components/landing-page/Footer";
+import Footer from "@/components/user/landing-page/Footer";
 
 interface ShowcaseLayoutPortfolioProps {
   children: ReactNode;

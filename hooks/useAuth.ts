@@ -40,7 +40,9 @@ export const useAuth = () => {
       if (callbackUrl) {
         router.push(callbackUrl);
       } else {
-        if (data.role === ROLES.ADMINCOM) {
+        if (data.role === ROLES.SUPERADMIN) {
+          router.push(ROUTES.SUPERADMIN);
+        } else if (data.role === ROLES.ADMINCOM) {
           router.push(ROUTES.ADMINCOM);
         } else if (data.role === ROLES.USER) {
           router.push(ROUTES.USER);
@@ -63,10 +65,10 @@ export const useAuth = () => {
     localStorage.removeItem('userRole');
     document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
     document.cookie = 'userRole=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-    
+
     // Redirect ke home page
     router.push('/');
   };
 
   return { login, logout, error, isLoading };
-}; 
+};
