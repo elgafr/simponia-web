@@ -1,4 +1,6 @@
-import { useState } from 'react';
+'use client';
+
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { LoginCredentials, LoginResponse, ROLES, ROUTES } from '@/types/auth';
 
@@ -9,8 +11,15 @@ export const useAuth = () => {
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const login = async (credentials: LoginCredentials) => {
+    if (!mounted) return;
+    
     setIsLoading(true);
     setError(null);
 
@@ -29,21 +38,22 @@ export const useAuth = () => {
         throw new Error(data.message || 'Login gagal');
       }
 
-      // Simpan token dan role
-      localStorage.setItem('token', data.access_token);
-      localStorage.setItem('userRole', data.role);
-      document.cookie = `token=${data.access_token}; path=/`;
-      document.cookie = `userRole=${data.role}; path=/`;
+      // Only set localStorage and cookies after successful login
+      if (mounted) {
+        localStorage.setItem('token', data.access_token);
+        localStorage.setItem('userRole', data.role);
+        document.cookie = `token=${data.access_token}; path=/`;
+        document.cookie = `userRole=${data.role}; path=/`;
 
-      // Redirect ke halaman yang diinginkan atau berdasarkan role
-      const callbackUrl = searchParams.get('callbackUrl');
-      if (callbackUrl) {
-        router.push(callbackUrl);
-      } else {
-        if (data.role === ROLES.ADMIN) {
-          router.push(ROUTES.ADMIN);
-        } else if (data.role === ROLES.USER) {
-          router.push(ROUTES.USER);
+        const callbackUrl = searchParams.get('callbackUrl');
+        if (callbackUrl) {
+          router.push(callbackUrl);
+        } else {
+          if (data.role === ROLES.ADMIN) {
+            router.push(ROUTES.ADMIN);
+          } else if (data.role === ROLES.USER) {
+            router.push(ROUTES.USER);
+          }
         }
       }
 
@@ -68,5 +78,5 @@ export const useAuth = () => {
     router.push('/');
   };
 
-  return { login, logout, error, isLoading };
+  return { login, logout, error, isLoading, mounted };
 }; 

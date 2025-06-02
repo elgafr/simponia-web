@@ -13,57 +13,38 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { PortfolioItem } from '@/components/user/showcase/types';
+import { useRouter } from 'next/navigation';
 
 interface ShowcaseDetailClientProps {
   data: PortfolioItem | null;
 }
 
-interface ProfileData {
-  nama: string;
-  user: {
-    nim: string;
-  };
-  noHandphone: string;
-  linkedin: string;
-  instagram: string;
-  email: string;
-  github: string;
-}
+
 
 export default function ShowcaseDetailClient({ data }: ShowcaseDetailClientProps) {
   const [isImageOpen, setIsImageOpen] = useState(false);
-  const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [copied, setCopied] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    const fetchProfileData = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
+    // Log the received data
+    console.log('Received data:', data);
+    console.log('Creator data:', data?.creator);
+    console.log('Team members:', data?.teamMembers);
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+    // Handle redirect if needed
+    if (!data || data.status === 'Perlu Perubahan' || data.status === 'Dihapus') {
+      router.push('/showcase');
+      return;
+    }
+  }, [data, router]);
 
-        if (response.ok) {
-          const data = await response.json();
-          setProfileData(data);
-        }
-      } catch (error) {
-        console.error('Error fetching profile data:', error);
-      }
-    };
-
-    fetchProfileData();
-  }, []);
-
+  // Show loading state if no data
   if (!data) {
     return (
       <main className="flex-1 bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-8 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-white text-center">Project not found</div>
+          <div className="text-white text-center">Loading...</div>
         </div>
       </main>
     );
@@ -109,7 +90,7 @@ export default function ShowcaseDetailClient({ data }: ShowcaseDetailClientProps
               <DialogTrigger asChild>
                 <div className="cursor-pointer">
                   <Image
-                    src={data.image}
+                    src={`${process.env.NEXT_PUBLIC_API_URL}${data.image}`}
                     alt={data.title}
                     width={1200}
                     height={300}
@@ -119,9 +100,9 @@ export default function ShowcaseDetailClient({ data }: ShowcaseDetailClientProps
               </DialogTrigger>
               <DialogContent className="max-w-4xl bg-[#001233] border-white/10">
                 <DialogTitle className="sr-only">Preview Image</DialogTitle>
-                <div className="relative">
+                <div className="relative max-h-[80vh] overflow-y-auto">
                   <Image
-                    src={data.image}
+                    src={`${process.env.NEXT_PUBLIC_API_URL}${data.image}`}
                     alt={data.title}
                     width={1200}
                     height={800}
@@ -136,7 +117,7 @@ export default function ShowcaseDetailClient({ data }: ShowcaseDetailClientProps
         {/* Project Info */}
         <div className="mb-12">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            <div className="lg:col-span-3">
+            <div className="lg:col-span-3 break-all max-w-full">
               <h1 className="text-4xl font-bold text-white mb-2">{data.title}</h1>
               {(data?.category || data?.tahun) && (
                 <div className="text-lg text-gray-300 mb-4">
@@ -162,38 +143,38 @@ export default function ShowcaseDetailClient({ data }: ShowcaseDetailClientProps
                 : <p className="text-gray-300">{data?.description}</p>
               }
               {/* Get in Touch */}
-              <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 w-fit mt-6">
+              <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 w-fit mt-6 break-all max-w-full">
                 <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
                   <MessageSquare className="h-5 w-5" />
                   Get in Touch
                 </h2>
                 <p className="text-gray-300 mb-4">
-                  {profileData ? `${profileData.nama}/${profileData.user.nim}` : 'Loading...'}
+                  {data.creator ? `${data.creator.name}/${data.creator.nim}` : 'No creator information available'}
                 </p>
                 <div className="flex gap-3">
                   {socialIcons.map((social, index) => {
                     const Icon = social.icon;
                     const socialLink = {
-                      whatsapp: `https://wa.me/${profileData?.noHandphone}`,
-                      github: profileData?.github ? `https://github.com/${profileData.github}` : '#',
-                      instagram: profileData?.instagram ? `https://instagram.com/${profileData.instagram}` : '#',
-                      linkedin: profileData?.linkedin ? `https://linkedin.com/in/${profileData.linkedin}` : '#',
-                      email: profileData?.email ? profileData.email : '#'
+                      whatsapp: data.creator?.noHandphone ? `https://wa.me/${data.creator.noHandphone}` : '#',
+                      github: data.creator?.github ? `https://github.com/${data.creator.github}` : '#',
+                      instagram: data.creator?.instagram ? `https://instagram.com/${data.creator.instagram}` : '#',
+                      linkedin: data.creator?.linkedin ? `https://linkedin.com/in/${data.creator.linkedin}` : '#',
+                      email: data.creator?.email || '#'
                     }[social.name];
 
                     return (
                       <a
                         key={index}
-                        href={socialLink || '#'}
+                        href={socialLink}
                         target={social.name === 'email' ? undefined : '_blank'}
                         rel={social.name === 'email' ? undefined : 'noopener noreferrer'}
-                        onClick={social.name === 'email' && profileData?.email ? 
-                          (e) => handleEmailClick(e, profileData.email) : undefined}
+                        onClick={social.name === 'email' && data.creator?.email ? 
+                          (e) => handleEmailClick(e, data.creator!.email) : undefined}
                         className="text-gray-400 hover:text-white transition-colors relative"
                       >
                         <Icon className="h-5 w-5" />
                         {social.name === 'email' && copied && (
-                          <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-[#011B45]   px-2 py-1 rounded text-sm text-white">
+                          <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-[#011B45] px-2 py-1 rounded text-sm text-white">
                             Email copied!
                           </span>
                         )}
@@ -235,10 +216,10 @@ export default function ShowcaseDetailClient({ data }: ShowcaseDetailClientProps
                   Team Project
                 </h2>
                 <div className="space-y-4">
-                  {data?.teamMembers && data.teamMembers.map((member: { name: string; role: string }, index: number) => (
+                  {data?.teamMembers && data.teamMembers.map((member: { name: string; role: string; nim: string }, index: number) => (
                     <div key={index} className="text-gray-300">
-                      <p className="text-white">{member.name}</p>
-                      <p className="text-sm">{member.role}</p>
+                      <p className="text-white break-all max-w-full">{member.name}/{member.nim}</p>
+                      <p className="text-sm break-all max-w-full">{member.role}</p>
                     </div>
                   ))}
                 </div>

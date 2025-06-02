@@ -22,7 +22,7 @@ export function ShowcaseCard({ item }: ShowcaseCardProps) {
         {/* Image Container - Fixed Height */}
         <div className="w-full h-52 relative rounded-t-xl overflow-hidden">
           <Image
-            src={item.image}
+            src={item.image ? `${process.env.NEXT_PUBLIC_API_URL}${item.image}` : "/default-avatar.png"}
             alt={item.title}
             fill
             className="object-cover"
@@ -30,7 +30,7 @@ export function ShowcaseCard({ item }: ShowcaseCardProps) {
         </div>
 
         {/* Tags - Fixed Height */}
-        <div className="flex flex-wrap gap-2 px-6 mt-0 min-h-[2rem]">
+        <div className="flex flex-wrap gap-2 px-6 mt-0 min-h-[2rem] max-h-[2rem] overflow-hidden">
           {item.tags.map((tag, index) => (
             <span
               key={index}

@@ -51,23 +51,29 @@ export default function Footer() {
           </div>
 
           {/* Support By Column */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Support By</h3>
-            <div className="space-y-3">
-              <Image
-                src="/logo ilab.svg"
-                alt="Lab Logo"
-                width={80}
-                height={60}
-                className="object-contain"
-              />
-              <Image
-                src="/logo-umm.svg"
-                alt="UMM Logo"
-                width={80}
-                height={60}
-                className="object-contain"
-              />
+          <div className="space-y-4 flex flex-col items-center">
+            <h3 className="text-lg font-semibold text-center">Support By</h3>
+            <div className="flex flex-row w-full gap-6">
+              <div className="flex-1 flex items-center justify-center">
+                <Image
+                  src="/logo ilab.svg"
+                  alt="Lab Logo"
+                  width={0}
+                  height={0}
+                  sizes="100vw"
+                  className="object-contain w-full h-32 md:h-40"
+                />
+              </div>
+              <div className="flex-1 flex items-center justify-center">
+                <Image
+                  src="/logo-umm.svg"
+                  alt="UMM Logo"
+                  width={0}
+                  height={0}
+                  sizes="100vw"
+                  className="object-contain w-full h-32 md:h-40"
+                />
+              </div>
             </div>
           </div>
         </div>

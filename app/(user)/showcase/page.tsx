@@ -14,7 +14,11 @@ async function getPortfolioData(token: string) {
     throw new Error('Failed to fetch portfolio data');
   }
   
-  return response.json();
+  const data = await response.json();
+  // Filter out items with status 'Perlu Perubahan' or 'Dihapus'
+  return data.filter((item: any) => 
+    item.status !== 'Perlu Perubahan' && item.status !== 'Dihapus'
+  );
 }
 
 export default async function ShowcasePage() {
@@ -33,7 +37,7 @@ export default async function ShowcasePage() {
       id: item.id,
       name: item.anggota[0]?.user?.nim || '',
       title: item.nama_projek,
-      image: '/portfolio-1.png', // Using static image as requested
+      image: item.gambar, // Using image from backend
       category: item.kategori,
       status: item.status,
       tags: item.tags.map((tag: any) => tag.nama),
@@ -50,7 +54,7 @@ export default async function ShowcasePage() {
         url: link.link_project
       })),
       teamMembers: item.anggota.map((member: any) => ({
-        name: member.user.nim,
+        name: member.user?.nim || '',
         role: member.role
       })),
       contact: {

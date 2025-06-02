@@ -51,25 +51,21 @@ interface DashboardContentProps {
 const categories = [
   {
     icon: '/Source Code.svg',
-    number: '50',
     title: 'Rekayasa Perangkat Lunak',
     description: 'Lorem ipsum dolor sit amet consectetur. Tellus aliquet amet tortor ut donec. Suscipit, tortor cursus est ac.',
   },
   {
     icon: '/Game Controller.svg',
-    number: '35',
     title: 'Game Cerdas',
     description: 'Lorem ipsum dolor sit amet consectetur. Tellus aliquet amet tortor ut donec. Suscipit, tortor cursus est ac.',
   },
   {
     icon: '/Slice.svg',
-    number: '20',
     title: 'Data Sains',
     description: 'Lorem ipsum dolor sit amet consectetur. Tellus aliquet amet tortor ut donec. Suscipit, tortor cursus est ac.',
   },
   {
     icon: '/Network.svg',
-    number: '15',
     title: 'Keamanan Jaringan',
     description: 'Lorem ipsum dolor sit amet consectetur. Tellus aliquet amet tortor ut donec. Suscipit, tortor cursus est ac.',
   }
@@ -84,7 +80,7 @@ export default function DashboardContent({ portfolioData, userData }: DashboardC
           description="Lorem ipsum dolor sit amet consectetur. Quisque purus risus in purus at et. Tincidunt et sapien donec id integer pulvinar. Scelerisque accumsan a ornare dictum massa media. Suspendisse at dolor."
         />
         <DashboardTable portfolioData={portfolioData} />
-        <CategoryCards categories={categories} />
+        <CategoryCards categories={categories} portfolioData={portfolioData} />
       </div>
     </main>
   );

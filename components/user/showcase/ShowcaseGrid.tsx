@@ -1,7 +1,9 @@
+import { EmptyState } from '@/components/ui/empty-state';
 import { ShowcaseCard } from './ShowcaseCard';
 import type { PortfolioItem } from './types';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
+
 
 interface ShowcaseGridProps {
   items: PortfolioItem[];
@@ -11,6 +13,20 @@ const ITEMS_PER_PAGE = 6;
 
 export function ShowcaseGrid({ items }: ShowcaseGridProps) {
   const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 9;
+
+  // If no items, show empty state
+  if (!items || items.length === 0) {
+    return (
+      <div className="mt-8">
+        <EmptyState 
+          title="Belum ada portfolio"
+          description="Belum ada portfolio yang ditampilkan. Coba lagi nanti!"
+          showAction={false}
+        />
+      </div>
+    );
+  }
 
   // Calculate pagination
   const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);

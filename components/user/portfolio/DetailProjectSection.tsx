@@ -7,6 +7,7 @@ import { ImageIcon, Plus, Trash2, X } from "lucide-react";
 import { RequiredLabel } from "./RequiredLabel";
 import { usePortfolioStore } from "@/store/portfolioStore";
 import { useEffect, useState } from 'react';
+import Image from "next/image";
 
 interface ProjectLink {
   id: number;
@@ -30,7 +31,7 @@ interface DetailProjectSectionProps {
   tags: Tag[];
   tagInput: string;
   projectImage: ProjectImage;
-  fileInputRef: React.RefObject<HTMLInputElement | null>;
+  fileInputRef: React.RefObject<HTMLInputElement>;
   onAddLink: () => void;
   onDeleteLink: (id: number) => void;
   onLinkChange: (id: number, field: keyof ProjectLink, value: string) => void;
@@ -40,6 +41,11 @@ interface DetailProjectSectionProps {
   onImageClick: () => void;
   onImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onPreview: () => void;
+  onYearChange: (value: string) => void;
+  onDescriptionChange: (value: string) => void;
+  errors?: {
+    [key: string]: string;
+  };
 }
 
 export function DetailProjectSection({
@@ -58,11 +64,22 @@ export function DetailProjectSection({
   onImageClick,
   onImageChange,
   onPreview,
+  onYearChange,
+  onDescriptionChange,
+  errors = {}
 }: DetailProjectSectionProps) {
   const [mounted, setMounted] = useState(false);
   const year = usePortfolioStore((state) => state.year);
   const description = usePortfolioStore((state) => state.description);
   const setPortfolioData = usePortfolioStore((state) => state.setPortfolioData);
+
+  const handleYearChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Hanya terima angka
+    if (/^\d*$/.test(value)) {
+      onYearChange(value);
+    }
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -90,11 +107,17 @@ export function DetailProjectSection({
         <div>
           <RequiredLabel>Tahun Project Dibuat</RequiredLabel>
           <Input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
             value={year}
-            onChange={(e) => setPortfolioData({ year: e.target.value })}
+            onChange={handleYearChange}
             placeholder="Masukkan Tahun Project Dibuat"
-            className="bg-white/5 border-0 text-white placeholder:text-gray-400"
+            className={`bg-white/5 border-0 text-white placeholder:text-gray-400 focus:bg-blue-900/30 focus-visible:ring-2 focus-visible:ring-blue-500 ${errors.year ? 'border-red-500' : ''}`}
           />
+          {errors.year && (
+            <p className="text-red-500 text-sm mt-1">{errors.year}</p>
+          )}
         </div>
 
         {/* Project Links */}
@@ -106,18 +129,24 @@ export function DetailProjectSection({
                 <Input
                   value={link.title}
                   onChange={(e) => onLinkChange(link.id, 'title', e.target.value)}
-                  className="bg-white/5 border-0 text-white placeholder:text-gray-400"
+                  className={`bg-white/5 border-0 text-white placeholder:text-gray-400 focus:bg-blue-900/30 focus-visible:ring-2 focus-visible:ring-blue-500 ${errors[`projectLink_${link.id}_title`] ? 'border-red-500' : ''}`}
                   placeholder="Masukkan Judul Link"
                 />
+                {errors[`projectLink_${link.id}_title`] && (
+                  <p className="text-red-500 text-sm mt-1">{errors[`projectLink_${link.id}_title`]}</p>
+                )}
               </div>
               <div className="flex-1">
                 <RequiredLabel>Link Project</RequiredLabel>
                 <Input
                   value={link.url}
                   onChange={(e) => onLinkChange(link.id, 'url', e.target.value)}
-                  className="bg-white/5 border-0 text-white placeholder:text-gray-400"
+                  className={`bg-white/5 border-0 text-white placeholder:text-gray-400 focus:bg-blue-900/30 focus-visible:ring-2 focus-visible:ring-blue-500 ${errors[`projectLink_${link.id}_url`] ? 'border-red-500' : ''}`}
                   placeholder="Masukkan Link Project"
                 />
+                {errors[`projectLink_${link.id}_url`] && (
+                  <p className="text-red-500 text-sm mt-1">{errors[`projectLink_${link.id}_url`]}</p>
+                )}
               </div>
               {projectLinks.length > 1 && (
                 <div className="flex items-end">
@@ -168,8 +197,11 @@ export function DetailProjectSection({
               onChange={(e) => onTagInputChange(e.target.value)}
               onKeyDown={onTagKeyDown}
               placeholder="Ketik tag dan tekan enter"
-              className="bg-white/5 border-0 text-white placeholder:text-gray-400"
+              className={`bg-white/5 border-0 text-white placeholder:text-gray-400 focus:bg-blue-900/30 focus-visible:ring-2 focus-visible:ring-blue-500 ${errors.tags ? 'border-red-500' : ''}`}
             />
+            {errors.tags && (
+              <p className="text-red-500 text-sm mt-1">{errors.tags}</p>
+            )}
           </div>
         </div>
 
@@ -178,41 +210,46 @@ export function DetailProjectSection({
           <RequiredLabel>Description</RequiredLabel>
           <Textarea
             value={description}
-            onChange={(e) => setPortfolioData({ description: e.target.value })}
+            onChange={(e) => onDescriptionChange(e.target.value)}
             placeholder="Description"
-            className="bg-white/5 border-0 text-white placeholder:text-gray-400 min-h-[150px]"
+            className={`bg-white/5 border-0 text-white placeholder:text-gray-400 focus:bg-blue-900/30 focus-visible:ring-2 focus-visible:ring-blue-500 min-h-[150px] ${errors.description ? 'border-red-500' : ''}`}
           />
+          {errors.description && (
+            <p className="text-red-500 text-sm mt-1">{errors.description}</p>
+          )}
         </div>
 
         {/* Image Upload */}
         <div>
           <RequiredLabel>Image</RequiredLabel>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={onImageChange}
-            accept="image/*"
-            className="hidden"
-          />
-          <div
+          <div 
             onClick={onImageClick}
-            className="bg-white/5 border-2 border-dashed border-white/20 rounded-lg p-8 cursor-pointer hover:bg-white/10 transition-colors"
+            className={`relative w-full h-[200px] bg-white/5 rounded-lg cursor-pointer hover:bg-white/10 transition-colors ${errors.projectImage ? 'border-2 border-red-500' : ''}`}
           >
             {projectImage.preview ? (
-              <div className="relative aspect-video w-full">
-                <img
-                  src={projectImage.preview}
-                  alt="Preview"
-                  className="w-full h-full object-contain"
-                />
-              </div>
+              <Image
+                src={projectImage.preview}
+                alt="Project Preview"
+                fill
+                className="object-cover rounded-lg"
+              />
             ) : (
-              <div className="flex flex-col items-center justify-center text-gray-400">
-                <ImageIcon className="h-16 w-16 mb-4" />
-                <p>Click to upload image</p>
+              <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                <ImageIcon className="w-12 h-12 mb-2" />
+                <p>Klik untuk upload gambar</p>
               </div>
             )}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={onImageChange}
+              accept="image/*"
+              className="hidden"
+            />
           </div>
+          {errors.projectImage && (
+            <p className="text-red-500 text-sm mt-1">{errors.projectImage}</p>
+          )}
         </div>
 
         {/* Action Buttons */}
