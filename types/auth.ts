@@ -11,11 +11,13 @@ export interface LoginResponse {
 }
 
 export const ROLES = {
-  ADMIN: '2',
+  SUPERADMIN: '1',
+  ADMINCOM: '2',
   USER: '3'
 } as const;
 
 export const ROUTES = {
-  ADMIN: '/dashboard-admin-community',
+  SUPERADMIN: '/dashboard-super-admin',
+  ADMINCOM: '/dashboard-admin-community',
   USER: '/dashboard'
-} as const; 
+} as const;

@@ -1,8 +1,7 @@
 'use client';
 
 // Import necessary modules and components
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -20,12 +19,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { portfolioItems } from '@/data/portfolioItems'; // Import the provided data
-
 
 // Define interfaces
 export interface PortfolioItem {
-  id: number;
+  id: string; // Changed to string to preserve UUID
   title: string;
   image: string;
   category: string;
@@ -47,6 +44,48 @@ export interface PortfolioItem {
   };
 }
 
+// Interface for Postman response (to type the fetched data)
+interface BackendPortfolioItem {
+  id: string;
+  nama_projek: string;
+  kategori: string;
+  tahun: number;
+  status: string;
+  gambar: string;
+  deskripsi: string;
+  created_at: string;
+  updated_at: string;
+  anggota: {
+    id: string;
+    user: {
+      id: string;
+      nim: string;
+      password: string;
+      role: string;
+      remember_token: string | null;
+      created_at: string;
+      updated_at: string;
+    };
+    role: string;
+    angkatan: string;
+    createdAt: string;
+    updatedAt: string;
+  }[];
+  detail_project: {
+    id: string;
+    judul_link: string;
+    link_project: string;
+    created_at: string;
+    updated_at: string;
+  }[];
+  tags: {
+    id: string;
+    nama: string;
+    created_at: string;
+    updated_at: string;
+  }[];
+}
+
 // ShowcaseHeader Component
 export function ShowcaseHeader() {
   return (
@@ -62,7 +101,11 @@ export function ShowcaseHeader() {
 }
 
 // ShowcaseSearch Component
-export function ShowcaseSearch() {
+interface ShowcaseSearchProps {
+  categories: string[];
+}
+
+export function ShowcaseSearch({ categories }: ShowcaseSearchProps) {
   return (
     <div className="flex flex-col md:flex-row gap-4 mb-12">
       <div className="relative flex-grow">
@@ -77,10 +120,18 @@ export function ShowcaseSearch() {
           <SelectValue placeholder="Category" />
         </SelectTrigger>
         <SelectContent className="bg-[#001233] border-[#001B45]">
-          <SelectItem value="all" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">All Categories</SelectItem>
-          <SelectItem value="ui" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">UI/UX Design</SelectItem>
-          <SelectItem value="web" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Web Development</SelectItem>
-          <SelectItem value="mobile" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Mobile App</SelectItem>
+          <SelectItem value="all" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">
+            All Categories
+          </SelectItem>
+          {categories.map((category) => (
+            <SelectItem
+              key={category}
+              value={category.toLowerCase()} // Use lowercase for the value to ensure consistency
+              className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white"
+            >
+              {category}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
     </div>
@@ -101,7 +152,7 @@ export function ShowcaseCard({ item }: ShowcaseCardProps) {
       <Card className="py-0 bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10 transition-all duration-300 overflow-hidden flex flex-col">
         <div className="w-full h-52 flex">
           <Image
-            src={item.image}
+            src={`/${item.image}`} // Prepend base URL to image path
             alt={item.title}
             width={400}
             height={208}
@@ -154,12 +205,80 @@ export function ShowcaseGrid({ items }: ShowcaseGridProps) {
 
 // Main HeroSection1ShowcasePortfolio Component
 export default function HeroSection1ShowcasePortfolio() {
+  const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch portfolio data from backend
+  useEffect(() => {
+    const fetchPortfolios = async () => {
+      const token = localStorage.getItem("token"); // Retrieve token from localStorage
+      if (!token) {
+        setError("No token found. Please log in.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/portofolio`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Use Bearer token for authentication
+          },
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Failed to fetch portfolios: ${response.status} - ${errorText}`);
+        }
+
+        const data: BackendPortfolioItem[] = await response.json();
+
+        // Map backend response to PortfolioItem interface
+        const mappedItems: PortfolioItem[] = data.map((item) => ({
+          id: item.id, // Use the full UUID as the id
+          title: item.nama_projek,
+          image: item.gambar,
+          category: item.kategori,
+          tags: item.tags.map(tag => tag.nama),
+          date: item.created_at,
+          subtitle: item.kategori, // No subtitle in response, using category as fallback
+          description: item.deskripsi,
+          links: item.detail_project.map(detail => ({
+            title: detail.judul_link,
+            url: detail.link_project,
+          })),
+          teamMembers: item.anggota.map(member => ({
+            name: member.user.nim, // Temporarily using NIM; will update later with actual names
+            role: member.role,
+          })),
+          contact: undefined, // Not present in Postman response
+        }));
+
+        setPortfolioItems(mappedItems);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred while fetching portfolios.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPortfolios();
+  }, []);
+
+  // Extract unique categories from portfolioItems
+  const uniqueCategories = Array.from(new Set(portfolioItems.map(item => item.category)));
+
+  if (loading) return <div className="text-white text-center py-10">Loading...</div>;
+  if (error) return <div className="text-red-500 text-center py-10">{error}</div>;
+
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-grow bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-24 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ShowcaseHeader />
-          <ShowcaseSearch />
+          <ShowcaseSearch categories={uniqueCategories} />
           <ShowcaseGrid items={portfolioItems} />
         </div>
       </main>
