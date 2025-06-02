@@ -11,6 +11,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const [userRole, setUserRole] = useState<number | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     // Check localStorage on mount
@@ -18,7 +19,13 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     if (storedRole) {
       setUserRole(Number(storedRole));
     }
+    setMounted(true);
   }, []);
+
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <UserContext.Provider value={{ userRole, setUserRole }}>

@@ -21,6 +21,16 @@ import { ProfileSection } from "@/components/user/portfolio/ProfileSection";
 import { TeamProjectSection } from "@/components/user/portfolio/TeamProjectSection";
 import { DetailProjectSection } from "@/components/user/portfolio/DetailProjectSection";
 import { usePortfolioStore } from "@/store/portfolioStore";
+import { redirect } from 'next/navigation';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface TeamMember {
   id: number;
@@ -28,7 +38,8 @@ interface TeamMember {
   nim: string;
   role: string;
   id_user: string;
-  angkatan?: string;
+  angkatan: string;
+  userId: string;
 }
 
 interface ProjectLink {
@@ -45,6 +56,16 @@ interface Tag {
 interface ProjectImage {
   file: File | null;
   preview: string;
+}
+
+interface User {
+  id: string;
+  nim: string;
+  name: string;
+  role: string;
+  created_at: string;
+  updated_at: string;
+  selected?: boolean;
 }
 
 const RequiredLabel = ({ children }: { children: React.ReactNode }) => (
@@ -66,7 +87,7 @@ export default function PortfolioClient() {
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<string>('projectName');
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([
-    { id: 1, name: "", nim: "", role: "", id_user: "" }
+    { id: 1, name: "", nim: "", role: "", id_user: "", angkatan: "", userId: "" }
   ]);
   const [projectLinks, setProjectLinks] = useState<ProjectLink[]>([
     { id: 1, title: "", url: "" }
@@ -77,8 +98,11 @@ export default function PortfolioClient() {
     file: null,
     preview: ""
   });
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [warning, setWarning] = useState<string | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null!);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [submittedPortfolioId, setSubmittedPortfolioId] = useState<string | null>(null);
 
   const sections = {
     projectName: useRef<HTMLDivElement>(null!),
@@ -106,12 +130,13 @@ export default function PortfolioClient() {
 
   const handleAddMember = () => {
     const newMember: TeamMember = {
-      id: teamMembers.length + 1,
+      id: Date.now(),
       name: "",
       nim: "",
       role: "",
       id_user: "",
       angkatan: "",
+      userId: ""
     };
     setTeamMembers([...teamMembers, newMember]);
   };
@@ -125,6 +150,7 @@ export default function PortfolioClient() {
     setTeamMembers(teamMembers.map(member => 
       member.id === id ? { ...member, [field]: value } : member
     ));
+    clearError(`teamMember_${id}_${field}`);
   };
 
   const handleAddLink = () => {
@@ -145,6 +171,7 @@ export default function PortfolioClient() {
     setProjectLinks(projectLinks.map(link => 
       link.id === id ? { ...link, [field]: value } : link
     ));
+    clearError(`projectLink_${id}_${field}`);
   };
 
   const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -176,6 +203,7 @@ export default function PortfolioClient() {
           file,
           preview: reader.result as string
         });
+        clearError('projectImage');
       };
       reader.readAsDataURL(file);
     }
@@ -199,120 +227,151 @@ export default function PortfolioClient() {
 
   const setPortfolioData = usePortfolioStore((state) => state.setPortfolioData);
 
-  // Load data from store when component mounts
-  useEffect(() => {
-    if (storedTags.length > 0) {
-      setTags(storedTags.map((text, index) => ({ id: index + 1, text })));
-    }
-    if (storedProjectLinks.length > 0) {
-      setProjectLinks(storedProjectLinks.map((link, index) => ({ id: index + 1, ...link })));
-    }
-    if (storedTeamMembers.length > 0) {
-      setTeamMembers(
-        storedTeamMembers.map((member, index) => ({
-          id: index + 1,
-          name: member.name,
-          role: member.role,
-          nim: member.nim,
-          id_user: member.name ?? "",
-          
-        }))
-      );
-    }
-    if (storedProjectImage) {
-      setProjectImage({ file: null, preview: storedProjectImage });
-    }
-  }, []);
-
-  // Sync local state with store
+  // Reset store on component mount
   useEffect(() => {
     setPortfolioData({
-      tags: tags.map(tag => tag.text),
-      projectLinks: projectLinks.map(link => ({ title: link.title, url: link.url })),
-      projectImage: projectImage.preview || '',
-      teamMembers: teamMembers.map(member => ({ name: member.name, role: member.role, nim: member.nim }))
+      title: '',
+      category: '',
+      year: '',
+      description: '',
+      projectImage: '',
+      teamMembers: [],
+      projectLinks: [],
+      tags: [],
+      contact: undefined
     });
-  }, [tags, projectLinks, projectImage, teamMembers]);
-
-  useEffect(() => {
-    // Fetch profile user
-    const fetchProfile = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          // Set baris pertama teamMembers dengan data user
-          setTeamMembers((prev) => [
-            {
-              ...prev[0],
-              name: data.nama || "",
-              nim: data.user?.nim || "",
-              role: prev[0].role || "", // biarkan role bisa diisi user
-              id_user: data.user?.id || "",
-              angkatan: data.user?.angkatan || ""
-            },
-            ...prev.slice(1)
-          ]);
-        }
-      } catch (err) {
-        console.error('Failed to fetch profile user', err);
-      }
-    };
-    fetchProfile();
   }, []);
 
   const validateAndScroll = () => {
-    const navbarHeight = 96; // Height of the navbar
+    const newErrors: { [key: string]: string } = {};
+    let hasError = false;
 
+    // Validate title
     if (!title) {
-      setWarning("Nama project harus diisi.");
-      nameRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      window.scrollBy(0, -navbarHeight); // Add offset for navbar
-      return false;
+      newErrors.title = "Nama project harus diisi";
+      hasError = true;
     }
+
+    // Validate category
     if (!category) {
-      setWarning("Kategori harus diisi.");
-      categoryRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      window.scrollBy(0, -navbarHeight);
-      return false;
+      newErrors.category = "Kategori harus diisi";
+      hasError = true;
     }
+
+    // Validate contact
     if (!contact?.name || !contact?.id) {
-      setWarning("Profil (nama/NIM) harus diisi.");
-      profileRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      window.scrollBy(0, -navbarHeight);
-      return false;
+      newErrors.contact = "Profil (nama/NIM) harus diisi";
+      hasError = true;
     }
+
+    // Validate year
     if (!year) {
-      setWarning("Tahun project harus diisi.");
-      detailRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      window.scrollBy(0, -navbarHeight);
-      return false;
+      newErrors.year = "Tahun project harus diisi";
+      hasError = true;
     }
+
+    // Validate description
     if (!description) {
-      setWarning("Deskripsi project harus diisi.");
-      detailRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      window.scrollBy(0, -navbarHeight);
+      newErrors.description = "Deskripsi project harus diisi";
+      hasError = true;
+    }
+
+    // Validate tags
+    if (!tags || tags.length === 0) {
+      newErrors.tags = "Minimal satu tag harus diisi";
+      hasError = true;
+    }
+
+    // Validate project links
+    projectLinks.forEach((link, index) => {
+      if (!link.title.trim()) {
+        newErrors[`projectLink_${link.id}_title`] = "Judul link harus diisi";
+        hasError = true;
+      }
+      if (!link.url.trim()) {
+        newErrors[`projectLink_${link.id}_url`] = "Link project harus diisi";
+        hasError = true;
+      }
+    });
+
+    // Validate team members
+    teamMembers.forEach((member, index) => {
+      if (!member.nim) {
+        newErrors[`teamMember_${member.id}_nim`] = "Nama/NIM harus diisi";
+        hasError = true;
+      }
+      if (!member.role) {
+        newErrors[`teamMember_${member.id}_role`] = "Role harus diisi";
+        hasError = true;
+      }
+    });
+
+    // Validate project image
+    if (!projectImage.file) {
+      newErrors.projectImage = "Gambar project harus diisi";
+      hasError = true;
+    }
+
+    setErrors(newErrors);
+
+    if (hasError) {
+      // Urutan prioritas untuk field yang harus divalidasi
+      const errorPriority = [
+        'title',
+        'category',
+        'teamMember_1_role',
+        'teamMember_1_nim',
+        'year',
+        'description',
+        'tags',
+        'projectImage',
+        'projectLink_'
+      ];
+
+      // Cari error pertama berdasarkan prioritas
+      let firstErrorKey = '';
+      for (const key of errorPriority) {
+        if (newErrors[key]) {
+          firstErrorKey = key;
+          break;
+        }
+      }
+
+      // Jika tidak ada error dengan prioritas, cari error team member lainnya
+      if (!firstErrorKey) {
+        const teamMemberError = Object.keys(newErrors).find(key => key.startsWith('teamMember_'));
+        if (teamMemberError) {
+          firstErrorKey = teamMemberError;
+        } else {
+          firstErrorKey = Object.keys(newErrors)[0];
+        }
+      }
+
+      if (firstErrorKey) {
+        // Scroll ke section yang sesuai
+        let targetSection = '';
+        if (firstErrorKey === 'title') targetSection = 'projectName';
+        else if (firstErrorKey === 'category') targetSection = 'category';
+        else if (firstErrorKey.startsWith('teamMember_')) targetSection = 'teamProject';
+        else if (firstErrorKey === 'year' || firstErrorKey === 'description' || firstErrorKey === 'tags' || firstErrorKey === 'projectImage' || firstErrorKey.startsWith('projectLink_')) targetSection = 'detailProject';
+
+        if (targetSection && sections[targetSection as keyof typeof sections]) {
+          const navbarHeight = 96;
+          const elementPosition = sections[targetSection as keyof typeof sections].current?.getBoundingClientRect().top || 0;
+          const offsetPosition = elementPosition + window.pageYOffset - navbarHeight;
+          
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+          
+          // Update active section
+          setActiveSection(targetSection);
+        }
+      }
       return false;
     }
-    if (!storedTags || storedTags.length === 0) {
-      setWarning("Minimal satu tag harus diisi.");
-      detailRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      window.scrollBy(0, -navbarHeight);
-      return false;
-    }
-    if (!storedProjectLinks || storedProjectLinks.length === 0 || !storedProjectLinks[0].title || !storedProjectLinks[0].url) {
-      setWarning("Minimal satu link project harus diisi.");
-      detailRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      window.scrollBy(0, -navbarHeight);
-      return false;
-    }
-    setWarning(null);
+
     return true;
   };
 
@@ -343,51 +402,158 @@ export default function PortfolioClient() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [sections]);
 
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          // Set baris pertama teamMembers dengan data user
+          setTeamMembers((prev) => [
+            {
+              ...prev[0],
+              name: data.nama || "",
+              nim: data.user?.nim || "",
+              role: prev[0].role || "", // biarkan role bisa diisi user
+              id_user: data.user?.id || "",
+              angkatan: data.user?.nim?.slice(0, 4) || "", // Take first 4 digits of NIM
+              userId: data.user?.id || "",
+            },
+            ...prev.slice(1)
+          ]);
+        }
+      } catch (err) {
+        console.error('Failed to fetch profile user', err);
+        redirect('/auth/login');
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  useEffect(() => {
+    setPortfolioData({
+      tags: tags.map(tag => tag.text),
+      projectLinks: projectLinks.map(link => ({ title: link.title, url: link.url })),
+      projectImage: projectImage.preview || '',
+      teamMembers: teamMembers.map(member => ({ userId: member.userId, name: member.name, role: member.role, nim: member.nim, angkatan: member.angkatan }))
+    });
+  }, [tags, projectLinks, projectImage, teamMembers]);
+
+  // Add handler for user selection
+  const handleUserSelect = (id: number, selectedNim: string) => {
+    const selectedUser = users.find(user => user.nim === selectedNim);
+    if (!selectedUser) return;
+
+    const updatedTeamMembers = teamMembers.map(member =>
+      member.id === id
+        ? {
+            ...member,
+            name: selectedUser.name,
+            nim: selectedUser.nim,
+            id_user: selectedUser.id,
+            userId: selectedUser.id,
+            angkatan: selectedUser.nim.slice(0, 4) // Otomatis isi angkatan
+          }
+        : member
+    );
+    setTeamMembers(updatedTeamMembers);
+  };
+
+  // Add useEffect to fetch users
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/portofolio/user`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setUsers(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch users', err);
+      }
+    };
+    fetchUsers();
+  }, []);
+
   const handleSubmit = async () => {
     if (!validateAndScroll()) {
       setTimeout(() => {
         topRef.current?.scrollIntoView({ behavior: "smooth" });
-      }, 100); // slight delay to ensure banner is rendered
+      }, 100);
       return;
     }
-    // Ambil data dari state/store
-    const payload = {
-      nama_projek: title,
-      kategori: category,
-      tahun: Number(year),
-      gambar: projectImage.preview, // atau nama file jika upload ke server
-      deskripsi: description,
-      anggota: teamMembers.map(member => ({
-        id_user: member.id_user, // pastikan field ini ada di state
-        role: member.role,
-       
-      })),
-      detail_project: projectLinks.map(link => ({
-        judul_link: link.title,
-        link_project: link.url
-      })),
-      tags: tags.map(tag => ({ nama: tag.text }))
-    };
 
     try {
       const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      if (!projectImage.file) {
+        throw new Error('Project image is required');
+      }
+
+      // Create FormData for the entire portfolio submission
+      const formData = new FormData();
+      formData.append('nama_projek', title);
+      formData.append('kategori', category);
+      formData.append('tahun', year);
+      formData.append('gambar', projectImage.file);
+      formData.append('deskripsi', description);
+
+      // Add team members
+      teamMembers.forEach((member, index) => {
+        formData.append(`anggota[${index}][id_user]`, member.userId);
+        formData.append(`anggota[${index}][role]`, member.role);
+        formData.append(`anggota[${index}][angkatan]`, member.angkatan);
+      });
+
+      // Add project links
+      projectLinks.forEach((link, index) => {
+        formData.append(`detail_project[${index}][judul_link]`, link.title);
+        formData.append(`detail_project[${index}][link_project]`, link.url);
+      });
+
+      // Add tags
+      tags.forEach((tag, index) => {
+        formData.append(`tags[${index}][nama]`, tag.text);
+      });
+
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/portofolio`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(payload)
+        body: formData
       });
 
       if (!res.ok) {
-        throw new Error('Gagal submit portfolio');
+        const errorData = await res.json().catch(() => null);
+        console.error('Error Response Body:', errorData);
+        throw new Error(errorData?.message || `Server error: ${res.status}`);
       }
-      alert('Portfolio berhasil dikirim!');
-      // Redirect atau reset form jika perlu
+
+      const data = await res.json();
+      console.log('Success Response Body:', data);
+      setSubmittedPortfolioId(data.id);
+      setShowSuccessDialog(true);
     } catch (err) {
-      alert('Terjadi kesalahan saat submit portfolio');
-      console.error(err);
+      console.error('=== ERROR DETAILS ===');
+      console.error('Error:', err);
+      console.error('Error Stack:', err instanceof Error ? err.stack : 'No stack trace');
+      alert(err instanceof Error ? err.message : 'Terjadi kesalahan saat submit portfolio');
     }
   };
 
@@ -401,25 +567,46 @@ export default function PortfolioClient() {
      }`;
   };
 
+  const clearError = (field: string) => {
+    setErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors[field];
+      return newErrors;
+    });
+  };
+
+  const handleTitleChange = (value: string) => {
+    setPortfolioData({ title: value });
+    clearError('title');
+  };
+
+  const handleCategoryChange = (value: string) => {
+    setPortfolioData({ category: value });
+    clearError('category');
+  };
+
+  const handleYearChange = (value: string) => {
+    setPortfolioData({ year: value });
+    clearError('year');
+  };
+
+  const handleDescriptionChange = (value: string) => {
+    setPortfolioData({ description: value });
+    clearError('description');
+  };
+
+  const handleTagInputChange = (value: string) => {
+    setTagInput(value);
+    if (tags.length > 0) {
+      clearError('tags');
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-grow bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-10 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div ref={topRef}></div>
-
-          {/* Status Banner: Wajib diisi */}
-          {warning && (
-            <div className="bg-red-500/20 backdrop-blur-sm rounded-xl p-4 mb-4">
-              <div className="flex items-center gap-2">
-                <span className="px-3 py-1 rounded-full text-xs text-white bg-red-500">
-                  Wajib diisi
-                </span>
-                <span className="text-white">
-                  {warning}
-                </span>
-              </div>
-            </div>
-          )}
 
           <div className="flex gap-8">
             <SideMenu 
@@ -431,15 +618,29 @@ export default function PortfolioClient() {
             />
 
             <div className="flex-grow">
-              <ProjectNameSection sectionRef={sections.projectName} />
-              <CategorySection sectionRef={sections.category} />
-              <ProfileSection sectionRef={sections.profile} />
+              <ProjectNameSection 
+                sectionRef={sections.projectName} 
+                errors={errors} 
+                onTitleChange={handleTitleChange}
+              />
+              <CategorySection 
+                sectionRef={sections.category} 
+                errors={errors}
+                onCategoryChange={handleCategoryChange}
+              />
+              <ProfileSection 
+                sectionRef={sections.profile} 
+                errors={errors} 
+              />
               <TeamProjectSection 
                 sectionRef={sections.teamProject}
                 teamMembers={teamMembers}
                 onAddMember={handleAddMember}
                 onDeleteMember={handleDeleteMember}
                 onMemberChange={handleMemberChange}
+                users={users}
+                onUserSelect={handleUserSelect}
+                errors={errors}
               />
               <DetailProjectSection 
                 sectionRef={sections.detailProject}
@@ -451,12 +652,15 @@ export default function PortfolioClient() {
                 onAddLink={handleAddLink}
                 onDeleteLink={handleDeleteLink}
                 onLinkChange={handleLinkChange}
-                onTagInputChange={setTagInput}
+                onTagInputChange={handleTagInputChange}
                 onTagKeyDown={handleTagKeyDown}
                 onTagDelete={handleTagDelete}
                 onImageClick={handleImageClick}
                 onImageChange={handleImageChange}
                 onPreview={handlePreview}
+                errors={errors}
+                onYearChange={handleYearChange}
+                onDescriptionChange={handleDescriptionChange}
               />
               {/* Action Buttons */}
               <div className="flex justify-end gap-4 mt-8">
@@ -475,7 +679,26 @@ export default function PortfolioClient() {
           </div>
         </div>
       </main>
-      <Footer />
+      
+
+      <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <AlertDialogContent className="bg-[#001233] border border-white/10">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Berhasil!</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              Portfolio Anda berhasil dikirim dan sedang menunggu verifikasi.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction 
+              onClick={() => router.push(`/showcase/${submittedPortfolioId}`)}
+              className="bg-green-600 text-white hover:bg-green-700"
+            >
+              Lihat Portfolio
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 } 

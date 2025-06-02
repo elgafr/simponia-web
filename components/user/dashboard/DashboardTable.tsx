@@ -11,7 +11,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Select,
   SelectContent,
@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface PortfolioItem {
   id: string;
@@ -34,13 +35,11 @@ interface PortfolioItem {
   updated_at: string;
   anggota: Array<{
     id: string;
-    user: {
-      id: string;
-      nim: string;
-      role: string;
-    };
     role: string;
+    nim: string;
     angkatan: string;
+    id_user: string;
+    name: string | null;
   }>;
   detail_project: Array<{
     id: string;
@@ -51,6 +50,12 @@ interface PortfolioItem {
     id: string;
     nama: string;
   }>;
+  creator: {
+    user_id: string;
+    nim: string;
+    name: string | null;
+    role: string;
+  };
 }
 
 interface DashboardTableProps {
@@ -83,15 +88,70 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [userPortfolios, setUserPortfolios] = useState<PortfolioItem[]>([]);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.log('No token found');
+          return;
+        }
+
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch user data');
+        }
+
+        const userData = await response.json();
+        console.log('Fetched user data:', userData);
+
+        if (userData && userData.id) {
+          // Filter portfolios where the user is either the creator or a member
+          const filteredPortfolios = portfolioData.filter(item => {
+            const isCreator = item.creator?.user_id === userData.id;
+            const isMember = item.anggota?.some(member => member.id_user === userData.id);
+            return isCreator || isMember;
+          });
+          console.log('Filtered portfolios:', filteredPortfolios);
+          setUserPortfolios(filteredPortfolios);
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUserData();
+  }, [portfolioData]);
+
+  // If no data, show empty state
+  if (!userPortfolios || userPortfolios.length === 0) {
+    return (
+      <div className="bg-[#011B45]/50 backdrop-blur-sm rounded-xl border border-gray-700/50 mt-8 mb-8">
+        <EmptyState 
+          title="Belum ada portfolio"
+          description="Anda belum memiliki portfolio. Mulai buat portfolio Anda sekarang!"
+          actionLabel="Buat Portfolio"
+          actionHref="/portfolio"
+        />
+      </div>
+    );
+  }
 
   // Filter data based on selected filters and search query
-  const filteredData = portfolioData.filter(item => {
+  const filteredData = userPortfolios.filter(item => {
     const statusMatch = statusFilter === 'all' || 
       (statusFilter === 'verified' && item.status === 'Terverifikasi') ||
       (statusFilter === 'process' && item.status === 'Proses Verifikasi') ||
-      (statusFilter === 'rejected' && item.status === 'Ditolak') ||
+      (statusFilter === 'rejected' && item.status === 'Dihapus') ||
       (statusFilter === 'waiting' && item.status === 'Perlu Perubahan') ||
-      (statusFilter === 'unverified' && item.status === 'Belum Diverifikasi');
+      (statusFilter === 'unverified' && item.status === 'Belum di Verifikasi');
     
     const categoryMatch = categoryFilter === 'all' || 
       (categoryFilter === 'rpl' && item.kategori === 'Rekayasa Perangkat Lunak') ||
@@ -190,9 +250,9 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
               <SelectItem value="all" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Semua Status</SelectItem>
               <SelectItem value="verified" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Terverifikasi</SelectItem>
               <SelectItem value="process" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Proses Verifikasi</SelectItem>
-              <SelectItem value="rejected" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Ditolak</SelectItem>
+              <SelectItem value="rejected" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Dihapus</SelectItem>
               <SelectItem value="waiting" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Perlu Perubahan</SelectItem>
-              <SelectItem value="unverified" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Belum Diverifikasi</SelectItem>
+              <SelectItem value="unverified" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Belum di Verifikasi</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -224,7 +284,7 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
                 </td>
                 <td className="px-6 py-4 w-32">
                   <div className="flex gap-2">
-                    {(item.status === 'Terverifikasi' || item.status === 'Proses Verifikasi' || item.status === 'Belum Diverifikasi') && (
+                    {(item.status === 'Terverifikasi' || item.status === 'Proses Verifikasi' || item.status === 'Belum di Verifikasi') && (
                       <button 
                         onClick={() => handleView(item.id)}
                         className="p-1 text-gray-400 hover:text-white hover:bg-transparent"

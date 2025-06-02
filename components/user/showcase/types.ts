@@ -4,7 +4,7 @@ export interface PortfolioItem {
   id: string | number;
   name?: string;
   title: string;
-  image: string;
+  image: string; // This will be the gambar field from backend
   category: string;
   status: string;
   tags: string[];
@@ -19,10 +19,22 @@ export interface PortfolioItem {
   teamMembers?: {
     name: string;
     role: string;
+    nim: string;
   }[];
   contact?: {
     name: string;
     id: string;
+  };
+  creator?: {
+    user_id: string;
+    nim: string;
+    name: string;
+    role: string;
+    noHandphone: string;
+    linkedin: string;
+    instagram: string;
+    email: string;
+    github: string;
   };
 }
 

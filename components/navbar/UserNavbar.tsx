@@ -9,6 +9,13 @@ export default function UserNavbar() {
   const pathname = usePathname();
 
   const isActive = (path: string) => {
+    if (path === '/showcase') {
+      // Check if we're in the showcase section (including specific portfolio pages)
+      return pathname.startsWith('/showcase')
+        ? "text-white border-b-2 border-blue-500 px-3 py-2"
+        : "text-gray-300 hover:text-white hover:border-b-2 hover:border-blue-500/50 px-3 py-2 transition-all duration-200";
+    }
+    
     return pathname === path 
       ? "text-white border-b-2 border-blue-500 px-3 py-2" 
       : "text-gray-300 hover:text-white hover:border-b-2 hover:border-blue-500/50 px-3 py-2 transition-all duration-200";

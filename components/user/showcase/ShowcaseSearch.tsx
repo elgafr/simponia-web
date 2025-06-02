@@ -13,6 +13,8 @@ interface ShowcaseSearchProps {
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   category: string;
   onCategoryChange: (value: string) => void;
+  selectedStatus: string;
+  setSelectedStatus: (value: string) => void;
 }
 
 export function ShowcaseSearch({ searchQuery, onSearchChange, category, onCategoryChange }: ShowcaseSearchProps) {

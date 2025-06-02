@@ -11,6 +11,10 @@ async function getUserData(token: string) {
   });
   
   if (!response.ok) {
+    if (response.status === 401) {
+      // If unauthorized, redirect to login
+      redirect('/auth/login');
+    }
     throw new Error('Failed to fetch user data');
   }
   
@@ -25,6 +29,10 @@ async function getPortfolioData(userId: string, token: string) {
   });
   
   if (!response.ok) {
+    if (response.status === 401) {
+      // If unauthorized, redirect to login
+      redirect('/auth/login');
+    }
     throw new Error('Failed to fetch portfolio data');
   }
   
@@ -54,12 +62,7 @@ export default async function DashboardPage() {
     );
   } catch (error) {
     console.error('Error fetching data:', error);
-    // Handle error appropriately
-    return (
-      <div>
-        <DashboardContent portfolioData={[]} userData={null} />
-        <Footer />
-      </div>
-    );
+    // If any error occurs, redirect to login page
+    redirect('/auth/login');
   }
 }

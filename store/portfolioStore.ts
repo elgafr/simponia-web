@@ -9,6 +9,8 @@ interface TeamMember {
   name: string;
   role: string;
   nim: string;
+  angkatan: string;
+  userId: string;
 }
 
 interface Contact {
@@ -26,8 +28,10 @@ export interface PortfolioStore {
   teamMembers: TeamMember[];
   projectImage: string;
   contact: Contact;
+  currentPortfolioId: string | null;
   setPortfolioData: (data: Partial<PortfolioStore>) => void;
   resetStore: () => void;
+  setCurrentPortfolioId: (id: string) => void;
 }
 
 const usePortfolioStore = create<PortfolioStore>((set) => ({
@@ -43,6 +47,7 @@ const usePortfolioStore = create<PortfolioStore>((set) => ({
     name: '',
     id: ''
   },
+  currentPortfolioId: null,
   setPortfolioData: (data: Partial<PortfolioStore>) => set((state) => ({ ...state, ...data })),
   resetStore: () => set({
     title: '',
@@ -56,8 +61,10 @@ const usePortfolioStore = create<PortfolioStore>((set) => ({
     contact: {
       name: '',
       id: ''
-    }
-  })
+    },
+    currentPortfolioId: null
+  }),
+  setCurrentPortfolioId: (id: string) => set({ currentPortfolioId: id })
 }));
 
 export { usePortfolioStore }; 

@@ -1,7 +1,11 @@
 import type { NextConfig } from "next";
 
+const apiDomain = process.env.NEXT_PUBLIC_API_URL ? new URL(process.env.NEXT_PUBLIC_API_URL).hostname : null;
+
 const nextConfig: NextConfig = {
-  /* config options here */
+  images: {
+    domains: ['localhost', ...(apiDomain ? [apiDomain] : [])],
+  },
 };
 
 export default nextConfig;
