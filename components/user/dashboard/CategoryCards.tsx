@@ -1,35 +1,5 @@
 import Image from 'next/image';
-
-interface PortfolioItem {
-  id: string;
-  nama_projek: string;
-  kategori: string;
-  tahun: number;
-  status: string;
-  gambar: string;
-  deskripsi: string;
-  created_at: string;
-  updated_at: string;
-  anggota: Array<{
-    id: string;
-    user: {
-      id: string;
-      nim: string;
-      role: string;
-    };
-    role: string;
-    angkatan: string;
-  }>;
-  detail_project: Array<{
-    id: string;
-    judul_link: string;
-    link_project: string;
-  }>;
-  tags: Array<{
-    id: string;
-    nama: string;
-  }>;
-}
+import { PortfolioItem } from '@/types/portfolio';
 
 interface Category {
   icon: string;

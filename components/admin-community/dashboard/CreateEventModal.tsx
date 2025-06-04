@@ -1,18 +1,35 @@
 "use client";
 
+import { useState } from "react";
+
 interface CreateEventModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
 const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) => {
+  const [poster, setPoster] = useState<File | null>(null);
+  const [posterPreview, setPosterPreview] = useState<string | null>(null);
+  const [panitia, setPanitia] = useState({ nama: '', nim: '', jabatan: '' });
+
   if (!isOpen) return null;
-  
+
+  const handlePosterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setPoster(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => setPosterPreview(ev.target?.result as string);
+      reader.readAsDataURL(file);
+    } else {
+      setPosterPreview(null);
+    }
+  };
+
   return (
     <div className="fixed inset-0 flex items-center justify-center backdrop-blur-md bg-black/60 z-50">
-      <div className="bg-[#0F172A] text-white p-6 rounded-lg w-full max-w-lg shadow-lg">
+      <div className="bg-[#001B45] text-white p-6 rounded-lg w-full max-w-2xl shadow-lg max-h-[90vh] overflow-y-auto">
         <h2 className="text-2xl font-semibold mb-4">Event Details</h2>
-        
         <form className="space-y-4">
           {/* Judul Acara */}
           <div>
@@ -63,12 +80,29 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) 
             </div>
           </div>
 
+          {/* Baris Panitia */}
+          <div className="flex space-x-2">
+            <div className="w-1/3">
+              <label className="block text-sm font-medium mb-1">Nama Panitia</label>
+              <input type="text" value={panitia.nama} onChange={e => setPanitia({ ...panitia, nama: e.target.value })} className="w-full p-2 rounded-md bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div className="w-1/3">
+              <label className="block text-sm font-medium mb-1">NIM</label>
+              <input type="text" value={panitia.nim} onChange={e => setPanitia({ ...panitia, nim: e.target.value })} className="w-full p-2 rounded-md bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div className="w-1/3">
+              <label className="block text-sm font-medium mb-1">Jabatan</label>
+              <input type="text" value={panitia.jabatan} onChange={e => setPanitia({ ...panitia, jabatan: e.target.value })} className="w-full p-2 rounded-md bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+          </div>
+
           {/* Poster Acara */}
           <div>
             <label className="block text-sm font-medium mb-1">Poster Acara*</label>
-            <div className="w-full h-40 border-2 border-gray-600 flex items-center justify-center rounded-md cursor-pointer bg-gray-800">
-              <span className="text-gray-400">Add Image</span>
-            </div>
+            <input type="file" accept="image/*" onChange={handlePosterChange} className="w-full text-gray-300" />
+            {posterPreview && (
+              <img src={posterPreview} alt="Preview Poster" className="mt-2 w-full h-40 object-contain rounded-md border border-gray-600" />
+            )}
           </div>
 
           {/* Deskripsi Acara */}

@@ -3,37 +3,8 @@
 import { DashboardHeader } from '@/components/user/dashboard/DashboardHeader';
 import { DashboardTable } from '@/components/user/dashboard/DashboardTable';
 import { CategoryCards } from '@/components/user/dashboard/CategoryCards';
-
-interface PortfolioItem {
-  id: string;
-  nama_projek: string;
-  kategori: string;
-  tahun: number;
-  status: string;
-  gambar: string;
-  deskripsi: string;
-  created_at: string;
-  updated_at: string;
-  anggota: Array<{
-    id: string;
-    user: {
-      id: string;
-      nim: string;
-      role: string;
-    };
-    role: string;
-    angkatan: string;
-  }>;
-  detail_project: Array<{
-    id: string;
-    judul_link: string;
-    link_project: string;
-  }>;
-  tags: Array<{
-    id: string;
-    nama: string;
-  }>;
-}
+import { useEffect, useState } from 'react';
+import { PortfolioItem } from '@/types/portfolio';
 
 interface UserData {
   id: string;
@@ -72,6 +43,18 @@ const categories = [
 ];
 
 export default function DashboardContent({ portfolioData, userData }: DashboardContentProps) {
+  const [filteredPortfolioData, setFilteredPortfolioData] = useState<PortfolioItem[]>([]);
+
+  useEffect(() => {
+    if (userData && portfolioData) {
+      // Filter portfolio data based on creator's user_id
+      const filtered = portfolioData.filter(portfolio => 
+        portfolio.creator.user_id === userData.id
+      );
+      setFilteredPortfolioData(filtered);
+    }
+  }, [userData, portfolioData]);
+
   return (
     <main className="min-h-screen bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-24 pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -79,8 +62,8 @@ export default function DashboardContent({ portfolioData, userData }: DashboardC
           title="Dashboard"
           description="Lorem ipsum dolor sit amet consectetur. Quisque purus risus in purus at et. Tincidunt et sapien donec id integer pulvinar. Scelerisque accumsan a ornare dictum massa media. Suspendisse at dolor."
         />
-        <DashboardTable portfolioData={portfolioData} />
-        <CategoryCards categories={categories} portfolioData={portfolioData} />
+        <DashboardTable portfolioData={filteredPortfolioData} />
+        <CategoryCards categories={categories} portfolioData={filteredPortfolioData} />
       </div>
     </main>
   );

@@ -38,7 +38,7 @@ const faqItems: FAQItem[] = [
 
 export default function FAQClient() {
   return (
-    <main className="flex-grow bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-24 pb-16">
+    <main className="flex-grow bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-24 pb-30">
       <FAQList items={faqItems} />
     </main>
   );

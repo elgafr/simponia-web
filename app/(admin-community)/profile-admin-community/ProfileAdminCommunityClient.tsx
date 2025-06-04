@@ -7,7 +7,6 @@ import { PenLine, Pencil, User, Upload } from "lucide-react";
 import Image from 'next/image';
 import { useRef } from 'react';
 
-// Define interfaces
 interface ProfileData {
   id: string;
   nama: string;
@@ -28,8 +27,8 @@ interface ProfileData {
   };
 }
 
-interface HeroSection1ProfileProps {
-  profileData: ProfileData;
+interface ProfileAdminCommunityClientProps {
+  profileData: ProfileData | null;
 }
 
 // ProfileImage Component
@@ -38,7 +37,7 @@ interface ProfileImageProps {
   onImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-export function ProfileImage({ profileImage, onImageUpload }: ProfileImageProps) {
+function ProfileImage({ profileImage, onImageUpload }: ProfileImageProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const triggerFileInput = () => {
@@ -95,7 +94,7 @@ interface ProfileBioProps {
   onChange: (value: string) => void;
 }
 
-export function ProfileBio({
+function ProfileBio({
   bio,
   isEditing,
   bioValue,
@@ -142,7 +141,7 @@ interface MyProfileProps {
   profileData: ProfileData;
 }
 
-export function MyProfile({ profileData }: MyProfileProps) {
+function MyProfile({ profileData }: MyProfileProps) {
   return (
     <div className="bg-white/5 backdrop-blur-sm rounded-lg p-6 mb-6">
       <h2 className="text-xl font-semibold text-white mb-6">My Profile</h2>
@@ -182,17 +181,12 @@ interface AccountDetailsProps {
   isEditing: string | null;
   editValue: string;
   onEdit: (field: string, value: string) => void;
-  onSave?: (field: string) => void; // Made optional
-  onCancel?: () => void; // Made optional
+  onSave?: (field: string) => void;
+  onCancel?: () => void;
   setEditValue: (value: string) => void;
 }
 
-/**
- * AccountDetails Component
- * @description Displays and allows editing of account-related fields (email, LinkedIn, Instagram, Github).
- * The onSave and onCancel props are optional for future extensibility but are used here for explicit save/cancel actions.
- */
-export function AccountDetails({ 
+function AccountDetails({ 
   profileData, 
   isEditing, 
   editValue, 
@@ -253,47 +247,214 @@ export function AccountDetails({
   );
 }
 
-// Main ProfilePage Component (renamed to HeroSection1Profile)
-const HeroSection1Profile = ({ profileData }: HeroSection1ProfileProps) => {
+// CommunityDetails Component
+function CommunityDetails() {
+  // Data dummy sementara
+  const data = {
+    community: "Infotech",
+    division: "Sistem Informasi",
+    dateJoined: "01/08/2024",
+    position: "Sekretaris",
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-24 pb-16">
+    <div className="bg-[#182B4D] rounded-xl p-6 mt-6 text-white">
+      <h2 className="text-xl font-semibold mb-6">Community Details</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <p className="text-gray-300 mb-1">Community</p>
+          <p className="font-bold">{data.community}</p>
+        </div>
+        <div>
+          <p className="text-gray-300 mb-1">Division</p>
+          <p className="font-bold">{data.division}</p>
+        </div>
+        <div>
+          <p className="text-gray-300 mb-1">Date Joined</p>
+          <p className="font-bold">{data.dateJoined}</p>
+        </div>
+        <div>
+          <p className="text-gray-300 mb-1">Position</p>
+          <p className="font-bold">{data.position}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function ProfileAdminCommunityClient({ profileData }: ProfileAdminCommunityClientProps) {
+  const [isEditing, setIsEditing] = useState<string | null>(null);
+  const [isEditingBio, setIsEditingBio] = useState(false);
+  const [editValue, setEditValue] = useState('');
+  const [bioValue, setBioValue] = useState('');
+  const [profile, setProfile] = useState(profileData);
+
+  if (!profile) {
+    return <div>Loading...</div>;
+  }
+
+  const handleEdit = (field: string, value: string) => {
+    setIsEditing(field);
+    setEditValue(value);
+  };
+
+  const handleSave = async (field: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('No token found');
+
+      const updateBody = { ...profile, [field]: editValue };
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin-community/${profile.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(updateBody)
+      });
+
+      const responseData = await response.json();
+      if (!response.ok) throw new Error(responseData.message || `HTTP error! status: ${response.status}`);
+
+      setIsEditing(null);
+      setProfile(responseData);
+    } catch (error) {
+      console.error('Error updating field:', error);
+      alert('Failed to update field. Please try again.');
+    }
+  };
+
+  const handleCancel = () => {
+    setIsEditing(null);
+  };
+
+  const handleEditBio = () => {
+    setBioValue(profile.keterangan);
+    setIsEditingBio(true);
+  };
+
+  const handleSaveBio = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('No token found');
+
+      const requestBody = {
+        keterangan: bioValue,
+        nama: profile.nama,
+        noHandphone: profile.noHandphone,
+        gender: profile.gender,
+        tanggalLahir: profile.tanggalLahir,
+        kota: profile.kota,
+        linkedin: profile.linkedin,
+        instagram: profile.instagram,
+        email: profile.email,
+        github: profile.github
+      };
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin-community/${profile.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      const responseData = await response.json();
+      if (!response.ok) throw new Error(responseData.message || `HTTP error! status: ${response.status}`);
+
+      setIsEditingBio(false);
+      setProfile(responseData);
+    } catch (error) {
+      console.error('Error updating bio:', error);
+      alert('Failed to update bio. Please try again.');
+    }
+  };
+
+  const handleCancelBio = () => {
+    setIsEditingBio(false);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('No token found');
+
+      const formData = new FormData();
+      formData.append('profilePicture', file);
+      formData.append('user_id', profile.user.id);
+      formData.append('nama', profile.nama);
+      formData.append('noHandphone', profile.noHandphone);
+      formData.append('gender', profile.gender);
+      formData.append('tanggalLahir', profile.tanggalLahir);
+      formData.append('kota', profile.kota);
+      formData.append('keterangan', profile.keterangan);
+      formData.append('linkedin', profile.linkedin);
+      formData.append('instagram', profile.instagram);
+      formData.append('email', profile.email);
+      formData.append('github', profile.github);
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin-community/${profile.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      const responseData = await response.json();
+      if (!response.ok) throw new Error(responseData.message || `HTTP error! status: ${response.status}`);
+
+      setProfile(responseData);
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Failed to upload image. Please try again.');
+    }
+  };
+
+  return (
+    <main className="flex-grow bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-24 pb-16">
       <div className="relative">
         <div className="absolute inset-0 bg-grid opacity-20" />
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-8 mb-8">
             <ProfileImage
-              profileImage={profileData.profilePicture}
-              onImageUpload={() => {}}
+              profileImage={profile.profilePicture ? `${process.env.NEXT_PUBLIC_API_URL}${profile.profilePicture}` : "/default-avatar.png"}
+              onImageUpload={handleImageUpload}
             />
-            <div>
-              <h1 className='text-2xl mb-3'>{profileData.nama}</h1>
+            <div className="flex-1">
+              <h1 className="text-2xl text-white mb-3">{profile.nama}</h1>
               <ProfileBio
-                bio={profileData.keterangan}
-                isEditing={false}
-                bioValue=""
-                onEdit={() => {}}
-                onSave={() => {}}
-                onCancel={() => {}}
-                onChange={(value) => {}}
+                bio={profile.keterangan}
+                isEditing={isEditingBio}
+                bioValue={bioValue}
+                onEdit={handleEditBio}
+                onSave={handleSaveBio}
+                onCancel={handleCancelBio}
+                onChange={setBioValue}
               />
             </div>
           </div>
 
-          <MyProfile profileData={profileData} />
+          <MyProfile profileData={profile} />
           
           <AccountDetails
-            profileData={profileData}
-            isEditing={null}
-            editValue=""
-            onEdit={(field, value) => {}}
-            onSave={(field) => {}}
-            onCancel={() => {}}
-            setEditValue={(value) => {}}
+            profileData={profile}
+            isEditing={isEditing}
+            editValue={editValue}
+            onEdit={handleEdit}
+            onSave={handleSave}
+            onCancel={handleCancel}
+            setEditValue={setEditValue}
           />
+
+          <CommunityDetails />
         </div>
       </div>
-    </div>
+    </main>
   );
-};
-
-export default HeroSection1Profile;
+} 

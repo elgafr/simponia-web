@@ -37,16 +37,16 @@ export default function Hero() {
           />
         </div>
         <h1 className="text-5xl md:text-6xl font-bold mb-4">
-          Selamat Datang di <span className="text-blue-400">Simponia</span>
+          Welcome to <span className="text-blue-400">Simponia</span>
         </h1>
         <p className="text-xl text-gray-300 mb-12">
           Showcase your project and skill: Your Portfolio, Our Expertise
         </p>
         <Link
-          href="/portfolio/create"
+          href="/dashboard-admin-community"
           className="bg-blue-600 text-white px-8 py-3 rounded-md text-lg font-medium hover:bg-blue-700 transition-colors"
         >
-          Buat Portfolio
+          Go To Dashboard
         </Link>
       </div>
     </section>
