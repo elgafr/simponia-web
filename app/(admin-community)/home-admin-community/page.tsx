@@ -1,16 +1,16 @@
 // app/home/page.tsx
-
-import HeroSection from "@/components/admin-community/home_component/HeroSection1Home";
-import HeroSection2 from "@/components/admin-community/home_component/HeroSection2Home";
-import HeroSection3 from "@/components/admin-community/home_component/HeroSection3Home";
-
+import Hero from "@/components/admin-community/landing-page/Hero";
+import Steps from "@/components/admin-community/landing-page/Steps";
+import Categories from "@/components/admin-community/landing-page/Categories";
+import About from "@/components/admin-community/landing-page/About";
 
 export default function HomePage() {
   return (
-    <div>
-      <HeroSection />
-      <HeroSection2 />
-      <HeroSection3 />
-    </div>
+    <main className="min-h-screen">
+        <Hero />
+        <Steps />
+        <Categories />
+        <About />
+    </main>
   );
 }

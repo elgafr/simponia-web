@@ -11,12 +11,49 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Image from "next/image";
+
+interface ProfileData {
+  id: string;
+  profilePicture: string;
+  nama: string;
+}
 
 export default function ProfileDropdown() {
   const router = useRouter();
   const { logout } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [profileData, setProfileData] = useState<ProfileData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch profile data');
+        }
+
+        const data = await response.json();
+        setProfileData(data);
+      } catch (error) {
+        console.error('Error fetching profile data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProfileData();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -46,9 +83,20 @@ export default function ProfileDropdown() {
           <Button 
             variant="ghost" 
             size="icon" 
-            className="relative w-8 h-8 rounded-full bg-gray-900 text-white hover:bg-blue-800 transition-colors duration-300 data-[state=open]:bg-blue-800"
+            className="relative w-8 h-8 rounded-full bg-gray-900 text-white hover:bg-blue-800 transition-colors duration-300 data-[state=open]:bg-blue-800 overflow-hidden"
           >
-            <User className="w-5 h-5 text-white" />
+            {isLoading ? (
+              <User className="w-5 h-5 text-white" />
+            ) : profileData?.profilePicture ? (
+              <Image
+                src={`${process.env.NEXT_PUBLIC_API_URL}${profileData.profilePicture}`}
+                alt={profileData.nama || "Profile"}
+                fill
+                className="object-cover"
+              />
+            ) : (
+              <User className="w-5 h-5 text-white" />
+            )}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-40 bg-blue-900 border-blue-800">

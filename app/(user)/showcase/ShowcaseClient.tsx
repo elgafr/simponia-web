@@ -27,7 +27,7 @@ export default function ShowcaseClient({ initialData }: ShowcaseClientProps) {
   // If no data or filtered data is empty, show empty state
   if (!initialData || initialData.length === 0 || filteredItems.length === 0) {
     return (
-      <main className="flex-grow bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-24 pb-16">
+      <main className="flex-grow bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-16 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ShowcaseHeader />
           <ShowcaseSearch

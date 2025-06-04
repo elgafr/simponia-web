@@ -4,9 +4,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { FormEvent, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
+import { ROLES, ROUTES } from '@/types/auth';
 
 export default function LoginPage() {
   const { login, error, isLoading } = useAuth();
+  const router = useRouter();
   const [formErrors, setFormErrors] = useState<{
     nim?: string;
     password?: string;
@@ -44,7 +47,21 @@ export default function LoginPage() {
     };
 
     try {
-      await login(credentials);
+      // Set studentMode to false before login
+      localStorage.setItem('studentMode', 'false');
+      const response = await login(credentials);
+      
+      // Check user role and redirect accordingly
+      if (response?.role === ROLES.USER) {
+        // For role 3 (regular user), redirect to /dashboard
+        router.push(ROUTES.USER);
+      } else if (response?.role === ROLES.ADMINCOM) {
+        // For role 2 (admin community), redirect to admin community dashboard
+        router.push(ROUTES.ADMINCOM);
+      } else if (response?.role === ROLES.SUPERADMIN) {
+        // For role 1 (super admin), redirect to super admin dashboard
+        router.push(ROUTES.USER);
+      }
     } catch (err) {
       // Error handling sudah dihandle di useAuth hook
     }

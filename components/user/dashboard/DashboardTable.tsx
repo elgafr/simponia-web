@@ -22,41 +22,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { EmptyState } from '@/components/ui/empty-state';
-
-interface PortfolioItem {
-  id: string;
-  nama_projek: string;
-  kategori: string;
-  tahun: number;
-  status: string;
-  gambar: string;
-  deskripsi: string;
-  created_at: string;
-  updated_at: string;
-  anggota: Array<{
-    id: string;
-    role: string;
-    nim: string;
-    angkatan: string;
-    id_user: string;
-    name: string | null;
-  }>;
-  detail_project: Array<{
-    id: string;
-    judul_link: string;
-    link_project: string;
-  }>;
-  tags: Array<{
-    id: string;
-    nama: string;
-  }>;
-  creator: {
-    user_id: string;
-    nim: string;
-    name: string | null;
-    role: string;
-  };
-}
+import { PortfolioItem } from '@/types/portfolio';
 
 interface DashboardTableProps {
   portfolioData: PortfolioItem[];
@@ -114,9 +80,9 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
 
         if (userData && userData.id) {
           // Filter portfolios where the user is either the creator or a member
-          const filteredPortfolios = portfolioData.filter(item => {
+          const filteredPortfolios = portfolioData.filter((item: PortfolioItem) => {
             const isCreator = item.creator?.user_id === userData.id;
-            const isMember = item.anggota?.some(member => member.id_user === userData.id);
+            const isMember = item.anggota?.some((member: { id_user: string }) => member.id_user === userData.id);
             return isCreator || isMember;
           });
           console.log('Filtered portfolios:', filteredPortfolios);
@@ -318,7 +284,7 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
-                            <AlertDialogCancel className="bg-gray-600 text-white hover:bg-gray-700">Batal</AlertDialogCancel>
+                            <AlertDialogCancel className="bg-gray-600 text-white hover:bg-gray-700 hover:text-white">Batal</AlertDialogCancel>
                             <AlertDialogAction 
                               onClick={() => handleDelete(item.id)}
                               className="bg-red-600 text-white hover:bg-red-700"

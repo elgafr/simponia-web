@@ -11,13 +11,10 @@ interface ShowcaseLayoutCommunityProps {
 
 const ShowcaseLayoutCommunity = ({ children }: ShowcaseLayoutCommunityProps) => {
   return (
-    <html lang="id">
-      <body className="bg-gray-950 text-white min-h-screen">
-        
-        <main>{children}</main>
-        <Footer />
-      </body>
-    </html>
+    <div className="bg-gray-950 text-white min-h-screen">
+      <main>{children}</main>
+      <Footer />
+    </div>
   );
 };
 

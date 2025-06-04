@@ -4,7 +4,7 @@ import Image from 'next/image';
 const categories = [
   {
     icon: '/Source Code.svg',
-    title: 'Rekayasa\nPerangkat Lunak',
+    title: 'Software\nEngineering',
     description: 'Lorem ipsum dolor sit amet, consectetur. Tellus aliquet amet tortor ut donec. Suscipit, tortor cursus est ac.',
     link: '/category/software'
   },

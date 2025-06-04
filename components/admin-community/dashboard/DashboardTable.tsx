@@ -1,6 +1,5 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
 import { Eye, PenLine, Trash2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   AlertDialog,
@@ -22,39 +21,58 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { useState, useEffect } from "react";
+import { EmptyState } from '@/components/ui/empty-state';
 
-interface Event {
-  id: number;
-  title: string;
-  leader: string;
-  date: string;
-  committee: number;
+interface Anggota {
+  id: string;
+  id_user: string;
+  nama: string;
+  nim: string;
+  jabatan: string;
   status: string;
+  kerjasama: number | null;
+  kedisiplinan: number | null;
+  komunikasi: number | null;
+  tanggung_jawab: number | null;
+  nilai_rata_rata: number | null;
+  grade: string | null;
 }
 
-const events: Event[] = [
-  { id: 1, title: "IT Character Building", leader: "Fatahillah Al-Fatih", date: "23 September 2024", committee: 16, status: "Active" },
-  { id: 2, title: "Workshop Python", leader: "Krisna Bimantoro", date: "10 September 2024", committee: 19, status: "Ongoing" },
-  { id: 3, title: "Backend Tutorial Using Golang", leader: "Nadhira Ulya Nisa", date: "01 Januari 2024", committee: 20, status: "Finished" },
-  { id: 4, title: "Workshop ITCB", leader: "Fatahillah Al-Fatih", date: "07 Agustus 2023", committee: 17, status: "Finished" },
-  { id: 5, title: "Mastering Clean Code", leader: "Krisna Bimantoro", date: "14 Juni 2023", committee: 30, status: "Finished" },
-  { id: 6, title: "Frontend React Workshop", leader: "John Doe", date: "20 Juli 2023", committee: 22, status: "Ongoing" },
-  { id: 7, title: "Mobile Development Seminar", leader: "Jane Smith", date: "11 Mei 2024", committee: 18, status: "Active" },
-  { id: 8, title: "Frontend React Workshop", leader: "John Doe", date: "20 Juli 2023", committee: 22, status: "Ongoing" },
-  { id: 9, title: "Mobile Development Seminar", leader: "Jane Smith", date: "11 Mei 2024", committee: 18, status: "Active" },
-  { id: 10, title: "Frontend React Workshop", leader: "John Doe", date: "20 Juli 2023", committee: 22, status: "Ongoing" },
-  { id: 11, title: "Mobile Development Seminar", leader: "Jane Smith", date: "11 Mei 2024", committee: 18, status: "Active" },
-  { id: 12, title: "Frontend React Workshop", leader: "John Doe", date: "20 Juli 2023", committee: 22, status: "Ongoing" },
-  { id: 13, title: "Mobile Development Seminar", leader: "Jane Smith", date: "11 Mei 2024", committee: 18, status: "Active" },
-];
+interface User {
+  id: string;
+  nim: string;
+  name: string | null;
+  role: string;
+}
+
+interface Event {
+  id: string;
+  judul: string;
+  tanggal: string;
+  jumlah_panitia: number;
+  skor: number;
+  status: string;
+  gambar: string;
+  deskripsi: string;
+  created_at: string;
+  updated_at: string;
+  created_by: User;
+  ketua_pelaksana: User;
+  anggota: Anggota[];
+}
+
+interface DashboardTableProps {
+  eventData?: Event[];
+}
 
 const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'Active':
+  switch (status.toLowerCase()) {
+    case 'active':
       return 'bg-green-500';
-    case 'Ongoing':
+    case 'ongoing':
       return 'bg-blue-500';
-    case 'Finished':
+    case 'finished':
       return 'bg-gray-500';
     default:
       return 'bg-gray-500';
@@ -63,19 +81,134 @@ const getStatusColor = (status: string) => {
 
 const ITEMS_PER_PAGE = 5;
 
-export default function HeroSection1Dashboard() {
+export function DashboardTable({ eventData: initialEventData }: DashboardTableProps) {
+  console.log('DashboardTable rendered with initialEventData:', initialEventData);
+  
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedYear, setSelectedYear] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [isDeleting, setIsDeleting] = useState(false);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  // Fetch current user data
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.error('No token found in localStorage');
+          toast.error('Authentication token not found');
+          return;
+        }
+
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch user data');
+        }
+
+        const userData = await response.json();
+        console.log('Current user data:', userData);
+        setCurrentUser(userData);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        toast.error('Failed to fetch user data');
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  // Fetch events
+  useEffect(() => {
+    console.log('useEffect triggered');
+    console.log('NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
+    
+    const fetchEvents = async () => {
+      console.log('fetchEvents started');
+      try {
+        const token = localStorage.getItem('token');
+        console.log('Token exists:', !!token);
+        
+        if (!token) {
+          console.error('No token found in localStorage');
+          toast.error('Authentication token not found');
+          return;
+        }
+
+        const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/acara`;
+        console.log('Fetching events from:', apiUrl);
+        
+        const response = await fetch(apiUrl, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        console.log('Response status:', response.status);
+        console.log('Response ok:', response.ok);
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => null);
+          console.error('API Error:', {
+            status: response.status,
+            statusText: response.statusText,
+            errorData
+          });
+          throw new Error(`Failed to fetch events: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log('Fetched events:', data);
+        
+        if (!Array.isArray(data)) {
+          console.error('Expected array of events but got:', data);
+          throw new Error('Invalid response format');
+        }
+
+        // Filter events based on current user
+        if (currentUser) {
+          const filteredEvents = data.filter(event => 
+            event.created_by.id === currentUser.id
+          );
+          console.log('Filtered events:', filteredEvents);
+          setEvents(filteredEvents);
+        } else {
+          setEvents(data);
+        }
+      } catch (error) {
+        console.error('Error fetching events:', error);
+        toast.error(error instanceof Error ? error.message : 'Failed to fetch events');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (!initialEventData) {
+      console.log('No initialEventData, fetching from API');
+      fetchEvents();
+    } else {
+      console.log('Using initialEventData:', initialEventData);
+      setEvents(initialEventData);
+      setIsLoading(false);
+    }
+  }, [initialEventData, currentUser]); // Add currentUser as dependency
 
   // Filter data based on selected filters and search query
   const filteredEvents = events.filter(event => {
-    const yearMatch = selectedYear === 'all' || event.date.includes(selectedYear);
-    const statusMatch = selectedStatus === 'all' || event.status === selectedStatus;
-    const searchMatch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                       event.leader.toLowerCase().includes(searchQuery.toLowerCase());
+    const yearMatch = selectedYear === 'all' || new Date(event.tanggal).getFullYear().toString() === selectedYear;
+    const statusMatch = selectedStatus === 'all' || (event.status?.toLowerCase() || '') === selectedStatus.toLowerCase();
+    const searchMatch = (event.judul?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+                       ((event.ketua_pelaksana?.name?.toLowerCase() || event.ketua_pelaksana?.nim?.toLowerCase() || '')).includes(searchQuery.toLowerCase());
     
     return yearMatch && statusMatch && searchMatch;
   });
@@ -86,17 +219,30 @@ export default function HeroSection1Dashboard() {
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const currentItems = filteredEvents.slice(startIndex, endIndex);
 
-  const handleView = (id: number) => {
+  const handleView = (id: string) => {
     // Add your view logic here
     console.log('Viewing event:', id);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     try {
       setIsDeleting(true);
-      // Add your delete API call here
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('No token found');
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/acara/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete event');
+      }
+
+      setEvents(events.filter(event => event.id !== id));
       toast.success('Event berhasil dihapus');
-      // Refresh the page to update the table
     } catch (error) {
       console.error('Error deleting event:', error);
       toast.error('Gagal menghapus event');
@@ -104,6 +250,28 @@ export default function HeroSection1Dashboard() {
       setIsDeleting(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
+
+  // If no events, show empty state
+  if (!events || events.length === 0) {
+    return (
+      <div className="bg-[#011B45]/50 backdrop-blur-sm rounded-xl border border-gray-700/50 overflow-hidden mb-10">
+        <EmptyState 
+          title="Belum ada acara"
+          description="Anda belum memiliki acara. Mulai buat acara Anda sekarang!"
+          actionLabel="Buat Acara"
+          actionHref="#"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -136,15 +304,15 @@ export default function HeroSection1Dashboard() {
             </SelectTrigger>
             <SelectContent className="bg-[#001233] border-[#001B45]">
               <SelectItem value="all" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Semua Status</SelectItem>
-              <SelectItem value="Active" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Active</SelectItem>
-              <SelectItem value="Ongoing" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Ongoing</SelectItem>
-              <SelectItem value="Finished" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Finished</SelectItem>
+              <SelectItem value="active" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Active</SelectItem>
+              <SelectItem value="ongoing" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Ongoing</SelectItem>
+              <SelectItem value="finished" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Finished</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
-      <div className="bg-white/5 backdrop-blur-sm rounded-xl overflow-hidden mb-16">
+      <div className="bg-[#011B45]/50 backdrop-blur-sm rounded-xl border border-gray-700/50 overflow-hidden mb-10">
         <table className="w-full table-fixed">
           <thead>
             <tr className="border-b border-gray-700">
@@ -154,20 +322,24 @@ export default function HeroSection1Dashboard() {
               <th className="px-6 py-4 text-left text-sm font-semibold text-white w-40">Tanggal</th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-white w-32">Jumlah Panitia</th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-white w-40">Status</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-white w-32">Aksi</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-white w-24">Aksi</th>
             </tr>
           </thead>
           <tbody>
             {currentItems.map((event, index) => (
               <tr key={event.id} className="border-b border-gray-700/50 hover:bg-white/5">
                 <td className="px-6 py-4 text-gray-300 w-12">{startIndex + index + 1}</td>
-                <td className="px-6 py-4 text-white w-64 truncate">{event.title}</td>
-                <td className="px-6 py-4 text-gray-300 w-40 truncate">{event.leader}</td>
-                <td className="px-6 py-4 text-gray-300 w-40">{event.date}</td>
-                <td className="px-6 py-4 text-gray-300 w-32">{event.committee}</td>
+                <td className="px-6 py-4 text-white w-64 truncate">{event.judul || '-'}</td>
+                <td className="px-6 py-4 text-gray-300 w-40 truncate">
+                  {event.ketua_pelaksana?.name || event.ketua_pelaksana?.nim || '-'}
+                </td>
+                <td className="px-6 py-4 text-gray-300 w-40">
+                  {event.tanggal ? new Date(event.tanggal).toLocaleDateString('id-ID') : '-'}
+                </td>
+                <td className="px-6 py-4 text-gray-300 w-32">{event.jumlah_panitia || 0}</td>
                 <td className="px-6 py-4 w-40">
-                  <span className={`px-3 py-1 rounded-full text-xs text-white ${getStatusColor(event.status)}`}>
-                    {event.status}
+                  <span className={`px-3 py-1 rounded-full text-xs text-white ${getStatusColor(event.status || '')}`}>
+                    {event.status ? event.status.charAt(0).toUpperCase() + event.status.slice(1) : '-'}
                   </span>
                 </td>
                 <td className="px-6 py-4 w-32">
@@ -195,7 +367,7 @@ export default function HeroSection1Dashboard() {
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel className="bg-gray-600 text-white hover:bg-gray-700">Batal</AlertDialogCancel>
+                          <AlertDialogCancel className="bg-gray-600 text-white hover:bg-gray-700 hover:text-white">Batal</AlertDialogCancel>
                           <AlertDialogAction 
                             onClick={() => handleDelete(event.id)}
                             className="bg-red-600 text-white hover:bg-red-700"
@@ -255,4 +427,4 @@ export default function HeroSection1Dashboard() {
       </div>
     </div>
   );
-}
+} 

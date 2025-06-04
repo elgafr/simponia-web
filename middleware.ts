@@ -27,7 +27,7 @@ export function middleware(request: NextRequest) {
   if (token) {
     // Rute yang hanya bisa diakses admin
     if (pathname.startsWith('/dashboard-admin-community')) {
-      if (userRole !== ROLES.ADMIN) {
+      if (userRole !== ROLES.ADMINCOM) {
         return NextResponse.redirect(new URL('/', request.url));
       }
     }
