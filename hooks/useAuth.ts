@@ -45,19 +45,18 @@ export const useAuth = () => {
         document.cookie = `token=${data.access_token}; path=/`;
         document.cookie = `userRole=${data.role}; path=/`;
 
-
-      // Redirect ke halaman yang diinginkan atau berdasarkan role
-      const callbackUrl = searchParams.get('callbackUrl');
-      if (callbackUrl) {
-        router.push(callbackUrl);
-      } else {
-        if (data.role === ROLES.SUPERADMIN) {
-          router.push(ROUTES.SUPERADMIN);
-        } else if (data.role === ROLES.ADMINCOM) {
-          router.push(ROUTES.ADMINCOM);
-        } else if (data.role === ROLES.USER) {
-          router.push(ROUTES.USER);
-
+        // Redirect ke halaman yang diinginkan atau berdasarkan role
+        const callbackUrl = searchParams.get('callbackUrl');
+        if (callbackUrl) {
+          router.push(callbackUrl);
+        } else {
+          if (data.role === ROLES.SUPERADMIN) {
+            router.push(ROUTES.SUPERADMIN);
+          } else if (data.role === ROLES.ADMINCOM) {
+            router.push(ROUTES.ADMINCOM);
+          } else if (data.role === ROLES.USER) {
+            router.push(ROUTES.USER);
+          }
         }
       }
 
@@ -82,8 +81,5 @@ export const useAuth = () => {
     router.push('/');
   };
 
-
   return { login, logout, error, isLoading, mounted };
-}; 
-
-
+};
