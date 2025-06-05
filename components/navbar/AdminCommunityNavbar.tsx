@@ -21,9 +21,9 @@ export default function AdminCommunityNavbar({ isStudentMode, onStudentModeChang
     if (path === '/dashboard-admin-community' && pathname === '/dashboard') {
       return "text-white border-b-2 border-blue-500 px-3 py-2";
     }
-    
-    return pathname === path 
-      ? "text-white border-b-2 border-blue-500 px-3 py-2" 
+
+    return pathname === path
+      ? "text-white border-b-2 border-blue-500 px-3 py-2"
       : "text-gray-300 hover:text-white hover:border-b-2 hover:border-blue-500/50 px-3 py-2 transition-all duration-200";
   };
 
@@ -64,12 +64,12 @@ export default function AdminCommunityNavbar({ isStudentMode, onStudentModeChang
           {/* Navigation Links */}
           <div className="hidden md:block">
             <div className="flex items-center space-x-4">
-              
+
               {isStudentMode ? (
                 <>
-<Link href="/" className={isActive('/')}>
-                Home
-              </Link>
+                  <Link href="/" className={isActive('/')}>
+                    Home
+                  </Link>
                   <Link href="/dashboard" className={isActive('/dashboard')}>
                     Dashboard
                   </Link>
@@ -85,16 +85,16 @@ export default function AdminCommunityNavbar({ isStudentMode, onStudentModeChang
                 </>
               ) : (
                 <>
-                <Link href="/home-admin-community" className={isActive('/home-admin-community')}>
-                Home
-              </Link>
+                  <Link href="/home-admin-community" className={isActive('/home-admin-community')}>
+                    Home
+                  </Link>
                   <Link href="/dashboard-admin-community" className={isActive('/dashboard-admin-community')}>
                     Dashboard
                   </Link>
                   <Link href="/showcase-admin-community" className={isActive('/showcase-admin-community')}>
                     Showcase
                   </Link>
-                  <Link href="/FAQ-admin-community" className={isActive('/faq-admin-community')}>
+                  <Link href="/faq-admin-community" className={isActive('/faq-admin-community')}>
                     FAQ
                   </Link>
                 </>
