@@ -3,7 +3,7 @@
 
 import { ReactNode } from "react";
 import Navbar from "@/components/navbar/SuperAdminNavbar";
-import Footer from "@/components/landing-page/Footer";
+import Footer from "@/components/user/landing-page/Footer";
 
 interface ShowcaseLayoutCommunityProps {
   children: ReactNode;
@@ -11,13 +11,11 @@ interface ShowcaseLayoutCommunityProps {
 
 const ShowcaseLayoutCommunity = ({ children }: ShowcaseLayoutCommunityProps) => {
   return (
-    <html lang="id">
-      <body className="text-white min-h-screen">
-        <Navbar />
-        <main>{children}</main>
-        <Footer />
-      </body>
-    </html>
+    <div className="text-white min-h-screen">
+      <Navbar />
+      <main>{children}</main>
+      <Footer />
+    </div>
   );
 };
 
