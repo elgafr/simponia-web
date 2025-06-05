@@ -11,7 +11,7 @@ const FAQLayout = ({ children }: FAQLayoutProps) => {
   return (
     <div className="min-h-screen bg-gray-950">
       <main>{children}</main>
-      
+      <Footer />
     </div>
   );
 };

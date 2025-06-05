@@ -2,7 +2,7 @@
 
 import React from "react";
 
-const HeroSection1DetailCommunity: React.FC = () => {
+const HeroSection1DetailCommunityScore: React.FC = () => {
   return (
     <section className=" text-white p-8 rounded-lg lg:px-100 py-20">
       {/* Profile Section */}
@@ -69,4 +69,4 @@ const HeroSection1DetailCommunity: React.FC = () => {
   );
 };
 
-export default HeroSection1DetailCommunity;
+export default HeroSection1DetailCommunityScore;

@@ -94,7 +94,7 @@ export default function AdminCommunityNavbar({ isStudentMode, onStudentModeChang
                   <Link href="/showcase-admin-community" className={isActive('/showcase-admin-community')}>
                     Showcase
                   </Link>
-                  <Link href="/faq-admin-community" className={isActive('/faq-admin-community')}>
+                  <Link href="/FAQ-admin-community" className={isActive('/faq-admin-community')}>
                     FAQ
                   </Link>
                 </>

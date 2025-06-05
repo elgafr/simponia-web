@@ -8,7 +8,7 @@ import { useParams, useRouter } from "next/navigation";
 import { MessageSquare, LinkIcon, Users, MessageCircle, Github, Instagram, Linkedin, Mail } from 'lucide-react';
 
 interface PortfolioItem {
-  id: number;
+  id: string;
   title: string;
   image: string;
   category: string;
@@ -51,19 +51,10 @@ interface BackendPortfolioItem {
   updated_at: string;
   anggota: {
     id: string;
-    user: {
-      id: string;
-      nim: string;
-      password: string;
-      role: string;
-      remember_token: string | null;
-      created_at: string;
-      updated_at: string;
-    };
     role: string;
     angkatan: string;
-    createdAt: string;
-    updatedAt: string;
+    id_user: string;
+    name: string;
   }[];
   detail_project: {
     id: string;
@@ -78,6 +69,17 @@ interface BackendPortfolioItem {
     created_at: string;
     updated_at: string;
   }[];
+  creator: {
+    user_id: string;
+    nim: string;
+    name: string;
+    role: string;
+    noHandphone: string;
+    linkedin: string;
+    instagram: string;
+    email: string;
+    github: string;
+  };
 }
 
 interface ProfileItem {
@@ -103,85 +105,51 @@ interface ProfileItem {
   github: string;
   createdAt: string;
   updatedAt: string;
+  profilePicture?: string;
 }
 
-interface UserItem {
-  id: string;
-  nim: string;
-  role: string;
-  remember_token: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-// Interface for the current authenticated user
 interface CurrentUser {
   id: string;
   nim: string;
   role: string;
 }
 
-interface SocialIcon {
-  icon: React.ComponentType<{ className?: string }>;
-  name: string;
-  url?: string;
+interface StatusVerifikasiItem {
+  UniqueID: number;
+  id_portofolio: string;
+  portofolio: {
+    id: string;
+    nama_projek: string;
+    kategori: string;
+    tahun: number;
+    status: string;
+    gambar: string;
+    deskripsi: string;
+    created_at: string;
+    updated_at: string;
+  };
+  note: string;
+  updated_by: string;
+  updatedBy: {
+    id: string;
+    nim: string;
+    password: string;
+    role: string;
+    remember_token: string | null;
+    created_at: string;
+    updated_at: string;
+  };
+  updated_at: string;
 }
 
-// Function to map backend status to display status
-const mapBackendStatusToDisplay = (backendStatus: string): string => {
-  switch (backendStatus) {
-    case "Perlu Revisi":
-      return "Perlu Perubahan";
-    case "Sudah di Verifikasi":
-      return "Terverifikasi";
-    case "Belum di Verifikasi":
-      return "Belum di Verifikasi";
-    default:
-      return backendStatus;
-  }
-};
+interface SocialLinksProps {
+  socialLinks?: { [key: string]: string | undefined };
+}
 
-// Function to map display status to backend status (removed mapping to match Postman)
-const mapDisplayStatusToBackend = (displayStatus: string): string => {
-  return displayStatus; // Send the display value directly
-};
+const SocialLinks: React.FC<SocialLinksProps> = ({ socialLinks = {} }) => {
+  console.log('Social Links in SocialLinks component:', socialLinks); // Debug log
 
-// ProjectHeader Component
-const ProjectHeader: React.FC<{ project: PortfolioItem }> = ({ project }) => {
-  return (
-    <>
-      <div className="rounded-xl overflow-hidden mb-12">
-        <Image
-          src={`/${project.image}`}
-          alt={project.title}
-          width={1200}
-          height={600}
-          className="w-full object-cover h-130"
-        />
-      </div>
-      <div className="mb-12">
-        <h1 className="text-4xl font-bold text-white mb-4">{project.title}</h1>
-        <p className="text-gray-400 text-xl mb-4">
-          {project.category} - {project.tahun}
-        </p>
-        <div className="flex flex-wrap gap-3">
-          {project.tags.map((tag, index) => (
-            <span
-              key={index}
-              className="px-4 py-1 bg-white/5 backdrop-blur-sm rounded-full text-sm text-white"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-      </div>
-    </>
-  );
-};
-
-// SocialLinks Component
-const SocialLinks: React.FC<{ socialLinks?: { [key: string]: string } }> = ({ socialLinks = {} }) => {
-  const socialIcons: SocialIcon[] = [
+  const socialIcons: { icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; name: string; url: string }[] = [
     { icon: MessageCircle, name: 'whatsapp', url: socialLinks.whatsapp || '#' },
     { icon: Github, name: 'github', url: socialLinks.github || '#' },
     { icon: Instagram, name: 'instagram', url: socialLinks.instagram || '#' },
@@ -190,7 +158,7 @@ const SocialLinks: React.FC<{ socialLinks?: { [key: string]: string } }> = ({ so
   ];
 
   return (
-    <div className="flex gap-3">
+    <div className="flex gap-3 mt-4">
       {socialIcons.map((social, index) => {
         const Icon = social.icon;
         if (social.url === '#') return null;
@@ -210,10 +178,64 @@ const SocialLinks: React.FC<{ socialLinks?: { [key: string]: string } }> = ({ so
   );
 };
 
-// ProjectContent Component
+const ProjectHeader: React.FC<{ project: PortfolioItem }> = ({ project }) => {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  const imageUrl = `${baseUrl}${project.image.startsWith('/') ? '' : '/'}${project.image}`;
+
+  console.log('Attempting to load image from:', imageUrl); // Debug log
+
+  return (
+    <>
+      <div className="rounded-xl overflow-hidden mb-12">
+        <Image
+          src={imageUrl}
+          alt={project.title}
+          width={1200}
+          height={600}
+          className="w-full object-cover h-130"
+          onError={(e) => {
+            console.error('Image load failed, falling back to default. URL:', imageUrl);
+            e.currentTarget.src = '/default-image.png'; // Fallback image
+          }}
+        />
+      </div>
+      <div className="mb-12">
+        <h1 className="text-4xl font-bold text-white mb-4">{project.title}</h1>
+        <div className="flex flex-wrap gap-3 mb-6">
+          {project.tags.map((tag, index) => (
+            <span
+              key={index}
+              className="px-4 py-1 bg-white/5 backdrop-blur-sm rounded-full text-sm text-white"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+};
+
 const ProjectContent: React.FC<{ project: PortfolioItem }> = ({ project }) => {
-  const contact = project.contact || (project.teamMembers && project.teamMembers.length > 0 ? project.teamMembers[0] : null);
-  const socialLinks = project.contact && 'socialLinks' in project.contact ? project.contact.socialLinks : undefined;
+  const contact = project.contact || null;
+
+  // Process social links, handling email separately to avoid adding 'https://'
+  const socialLinks = contact?.socialLinks
+    ? {
+        whatsapp: contact.socialLinks.whatsapp?.startsWith('http') ? contact.socialLinks.whatsapp : `https://${contact.socialLinks.whatsapp}`,
+        github: contact.socialLinks.github?.startsWith('http') ? contact.socialLinks.github : `https://${contact.socialLinks.github}`,
+        instagram: contact.socialLinks.instagram?.startsWith('http') ? contact.socialLinks.instagram : `https://${contact.socialLinks.instagram}`,
+        linkedin: contact.socialLinks.linkedin?.startsWith('http') ? contact.socialLinks.linkedin : `https://${contact.socialLinks.linkedin}`,
+        email: contact.socialLinks.email, // Do not prepend 'https://' to email
+      }
+    : {};
+
+  // Filter out undefined or empty values
+  const filteredSocialLinks = Object.fromEntries(
+    Object.entries(socialLinks).filter(([, value]) => value && value !== '')
+  );
+
+  console.log('Processed Social Links in ProjectContent:', filteredSocialLinks); // Debug log
 
   return (
     <div className="lg:col-span-2">
@@ -233,17 +255,16 @@ const ProjectContent: React.FC<{ project: PortfolioItem }> = ({ project }) => {
           Get in Touch
         </h2>
         {contact && (
-          <p className="text-gray-300 mb-4">
-            {contact.name} / {contact.nim}
-          </p>
+          <div className="text-gray-300">
+            <p>{contact.name} / {contact.nim}</p>
+            <SocialLinks socialLinks={filteredSocialLinks} />
+          </div>
         )}
-        <SocialLinks socialLinks={socialLinks} />
       </div>
     </div>
   );
 };
 
-// ProjectSidebar Component
 const ProjectSidebar: React.FC<{ project: PortfolioItem }> = ({ project }) => {
   return (
     <div className="space-y-8">
@@ -274,7 +295,7 @@ const ProjectSidebar: React.FC<{ project: PortfolioItem }> = ({ project }) => {
           <div className="space-y-4">
             {project.teamMembers.map((member, index) => (
               <div key={index} className="text-gray-300">
-                <p className="text-white">{member.name}</p>
+                <p className="text-white">{member.name} / {member.nim}</p>
                 <p className="text-sm">{member.role}</p>
               </div>
             ))}
@@ -291,15 +312,15 @@ const HeroSection1DetailPortfolio: React.FC = () => {
   const idParam = params.id;
 
   const portfolioId = idParam
-    ? typeof idParam === "string"
-      ? idParam.split("-").slice(0, 5).join("-")
+    ? typeof idParam === 'string'
+      ? idParam.substring(0, 36) // Extract only the first 36 characters (UUID length)
       : null
     : null;
 
   const [portfolioItem, setPortfolioItem] = useState<PortfolioItem | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [status, setStatus] = useState<string>("");
+  const [status, setStatus] = useState<string>("Belum di Verifikasi");
   const [note, setNote] = useState<string>("");
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
 
@@ -319,17 +340,17 @@ const HeroSection1DetailPortfolio: React.FC = () => {
       }
 
       try {
-        // Step 1: Fetch current user to get updated_by ID (try all role-specific endpoints)
+        // Step 1: Fetch current user to get updated_by ID
         let userData: CurrentUser | null = null;
         const roleEndpoints = {
           "1": "/profile-admin",
           "2": "/profile-admin-community",
-          "3": "/profile-user"
+          "3": "/profile-user",
         };
         let fetched = false;
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        for (const [_role, endpoint] of Object.entries(roleEndpoints)) {
+        for (const [_, endpoint] of Object.entries(roleEndpoints)) {
           const userResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
             method: "GET",
             headers: {
@@ -351,7 +372,6 @@ const HeroSection1DetailPortfolio: React.FC = () => {
         }
 
         if (!fetched) {
-          // Fallback: Decode from token if no profile endpoint works
           const payload = token.split('.')[1];
           const decoded = JSON.parse(atob(payload));
           if (decoded && decoded.id) {
@@ -362,105 +382,9 @@ const HeroSection1DetailPortfolio: React.FC = () => {
         }
         setCurrentUser(userData);
 
-        // Step 2: Fetch all users from /portofolio/user
-        const usersUrl = `${process.env.NEXT_PUBLIC_API_URL}/portofolio/user`;
-        const usersResponse = await fetch(usersUrl, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!usersResponse.ok) {
-          const errorText = await usersResponse.text();
-          throw new Error(`Failed to fetch users: ${usersResponse.status} - ${errorText}`);
-        }
-
-        const usersData: UserItem[] = await usersResponse.json();
-
-        // Step 3: Fetch profiles based on role and create maps
-        const userIdToNameMap = new Map<string, string>();
-        const userIdToSocialLinksMap = new Map<string, { whatsapp?: string; github?: string; instagram?: string; linkedin?: string; email?: string }>();
-
-        // Fetch profiles for role 3 (Users)
-        const role3Users = usersData.filter(user => user.role === "3");
-        if (role3Users.length > 0) {
-          const profileUserResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user`, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          });
-
-          if (profileUserResponse.ok) {
-            const profileUserData: ProfileItem[] = await profileUserResponse.json();
-            profileUserData.forEach(profile => {
-              userIdToNameMap.set(profile.user.id, profile.nama);
-              userIdToSocialLinksMap.set(profile.user.id, {
-                whatsapp: profile.noHandphone ? `https://wa.me/${profile.noHandphone}` : undefined,
-                github: profile.github && !profile.github.startsWith('http') ? `https://github.com/${profile.github}` : profile.github || undefined,
-                instagram: profile.instagram && !profile.instagram.startsWith('http') ? `https://instagram.com/${profile.instagram}` : profile.instagram || undefined,
-                linkedin: profile.linkedin && !profile.linkedin.startsWith('http') ? `https://linkedin.com/in/${profile.linkedin}` : profile.linkedin || undefined,
-                email: profile.email || undefined,
-              });
-            });
-          }
-        }
-
-        // Fetch profiles for role 2 (Admin Community)
-        const role2Users = usersData.filter(user => user.role === "2");
-        if (role2Users.length > 0) {
-          const profileAdminCommunityResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin-community`, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          });
-
-          if (profileAdminCommunityResponse.ok) {
-            const profileAdminCommunityData: ProfileItem[] = await profileAdminCommunityResponse.json();
-            profileAdminCommunityData.forEach(profile => {
-              userIdToNameMap.set(profile.user.id, profile.nama);
-              userIdToSocialLinksMap.set(profile.user.id, {
-                whatsapp: profile.noHandphone ? `https://wa.me/${profile.noHandphone}` : undefined,
-                github: profile.github && !profile.github.startsWith('http') ? `https://github.com/${profile.github}` : profile.github || undefined,
-                instagram: profile.instagram && !profile.instagram.startsWith('http') ? `https://instagram.com/${profile.instagram}` : profile.instagram || undefined,
-                linkedin: profile.linkedin && !profile.linkedin.startsWith('http') ? `https://linkedin.com/in/${profile.linkedin}` : profile.linkedin || undefined,
-                email: profile.email || undefined,
-              });
-            });
-          }
-        }
-
-        // Fetch profiles for role 1 (SuperAdmin)
-        const role1Users = usersData.filter(user => user.role === "1");
-        if (role1Users.length > 0) {
-          const profileAdminResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin`, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          });
-
-          if (profileAdminResponse.ok) {
-            const profileAdminData: ProfileItem = await profileAdminResponse.json();
-            userIdToNameMap.set(profileAdminData.user.id, profileAdminData.nama);
-            userIdToSocialLinksMap.set(profileAdminData.user.id, {
-              whatsapp: profileAdminData.noHandphone ? `https://wa.me/${profileAdminData.noHandphone}` : undefined,
-              github: profileAdminData.github && !profileAdminData.github.startsWith('http') ? `https://github.com/${profileAdminData.github}` : profileAdminData.github || undefined,
-              instagram: profileAdminData.instagram && !profileAdminData.instagram.startsWith('http') ? `https://instagram.com/${profileAdminData.instagram}` : profileAdminData.instagram || undefined,
-              linkedin: profileAdminData.linkedin && !profileAdminData.linkedin.startsWith('http') ? `https://linkedin.com/in/${profileAdminData.linkedin}` : profileAdminData.linkedin || undefined,
-              email: profileAdminData.email || undefined,
-            });
-          }
-        }
-
-        // Step 4: Fetch portfolio details
+        // Step 2: Fetch portfolio details
         const portfolioUrl = `${process.env.NEXT_PUBLIC_API_URL}/portofolio/${portfolioId}`;
+        console.log(`Fetching portfolio from: ${portfolioUrl}`);
         const response = await fetch(portfolioUrl, {
           method: "GET",
           headers: {
@@ -476,28 +400,84 @@ const HeroSection1DetailPortfolio: React.FC = () => {
 
         const data: BackendPortfolioItem = await response.json();
 
-        // Step 5: Map team members using the userIdToNameMap
-        const teamMembersWithNames = data.anggota.map(member => {
-          const userNim = member.user.nim;
-          const name = userIdToNameMap.get(member.user.id) || "Unknown Member";
-          return {
-            name,
-            role: member.role,
-            nim: userNim,
-          };
+        // Step 3: Fetch user profiles to map id_user to nim
+        const userIdToNimMap = new Map<string, string>();
+
+        const profileUserResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         });
 
-        // Step 6: Set contact to the first anggota member using user.id
-        const firstMember = data.anggota[0];
-        const contact = firstMember ? {
-          name: userIdToNameMap.get(firstMember.user.id) || "Unknown Member",
-          nim: firstMember.user.nim,
-          socialLinks: userIdToSocialLinksMap.get(firstMember.user.id),
-        } : undefined;
+        if (!profileUserResponse.ok) {
+          const errorText = await profileUserResponse.text();
+          throw new Error(`Failed to fetch user profiles: ${profileUserResponse.status} - ${errorText}`);
+        }
 
-        // Step 7: Map the portfolio item
+        const profileUserData: ProfileItem[] = await profileUserResponse.json();
+        profileUserData.forEach(profile => {
+          userIdToNimMap.set(profile.user.id, profile.user.nim);
+        });
+
+        const profileAdminCommunityResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin-community`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (profileAdminCommunityResponse.ok) {
+          const profileAdminCommunityData: ProfileItem[] = await profileAdminCommunityResponse.json();
+          profileAdminCommunityData.forEach(profile => {
+            userIdToNimMap.set(profile.user.id, profile.user.nim);
+          });
+        }
+
+        const profileAdminResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (profileAdminResponse.ok) {
+          const profileAdminData: ProfileItem = await profileAdminResponse.json();
+          userIdToNimMap.set(profileAdminData.user.id, profileAdminData.user.nim);
+        }
+
+        // Step 4: Fetch status verifikasi to get status and note
+        const statusVerifikasiUrl = `${process.env.NEXT_PUBLIC_API_URL}/status-verifikasi`;
+        const statusVerifikasiResponse = await fetch(statusVerifikasiUrl, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (statusVerifikasiResponse.ok) {
+          const statusVerifikasiData: StatusVerifikasiItem[] = await statusVerifikasiResponse.json();
+          const matchingStatus = statusVerifikasiData.find(item => item.id_portofolio === portfolioId);
+          if (matchingStatus) {
+            setStatus(matchingStatus.portofolio.status);
+            setNote(matchingStatus.note || "");
+          }
+        }
+
+        // Step 5: Map team members with their NIMs
+        const teamMembersWithNames = data.anggota.map(member => ({
+          name: member.name,
+          role: member.role,
+          nim: userIdToNimMap.get(member.id_user) || "N/A",
+        }));
+
+        // Step 6: Map the portfolio item
         const mappedItem: PortfolioItem = {
-          id: parseInt(data.id.split('-')[0], 16) || 0,
+          id: data.id,
           title: data.nama_projek,
           image: data.gambar,
           category: data.kategori,
@@ -511,11 +491,21 @@ const HeroSection1DetailPortfolio: React.FC = () => {
             url: detail.link_project,
           })),
           teamMembers: teamMembersWithNames,
-          contact: contact,
+          contact: {
+            name: data.creator.name,
+            nim: data.creator.nim,
+            socialLinks: {
+              whatsapp: data.creator.noHandphone ? `https://wa.me/${data.creator.noHandphone.replace(/[^0-9]/g, '')}` : undefined,
+              linkedin: data.creator.linkedin ? (data.creator.linkedin.startsWith('http') ? data.creator.linkedin : `https://${data.creator.linkedin}`) : undefined,
+              instagram: data.creator.instagram ? (data.creator.instagram.startsWith('http') ? data.creator.instagram : `https://${data.creator.instagram}`) : undefined,
+              email: data.creator.email || undefined,
+              github: data.creator.github ? (data.creator.github.startsWith('http') ? data.creator.github : `https://${data.creator.github}`) : undefined,
+            },
+          },
         };
 
+        console.log('Mapped Portfolio Item:', mappedItem); // Debug log
         setPortfolioItem(mappedItem);
-        setStatus(mapBackendStatusToDisplay(data.status)); // Map backend status to display status
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred while fetching portfolio details.");
       } finally {
@@ -533,7 +523,6 @@ const HeroSection1DetailPortfolio: React.FC = () => {
       return;
     }
 
-    // Check if the user is a SuperAdmin (role 1)
     if (currentUser.role !== "1") {
       alert("Only SuperAdmins can update the portfolio status and notes.");
       return;
@@ -543,11 +532,11 @@ const HeroSection1DetailPortfolio: React.FC = () => {
       const statusVerifikasiUrl = `${process.env.NEXT_PUBLIC_API_URL}/status-verifikasi`;
       const payload = {
         id_portofolio: portfolioId,
-        status: mapDisplayStatusToBackend(status),
+        status: status,
         note: note || undefined,
         updated_by: currentUser.id,
       };
-      console.log("Sending payload to /status-verifikasi:", payload); // Debug log
+      console.log("Sending payload to /status-verifikasi:", payload);
 
       const response = await fetch(statusVerifikasiUrl, {
         method: "POST",
@@ -560,14 +549,16 @@ const HeroSection1DetailPortfolio: React.FC = () => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        const errorData = JSON.parse(errorText || '{}');
-        throw new Error(`Failed to update status verifikasi: ${response.status} - ${JSON.stringify(errorData)}`);
+        throw new Error(`Failed to update status verifikasi: ${response.status} - ${errorText}`);
       }
+
+      const responseData = await response.json();
+      console.log("Status verifikasi updated:", responseData);
 
       alert("Portfolio status updated successfully!");
       router.push("/dashboard-super-admin");
     } catch (err) {
-      console.error("Error during status update:", err); // Debug log
+      console.error("Error during status update:", err);
       alert(err instanceof Error ? err.message : "An error occurred while updating the portfolio status.");
     }
   };
@@ -653,7 +644,6 @@ const HeroSection1DetailPortfolio: React.FC = () => {
     <div className="min-h-screen flex flex-col">
       <main className="flex-1 bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-15 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Navigation Bar */}
           <div className="flex justify-between items-center mb-6">
             <Link href={"/dashboard-super-admin"}>
               <button className="flex items-center text-white bg-gray-700 px-4 py-2 rounded-lg hover:bg-gray-600 hover:scale-110 transition">
@@ -687,7 +677,6 @@ const HeroSection1DetailPortfolio: React.FC = () => {
             <ProjectSidebar project={portfolioItem} />
           </div>
 
-          {/* Note Section */}
           <div className="mt-12">
             <label className="text-white text-2xl font-semibold block mb-4">Note</label>
             <textarea
@@ -699,7 +688,6 @@ const HeroSection1DetailPortfolio: React.FC = () => {
             ></textarea>
           </div>
 
-          {/* Delete Button */}
           <div className="flex justify-end mt-8">
             <button
               className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 hover:scale-110 transition"

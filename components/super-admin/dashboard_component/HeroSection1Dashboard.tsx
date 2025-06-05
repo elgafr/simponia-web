@@ -74,19 +74,10 @@ interface PortfolioItem {
   updated_at: string;
   anggota: {
     id: string;
-    user: {
-      id: string;
-      nim: string;
-      password: string;
-      role: string;
-      remember_token: string | null;
-      created_at: string;
-      updated_at: string;
-    };
     role: string;
     angkatan: string;
-    createdAt: string;
-    updatedAt: string;
+    id_user: string;
+    name: string;
   }[];
   detail_project: {
     id: string;
@@ -101,6 +92,12 @@ interface PortfolioItem {
     created_at: string;
     updated_at: string;
   }[];
+  creator: {
+    user_id: string;
+    nim: string;
+    name: string;
+    role: string;
+  };
 }
 
 interface Profile {
@@ -245,7 +242,7 @@ const HeroSection1Dashboard = () => {
     fetchPortfolios();
   }, []);
 
-  // Create a mapping of user.id to nama
+  // Create a mapping of user.id to nama (though not used for creator name directly)
   const userIdToNameMap = new Map<string, string>();
   [...userProfiles, ...adminCommunityProfiles, ...superAdminProfiles].forEach((profile) => {
     userIdToNameMap.set(profile.user.id, profile.nama);
@@ -382,9 +379,7 @@ const HeroSection1Dashboard = () => {
               <tr key={portfolio.id} className="border-b border-gray-700/50 hover:bg-white/5">
                 <td className="px-6 py-4 text-gray-300 text-left">{indexOfFirstItem + index + 1}</td>
                 <td className="px-6 py-4 text-gray-300 text-left">
-                  {portfolio.anggota.length > 0
-                    ? userIdToNameMap.get(portfolio.anggota[0].user.id) || portfolio.anggota[0].user.nim
-                    : "Unknown"}
+                  {portfolio.creator ? portfolio.creator.name : "Unknown"}
                 </td>
                 <td className="px-6 py-4 text-gray-300 text-left">{portfolio.nama_projek}</td>
                 <td className="px-6 py-4 text-gray-300 text-left">{portfolio.kategori}</td>
