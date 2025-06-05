@@ -4,7 +4,7 @@ import React from "react";
 
 const HeroSection1DetailCommunity: React.FC = () => {
   return (
-    <section className=" text-white p-8 rounded-lg lg:px-100 py-30">
+    <section className=" text-white p-8 rounded-lg lg:px-100 py-20">
       {/* Profile Section */}
       <div>
         <div className="text-white mb-15 text-center">
@@ -18,7 +18,7 @@ const HeroSection1DetailCommunity: React.FC = () => {
         </h2>
         <div className="border-t border-gray-500 my-4"></div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 text-xl bg-gray-900 p-5 rounded-2xl  hover:scale-102 transition">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-3 text-xl bg-white/5 p-5 rounded-2xl  hover:scale-102 transition">
           <p>
             <span className="text-gray-300">Fullname :</span> Fatahillah Al-Fatih
           </p>
@@ -44,9 +44,12 @@ const HeroSection1DetailCommunity: React.FC = () => {
       </div>
 
       {/* Community Section */}
-      <div className="mt-8 bg-gray-900 p-4 rounded-2xl hover:scale-102 transition">
-        <h2 className="text-2xl font-bold mb-4">Community</h2>
+      <h2 className="text-3xl font-bold mb-4 flex items-center mt-10 gap-2">
+          Community
+      </h2>
+      <div className="border-t border-gray-500 my-4"></div>
 
+      <div className="mt-8 bg-white/5 p-4 rounded-2xl hover:scale-102 transition">
         <div className=" rounded-lg ">
           <h3 className="text-xl font-semibold">Infotech</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2 text-xl mt-2">

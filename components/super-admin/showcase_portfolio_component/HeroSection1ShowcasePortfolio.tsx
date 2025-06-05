@@ -22,7 +22,7 @@ import {
 
 // Define interfaces
 export interface PortfolioItem {
-  id: string; // Changed to string to preserve UUID
+  id: string;
   title: string;
   image: string;
   category: string;
@@ -37,14 +37,21 @@ export interface PortfolioItem {
   teamMembers?: {
     name: string;
     role: string;
+    nim?: string;
   }[];
   contact?: {
     name: string;
-    id: string;
+    nim: string;
+    socialLinks?: {
+      whatsapp?: string;
+      linkedin?: string;
+      instagram?: string;
+      email?: string;
+      github?: string;
+    };
   };
 }
 
-// Interface for Postman response (to type the fetched data)
 interface BackendPortfolioItem {
   id: string;
   nama_projek: string;
@@ -57,19 +64,11 @@ interface BackendPortfolioItem {
   updated_at: string;
   anggota: {
     id: string;
-    user: {
-      id: string;
-      nim: string;
-      password: string;
-      role: string;
-      remember_token: string | null;
-      created_at: string;
-      updated_at: string;
-    };
     role: string;
     angkatan: string;
-    createdAt: string;
-    updatedAt: string;
+    id_user: string;
+    name: string;
+    nim: string;
   }[];
   detail_project: {
     id: string;
@@ -84,6 +83,17 @@ interface BackendPortfolioItem {
     created_at: string;
     updated_at: string;
   }[];
+  creator: {
+    user_id: string;
+    nim: string;
+    name: string;
+    role: string;
+    noHandphone: string;
+    linkedin: string;
+    instagram: string;
+    email: string;
+    github: string;
+  };
 }
 
 // ShowcaseHeader Component
@@ -144,6 +154,9 @@ interface ShowcaseCardProps {
 }
 
 export function ShowcaseCard({ item }: ShowcaseCardProps) {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  const imageUrl = `${baseUrl}${item.image.startsWith('/') ? '' : '/'}${item.image}`;
+
   return (
     <Link
       href={`/detail-super-admin/portfolio/view/${item.id}-${item.title.toLowerCase().replace(/[^\w\s]/g, '-').replace(/\s+/g, '-')}`}
@@ -152,11 +165,15 @@ export function ShowcaseCard({ item }: ShowcaseCardProps) {
       <Card className="py-0 bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10 transition-all duration-300 overflow-hidden flex flex-col">
         <div className="w-full h-52 flex">
           <Image
-            src={`/${item.image}`} // Prepend base URL to image path
+            src={imageUrl}
             alt={item.title}
             width={400}
             height={208}
             className="w-full h-full object-fill"
+            onError={(e) => {
+              console.error('Image load failed, falling back to default. URL:', imageUrl);
+              e.currentTarget.src = '/default-image.png'; // Fallback image
+            }}
           />
         </div>
         <div className="flex flex-wrap gap-2 px-6 mt-1">
@@ -237,23 +254,34 @@ export default function HeroSection1ShowcasePortfolio() {
 
         // Map backend response to PortfolioItem interface
         const mappedItems: PortfolioItem[] = data.map((item) => ({
-          id: item.id, // Use the full UUID as the id
+          id: item.id,
           title: item.nama_projek,
           image: item.gambar,
           category: item.kategori,
           tags: item.tags.map(tag => tag.nama),
           date: item.created_at,
-          subtitle: item.kategori, // No subtitle in response, using category as fallback
+          subtitle: item.kategori, // Using category as fallback
           description: item.deskripsi,
           links: item.detail_project.map(detail => ({
             title: detail.judul_link,
             url: detail.link_project,
           })),
           teamMembers: item.anggota.map(member => ({
-            name: member.user.nim, // Temporarily using NIM; will update later with actual names
+            name: member.name,
             role: member.role,
+            nim: member.nim,
           })),
-          contact: undefined, // Not present in Postman response
+          contact: {
+            name: item.creator.name,
+            nim: item.creator.nim,
+            socialLinks: {
+              whatsapp: item.creator.noHandphone ? `https://wa.me/${item.creator.noHandphone.replace(/[^0-9]/g, '')}` : undefined,
+              linkedin: item.creator.linkedin.startsWith('http') ? item.creator.linkedin : `https://${item.creator.linkedin}`,
+              instagram: item.creator.instagram.startsWith('http') ? item.creator.instagram : `https://${item.creator.instagram}`,
+              email: item.creator.email,
+              github: item.creator.github.startsWith('http') ? item.creator.github : `https://${item.creator.github}`,
+            },
+          },
         }));
 
         setPortfolioItems(mappedItems);

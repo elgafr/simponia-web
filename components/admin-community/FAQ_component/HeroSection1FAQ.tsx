@@ -97,10 +97,8 @@ const faqItems: FAQItem[] = [
 // Main HeroSection1FAQ Component
 export default function HeroSection1FAQ() {
   return (
-    <div className="min-h-screen flex flex-col">
-      <main className="flex-grow bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-24 pb-16">
-        <FAQList items={faqItems} />
-      </main>
-    </div>
+    <main className="flex-grow bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-24 py-30">
+      <FAQList items={faqItems} />
+    </main>
   );
 }

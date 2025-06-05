@@ -8,20 +8,28 @@ import Image from 'next/image';
 import { useRef } from 'react';
 
 // Define interfaces
-export interface ProfileData {
-  name: string;
+interface ProfileData {
+  id: string;
+  nama: string;
+  noHandphone: string;
   gender: string;
-  nim: string;
-  dateOfBirth: string;
-  mobileNumber: string;
-  state: string;
+  tanggalLahir: string;
+  kota: string;
+  keterangan: string;
   linkedin: string;
-  email: string;
   instagram: string;
+  email: string;
   github: string;
-  bio: string;
-  profileImage: string;
-  avatar?: string;
+  profilePicture: string;
+  user: {
+    id: string;
+    nim: string;
+    role: string;
+  };
+}
+
+interface HeroSection1ProfileProps {
+  profileData: ProfileData;
 }
 
 // ProfileImage Component
@@ -141,7 +149,7 @@ export function MyProfile({ profileData }: MyProfileProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <p className="text-gray-400 mb-1">Name</p>
-          <p className="text-white">{profileData.name}</p>
+          <p className="text-white">{profileData.nama}</p>
         </div>
         <div>
           <p className="text-gray-400 mb-1">Gender</p>
@@ -149,19 +157,19 @@ export function MyProfile({ profileData }: MyProfileProps) {
         </div>
         <div>
           <p className="text-gray-400 mb-1">NIM</p>
-          <p className="text-white">{profileData.nim}</p>
+          <p className="text-white">{profileData.user.nim}</p>
         </div>
         <div>
           <p className="text-gray-400 mb-1">Date Of Birth</p>
-          <p className="text-white">{profileData.dateOfBirth}</p>
+          <p className="text-white">{profileData.tanggalLahir}</p>
         </div>
         <div>
           <p className="text-gray-400 mb-1">Mobile Number</p>
-          <p className="text-white">{profileData.mobileNumber}</p>
+          <p className="text-white">{profileData.noHandphone}</p>
         </div>
         <div>
           <p className="text-gray-400 mb-1">State</p>
-          <p className="text-white">{profileData.state}</p>
+          <p className="text-white">{profileData.kota}</p>
         </div>
       </div>
     </div>
@@ -246,116 +254,46 @@ export function AccountDetails({
 }
 
 // Main ProfilePage Component (renamed to HeroSection1Profile)
-const initialProfileData: ProfileData = {
-  name: 'Nadhira Ulya Nisa',
-  gender: 'Female',
-  nim: '202210370311079',
-  dateOfBirth: '07/03/2004',
-  mobileNumber: '+6281242979421',
-  state: 'Malang',
-  linkedin: 'Nadhira Ulya Nisa',
-  email: 'nadhiraulyanisa0207@gmail.com',
-  instagram: '@nadhiraulya_',
-  github: '---',
-  bio: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-  profileImage: '/default-avatar.png',
-  avatar: '/default-avatar.png'
-};
-
-export default function HeroSection1Profile() {
-  const [isEditing, setIsEditing] = useState<string | null>(null);
-  const [isEditingBio, setIsEditingBio] = useState(false);
-  const [profileData, setProfileData] = useState<ProfileData>(initialProfileData);
-  const [editValue, setEditValue] = useState('');
-  const [bioValue, setBioValue] = useState('');
-
-  const handleEdit = (field: string, value: string) => {
-    setIsEditing(field);
-    setEditValue(value);
-  };
-
-  const handleSave = (field: string) => {
-    setProfileData(prev => ({
-      ...prev,
-      [field]: editValue
-    }));
-    setIsEditing(null);
-  };
-
-  const handleCancel = () => {
-    setIsEditing(null);
-  };
-
-  const handleEditBio = () => {
-    setBioValue(profileData.bio);
-    setIsEditingBio(true);
-  };
-
-  const handleSaveBio = () => {
-    setProfileData(prev => ({
-      ...prev,
-      bio: bioValue
-    }));
-    setIsEditingBio(false);
-  };
-
-  const handleCancelBio = () => {
-    setIsEditingBio(false);
-  };
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileData(prev => ({
-          ...prev,
-          profileImage: reader.result as string
-        }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
+const HeroSection1Profile = ({ profileData }: HeroSection1ProfileProps) => {
   return (
-    <div className="min-h-screen flex flex-col">
-      <main className="flex-grow bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-24 pb-16">
-        <div className="relative">
-          <div className="absolute inset-0 bg-grid opacity-20" />
-          <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center gap-8 mb-8">
-              <ProfileImage
-                profileImage={profileData.profileImage}
-                onImageUpload={handleImageUpload}
-              />
-              <div>
-                <h1 className='text-2xl mb-3'>{profileData.name}</h1>
-                <ProfileBio
-                  bio={profileData.bio}
-                  isEditing={isEditingBio}
-                  bioValue={bioValue}
-                  onEdit={handleEditBio}
-                  onSave={handleSaveBio}
-                  onCancel={handleCancelBio}
-                  onChange={setBioValue}
-                />
-              </div>
-            </div>
-
-            <MyProfile profileData={profileData} />
-            
-            <AccountDetails
-              profileData={profileData}
-              isEditing={isEditing}
-              editValue={editValue}
-              onEdit={handleEdit}
-              onSave={handleSave}
-              onCancel={handleCancel}
-              setEditValue={setEditValue}
+    <div className="min-h-screen bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-24 pb-16">
+      <div className="relative">
+        <div className="absolute inset-0 bg-grid opacity-20" />
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-8 mb-8">
+            <ProfileImage
+              profileImage={profileData.profilePicture}
+              onImageUpload={() => {}}
             />
+            <div>
+              <h1 className='text-2xl mb-3'>{profileData.nama}</h1>
+              <ProfileBio
+                bio={profileData.keterangan}
+                isEditing={false}
+                bioValue=""
+                onEdit={() => {}}
+                onSave={() => {}}
+                onCancel={() => {}}
+                onChange={(value) => {}}
+              />
+            </div>
           </div>
+
+          <MyProfile profileData={profileData} />
+          
+          <AccountDetails
+            profileData={profileData}
+            isEditing={null}
+            editValue=""
+            onEdit={(field, value) => {}}
+            onSave={(field) => {}}
+            onCancel={() => {}}
+            setEditValue={(value) => {}}
+          />
         </div>
-      </main>
+      </div>
     </div>
   );
-}
+};
+
+export default HeroSection1Profile;

@@ -1,89 +1,73 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PenLine, Pencil, User, Upload } from "lucide-react";
-import Image from 'next/image';
-import { useRef } from 'react';
+import { PenLine, Pencil, User } from "lucide-react";
+import Image from 'next/image'; // Import Image from next/image
 
 // Define interfaces
 export interface ProfileData {
-  id: string; // Added from response
-  name: string;
+  id: string;
+  nama: string;
   gender: string;
   nim: string;
-  dateOfBirth: string;
-  mobileNumber: string;
-  state: string;
+  tanggalLahir: string;
+  noHandphone: string;
+  kota: string;
   linkedin: string;
   email: string;
   instagram: string;
   github: string;
-  bio: string;
-  profileImage: string;
-  avatar?: string;
-  noHandphone?: string; // Optional, matches response
-  keterangan?: string;  // Optional, matches response
-  createdAt?: string;   // Optional, matches response
-  updatedAt?: string;   // Optional, matches response
+  keterangan: string;
+  profilePicture: string | null; // Will store filename or URL from response
+  createdAt: string;
+  updatedAt: string;
 }
 
 // ProfileImage Component
 interface ProfileImageProps {
-  profileImage: string;
-  onImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  profilePicture: string | null;
 }
 
-export function ProfileImage({ profileImage, onImageUpload }: ProfileImageProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
+export function ProfileImage({ profilePicture }: ProfileImageProps) {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  const imageUrl = profilePicture && !profilePicture.startsWith('data:image/')
+    ? `${baseUrl}${profilePicture.startsWith('/') ? '' : '/'}${profilePicture}`
+    : profilePicture || '/default-avatar.png';
 
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
-  };
+  console.log('Attempting to load image from:', imageUrl); // Debug log
 
   return (
-    <div className="relative w-48 h-48 rounded-full bg-white/10 overflow-hidden flex-shrink-0 group">
-      {profileImage === '/default-avatar.png' ? (
+    <div className="relative w-48 h-48 rounded-full bg-white/10 overflow-hidden flex-shrink-0" key={imageUrl}>
+      {imageUrl === '/default-avatar.png' ? (
         <div className="w-full h-full flex items-center justify-center bg-white/5">
           <User className="w-24 h-24 text-white/50" />
         </div>
       ) : (
         <div className="relative w-full h-full">
           <Image
-            src={profileImage}
+            src={imageUrl}
             alt="Profile Picture"
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            priority
+            width={192}
+            height={192}
+            loading="eager" // Tambahkan untuk debugging
+            className="w-full h-full object-cover rounded-full"
+            onError={(e) => {
+              console.error('Image load failed, falling back to default. URL:', imageUrl);
+              e.currentTarget.src = '/default-avatar.png';
+            }}
+            onLoad={() => console.log('Image loaded successfully:', imageUrl)} // Tambahkan untuk debugging
           />
         </div>
       )}
-      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={triggerFileInput}
-          className="text-white hover:text-white hover:bg-blue-900"
-        >
-          <Upload className="h-6 w-6" />
-        </Button>
-      </div>
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={onImageUpload}
-        accept="image/*"
-        className="hidden"
-      />
     </div>
   );
 }
 
 // ProfileBio Component
 interface ProfileBioProps {
-  bio: string;
+  keterangan: string;
   isEditing: boolean;
   bioValue: string;
   onEdit: () => void;
@@ -93,7 +77,7 @@ interface ProfileBioProps {
 }
 
 export function ProfileBio({
-  bio,
+  keterangan,
   isEditing,
   bioValue,
   onEdit,
@@ -122,7 +106,7 @@ export function ProfileBio({
         </div>
       ) : (
         <div className="flex flex-col gap-2">
-          <p className="text-gray-300 text-base">{bio}</p>
+          <p className="text-gray-300 text-base">{keterangan}</p>
           <div className="flex justify-end">
             <Button variant="ghost" size="icon" onClick={onEdit} className="text-gray-400 hover:text-white hover:bg-transparent">
               <Pencil className="h-4 w-4" />
@@ -146,27 +130,27 @@ export function MyProfile({ profileData }: MyProfileProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <p className="text-gray-400 mb-1">Name</p>
-          <p className="text-white">{profileData.name}</p>
+          <p className="text-white">{profileData.nama}</p>
         </div>
         <div>
           <p className="text-gray-400 mb-1">Gender</p>
-          <p className="text-white">{profileData.gender}</p>
+          <p className="text-white">{profileData.gender === 'L' ? 'Laki-laki' : 'Perempuan'}</p>
         </div>
         <div>
           <p className="text-gray-400 mb-1">NIM</p>
-          <p className="text-white">{profileData.nim}</p>
+          <p className="text-white">{profileData.nim || 'N/A'}</p>
         </div>
         <div>
           <p className="text-gray-400 mb-1">Date Of Birth</p>
-          <p className="text-white">{profileData.dateOfBirth}</p>
+          <p className="text-white">{new Date(profileData.tanggalLahir).toLocaleDateString('id-ID')}</p>
         </div>
         <div>
           <p className="text-gray-400 mb-1">Mobile Number</p>
-          <p className="text-white">{profileData.mobileNumber || profileData.noHandphone}</p>
+          <p className="text-white">{profileData.noHandphone}</p>
         </div>
         <div>
           <p className="text-gray-400 mb-1">State</p>
-          <p className="text-white">{profileData.state}</p>
+          <p className="text-white">{profileData.kota}</p>
         </div>
       </div>
     </div>
@@ -179,16 +163,11 @@ interface AccountDetailsProps {
   isEditing: string | null;
   editValue: string;
   onEdit: (field: string, value: string) => void;
-  onSave?: (field: string) => void; // Made optional
-  onCancel?: () => void; // Made optional
+  onSave: (field: string) => void;
+  onCancel: () => void;
   setEditValue: (value: string) => void;
 }
 
-/**
- * AccountDetails Component
- * @description Displays and allows editing of account-related fields (email, LinkedIn, Instagram, Github).
- * The onSave and onCancel props are optional for future extensibility but are used here for explicit save/cancel actions.
- */
 export function AccountDetails({ 
   profileData, 
   isEditing, 
@@ -235,7 +214,7 @@ export function AccountDetails({
                   <Button onClick={onCancel} className="bg-red-600 text-white hover:bg-red-700 transition-colors">
                     Batal
                   </Button>
-                  <Button onClick={() => onSave && onSave(field)} className="bg-emerald-600 text-white hover:bg-emerald-700 transition-colors">
+                  <Button onClick={() => onSave(field)} className="bg-emerald-600 text-white hover:bg-emerald-700 transition-colors">
                     Simpan
                   </Button>
                 </div>
@@ -253,21 +232,18 @@ export function AccountDetails({
 // Main ProfilePage Component (renamed to HeroSection1Profile)
 const initialProfileData: ProfileData = {
   id: '',
-  name: '',
+  nama: '',
   gender: '',
   nim: '',
-  dateOfBirth: '',
-  mobileNumber: '',
-  state: '',
+  tanggalLahir: '',
+  noHandphone: '',
+  kota: '',
   linkedin: '',
   email: '',
   instagram: '',
   github: '',
-  bio: '',
-  profileImage: '/default-avatar.png',
-  avatar: '/default-avatar.png',
-  noHandphone: '',
   keterangan: '',
+  profilePicture: null,
   createdAt: '',
   updatedAt: ''
 };
@@ -279,56 +255,58 @@ export default function HeroSection1Profile() {
   const [editValue, setEditValue] = useState('');
   const [bioValue, setBioValue] = useState('');
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        console.error('No token found');
-        return;
+  const fetchProfile = useCallback(async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('No token found');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to fetch profile: ${response.status} - ${errorText}`);
       }
 
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text(); // Get error details
-          throw new Error(`Failed to fetch profile: ${response.status} - ${errorText}`);
-        }
-
-        const data = await response.json();
-        setProfileData({
-          id: data.id,
-          name: data.nama,
-          gender: data.gender,
-          nim: data.user.nim,
-          dateOfBirth: data.tanggalLahir,
-          mobileNumber: data.noHandphone,
-          state: data.kota,
-          linkedin: data.linkedin,
-          email: data.email,
-          instagram: data.instagram,
-          github: data.github,
-          bio: data.keterangan || '',
-          profileImage: '/default-avatar.png', // Placeholder; update with actual image URL if provided
-          avatar: '/default-avatar.png',
-          noHandphone: data.noHandphone,
-          keterangan: data.keterangan,
-          createdAt: data.createdAt,
-          updatedAt: data.updatedAt,
-        });
-      } catch (error) {
-        console.error('Error fetching profile:', error);
-      }
-    };
-
-    fetchProfile();
+      const data = await response.json();
+      console.log('GET profile response:', data);
+      setProfileData({
+        id: data.id,
+        nama: data.nama,
+        gender: data.gender,
+        nim: data.user?.nim || '',
+        tanggalLahir: data.tanggalLahir,
+        noHandphone: data.noHandphone,
+        kota: data.kota,
+        linkedin: data.linkedin,
+        email: data.email,
+        instagram: data.instagram,
+        github: data.github,
+        keterangan: data.keterangan || '',
+        profilePicture: data.profilePicture || '/default-avatar.png',
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt,
+      });
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
+
+  useEffect(() => {
+    console.log('Profile picture updated:', profileData.profilePicture);
+  }, [profileData.profilePicture]);
 
   const handleEdit = (field: string, value: string) => {
     setIsEditing(field);
@@ -347,7 +325,6 @@ export default function HeroSection1Profile() {
       return;
     }
 
-    // Prepare the data to send to the backend
     const updatedData = {
       [field]: editValue,
     };
@@ -367,7 +344,6 @@ export default function HeroSection1Profile() {
         throw new Error(`Failed to update profile: ${response.status} - ${errorText}`);
       }
 
-      // Update the local state only if the request is successful
       setProfileData(prev => ({
         ...prev,
         [field]: editValue
@@ -383,7 +359,7 @@ export default function HeroSection1Profile() {
   };
 
   const handleEditBio = () => {
-    setBioValue(profileData.bio);
+    setBioValue(profileData.keterangan);
     setIsEditingBio(true);
   };
 
@@ -399,7 +375,6 @@ export default function HeroSection1Profile() {
       return;
     }
 
-    // Prepare the data to send to the backend
     const updatedData = {
       keterangan: bioValue,
     };
@@ -419,11 +394,9 @@ export default function HeroSection1Profile() {
         throw new Error(`Failed to update bio: ${response.status} - ${errorText}`);
       }
 
-      // Update the local state only if the request is successful
       setProfileData(prev => ({
         ...prev,
-        bio: bioValue,
-        keterangan: bioValue, // Update keterangan as well to keep it in sync
+        keterangan: bioValue,
       }));
       setIsEditingBio(false);
     } catch (error) {
@@ -435,20 +408,6 @@ export default function HeroSection1Profile() {
     setIsEditingBio(false);
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileData(prev => ({
-          ...prev,
-          profileImage: reader.result as string
-        }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-grow bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-24 pb-16">
@@ -457,13 +416,12 @@ export default function HeroSection1Profile() {
           <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-8 mb-8">
               <ProfileImage
-                profileImage={profileData.profileImage}
-                onImageUpload={handleImageUpload}
+                profilePicture={profileData.profilePicture}
               />
               <div>
-                <h1 className='text-2xl mb-3'>{profileData.name}</h1>
+                <h1 className='text-2xl mb-3'>{profileData.nama}</h1>
                 <ProfileBio
-                  bio={profileData.bio}
+                  keterangan={profileData.keterangan}
                   isEditing={isEditingBio}
                   bioValue={bioValue}
                   onEdit={handleEditBio}

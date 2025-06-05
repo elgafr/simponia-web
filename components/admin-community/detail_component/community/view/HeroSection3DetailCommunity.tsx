@@ -9,7 +9,7 @@ const HeroSection3DetailCommunity: React.FC = () => {
       </h2>
 
       {/* Information List */}
-      <div className="space-y-5 bg-gray-900 p-4 rounded-2xl ">
+      <div className="space-y-5 bg-white/5 p-4 rounded-2xl ">
         <div className="flex justify-start">
           <span className="text-gray-300 text-xl">Fullname</span>
           <span className="font-medium text-xl">: Fatahillah Al-Fatih</span>
