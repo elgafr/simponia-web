@@ -39,9 +39,10 @@ interface EventData {
 
 interface CommunityActivitySectionProps {
   eventData: EventData;
+  onRefresh?: () => void;
 }
 
-const CommunityActivitySection: React.FC<CommunityActivitySectionProps> = ({ eventData }) => {
+const CommunityActivitySection: React.FC<CommunityActivitySectionProps> = ({ eventData, onRefresh }) => {
   const [isGradeModalOpen, setIsGradeModalOpen] = React.useState(false);
   const [imageError, setImageError] = React.useState(false);
   const router = useRouter();
@@ -127,7 +128,11 @@ const CommunityActivitySection: React.FC<CommunityActivitySectionProps> = ({ eve
           </button>
         </div>
 
-        <GradeScoring isOpen={isGradeModalOpen} onClose={() => setIsGradeModalOpen(false)} />
+        <GradeScoring 
+          isOpen={isGradeModalOpen} 
+          onClose={() => setIsGradeModalOpen(false)} 
+          onSuccess={onRefresh}
+        />
       </div>
     </section>
   );

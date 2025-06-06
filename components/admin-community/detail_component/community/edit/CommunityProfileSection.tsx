@@ -129,6 +129,18 @@ const CommunityProfileSection: React.FC<CommunityProfileSectionProps> = ({ userP
           </span>
         </div>
         <div className="flex"><span className="ml-2 w-32 text-gray-300">Catatan</span>: <span className="ml-2" >{anggotaData.catatan || "-"}</span></div>
+        
+        {/* Grade Information */}
+        <div className="mt-4">
+          <span className="font-bold text-lg mb-2 block">Grade Information</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div className="flex"><span className="ml-2 w-32 text-gray-300">Kerjasama</span>: <span className="ml-2">{anggotaData.kerjasama || "-"}</span></div>
+            <div className="flex"><span className="ml-2 w-32 text-gray-300">Kedisiplinan</span>: <span className="ml-2">{anggotaData.kedisiplinan || "-"}</span></div>
+            <div className="flex"><span className="ml-2 w-32 text-gray-300">Komunikasi</span>: <span className="ml-2">{anggotaData.komunikasi || "-"}</span></div>
+            <div className="flex"><span className="ml-2 w-32 text-gray-300">Tanggung Jawab</span>: <span className="ml-2">{anggotaData.tanggung_jawab || "-"}</span></div>
+            <div className="flex"><span className="ml-2 w-32 text-gray-300">Grade</span>: <span className="ml-2 font-semibold">{anggotaData.grade || "-"}</span></div>
+          </div>
+        </div>
       </div>
     </section>
   );

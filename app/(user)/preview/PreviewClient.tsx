@@ -66,6 +66,7 @@ export default function PreviewClient() {
   const teamMembers = usePortfolioStore((state: PortfolioStore) => state.teamMembers);
   const category = usePortfolioStore((state: PortfolioStore) => state.category);
   const year = usePortfolioStore((state: PortfolioStore) => state.year);
+  const setPortfolioData = usePortfolioStore((state: PortfolioStore) => state.setPortfolioData);
 
   useEffect(() => {
     setMounted(true);
@@ -82,10 +83,51 @@ export default function PreviewClient() {
     setLoading(false);
   }, [router]);
 
+  // Cek jika semua data utama kosong
+  const isAllDataEmpty =
+    !title &&
+    !description &&
+    (!tags || tags.length === 0) &&
+    (!projectLinks || projectLinks.length === 0) &&
+    (!teamMembers || teamMembers.length === 0) &&
+    !projectImage &&
+    !category &&
+    !year &&
+    !contact;
+
   if (!mounted || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C]">
         <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  // Jika semua data kosong, tampilkan halaman kosong atau pesan custom
+  if (isAllDataEmpty) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C]">
+        <div className="text-white text-2xl text-center opacity-60">
+          {/* kosong */}
+        </div>
+        <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+          <AlertDialogContent className="bg-[#001233] border border-white/10">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-white">Berhasil!</AlertDialogTitle>
+              <AlertDialogDescription className="text-gray-400">
+                Portfolio Anda berhasil dikirim dan sedang menunggu verifikasi.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogAction 
+                onClick={() => router.push(`/showcase/${submittedPortfolioId}`)}
+                className="bg-green-600 text-white hover:bg-green-700"
+              >
+                Lihat Portfolio
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     );
   }
@@ -189,6 +231,20 @@ export default function PreviewClient() {
       console.log('Submit successful:', data);
       setSubmittedPortfolioId(data.id);
       setShowSuccessDialog(true);
+
+      // Clear the store after successful submission
+      setPortfolioData({
+        title: '',
+        category: '',
+        year: '',
+        description: '',
+        projectImage: '',
+        teamMembers: [],
+        projectLinks: [],
+        tags: [],
+        contact: undefined
+      });
+
     } catch (err) {
       console.error('Error submitting portfolio:', err);
       alert(err instanceof Error ? err.message : 'Terjadi kesalahan saat submit portfolio');
@@ -248,7 +304,7 @@ export default function PreviewClient() {
                   <div className="cursor-pointer">
                     <Image
                       src={projectImage}
-                      alt={title}
+                      alt={title || 'Project Image'}
                       width={1200}
                       height={300}
                       className="w-full h-[300px] object-cover hover:opacity-90 transition-opacity"
@@ -260,7 +316,7 @@ export default function PreviewClient() {
                   <div className="relative max-h-[80vh] overflow-y-auto">
                     <Image
                       src={projectImage}
-                      alt={title}
+                      alt={title || 'Project Image'}
                       width={1200}
                       height={800}
                       className="w-full h-auto object-contain"
@@ -275,7 +331,7 @@ export default function PreviewClient() {
           <div className="mb-12">
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
               <div className="lg:col-span-3 break-all max-w-full">
-                <h1 className="text-4xl font-bold text-white mb-2">{title}</h1>
+                <h1 className="text-4xl font-bold text-white mb-2">{title || 'Project Title'}</h1>
                 {(category || year) && (
                   <div className="text-lg text-gray-300 mb-4">
                     {categoryLabel(category)}
@@ -283,84 +339,92 @@ export default function PreviewClient() {
                     {year}
                   </div>
                 )}
-                <div className="flex flex-wrap gap-3 mb-4">
-                  {tags.map((tag: string, index: number) => (
-                    <span
-                      key={index}
-                      className="px-4 py-1 bg-white/5 backdrop-blur-sm rounded-full text-sm text-white"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-                <p className="text-gray-300">{description}</p>
-                {/* Get in Touch */}
-                <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 w-fit mt-6 break-all max-w-full">
-                  <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
-                    <MessageSquare className="h-5 w-5" />
-                    Get in Touch
-                  </h2>
-                  <p className="text-gray-300 mb-4">
-                    {contact.name && contact.id
-                      ? `${contact.name}/${contact.id}`
-                      : 'nama/nim'}
-                  </p>
-                  <div className="flex gap-3">
-                    {socialIcons.map((social, index) => {
-                      const Icon = social.icon;
-                      return (
-                        <a
-                          key={index}
-                          href="#"
-                          className="text-gray-400 hover:text-white transition-colors"
-                        >
-                          <Icon className="h-5 w-5" />
-                        </a>
-                      );
-                    })}
+                {tags && tags.length > 0 && (
+                  <div className="flex flex-wrap gap-3 mb-4">
+                    {tags.map((tag: string, index: number) => (
+                      <span
+                        key={index}
+                        className="px-4 py-1 bg-white/5 backdrop-blur-sm rounded-full text-sm text-white"
+                      >
+                        {tag}
+                      </span>
+                    ))}
                   </div>
-                </div>
+                )}
+                <p className="text-gray-300">{description || 'Project Description'}</p>
+                {/* Get in Touch */}
+                {contact && (
+                  <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 w-fit mt-6 break-all max-w-full">
+                    <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
+                      <MessageSquare className="h-5 w-5" />
+                      Get in Touch
+                    </h2>
+                    <p className="text-gray-300 mb-4">
+                      {contact.name && contact.id
+                        ? `${contact.name}/${contact.id}`
+                        : 'nama/nim'}
+                    </p>
+                    <div className="flex gap-3">
+                      {socialIcons.map((social, index) => {
+                        const Icon = social.icon;
+                        return (
+                          <a
+                            key={index}
+                            href="#"
+                            className="text-gray-400 hover:text-white transition-colors"
+                          >
+                            <Icon className="h-5 w-5" />
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Sidebar */}
               <div className="space-y-8">
                 {/* Project Links */}
-                <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6">
-                  {projectLinks.map((link: ProjectLink, index: number) => (
-                    <div key={index}>
-                      <h2 className="text-xl font-semibold text-white mb-2">
-                        {link.title}
-                      </h2>
-                      <div className="grid grid-cols-[auto_1fr] items-center gap-2 bg-[#011B45] rounded-lg p-4 mb-4">
-                        <LinkIcon className="w-5 h-5 text-blue-500" />
-                        <a
-                          href={link.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-white hover:text-blue-400 transition-colors break-all"
-                        >
-                          {link.url}
-                        </a>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Team Members */}
-                <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6">
-                  <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    Team Project
-                  </h2>
-                  <div className="space-y-4">
-                    {teamMembers.map((member: TeamMember, index: number) => (
-                      <div key={index} className="text-gray-300">
-                        <p className="text-white break-all max-w-full">{member.name}/{member.nim}</p>
-                        <p className="text-sm break-all max-w-full">{member.role}</p>
+                {projectLinks && projectLinks.length > 0 && (
+                  <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6">
+                    {projectLinks.map((link: ProjectLink, index: number) => (
+                      <div key={index}>
+                        <h2 className="text-xl font-semibold text-white mb-2">
+                          {link.title}
+                        </h2>
+                        <div className="grid grid-cols-[auto_1fr] items-center gap-2 bg-[#011B45] rounded-lg p-4 mb-4">
+                          <LinkIcon className="w-5 h-5 text-blue-500" />
+                          <a
+                            href={link.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-white hover:text-blue-400 transition-colors break-all"
+                          >
+                            {link.url}
+                          </a>
+                        </div>
                       </div>
                     ))}
                   </div>
-                </div>
+                )}
+
+                {/* Team Members */}
+                {teamMembers && teamMembers.length > 0 && (
+                  <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6">
+                    <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
+                      <Users className="h-5 w-5" />
+                      Team Project
+                    </h2>
+                    <div className="space-y-4">
+                      {teamMembers.map((member: TeamMember, index: number) => (
+                        <div key={index} className="text-gray-300">
+                          <p className="text-white break-all max-w-full">{member.name}/{member.nim}</p>
+                          <p className="text-sm break-all max-w-full">{member.role}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

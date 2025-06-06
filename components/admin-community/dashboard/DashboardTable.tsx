@@ -69,13 +69,13 @@ interface DashboardTableProps {
 const getStatusColor = (status: string) => {
   switch (status.toLowerCase()) {
     case 'active':
-      return 'bg-green-500';
+      return 'bg-green-600';
     case 'ongoing':
-      return 'bg-blue-500';
+      return 'bg-yellow-600';
     case 'finished':
-      return 'bg-gray-500';
+      return 'bg-blue-600';
     default:
-      return 'bg-gray-500';
+      return 'bg-gray-600';
   }
 };
 

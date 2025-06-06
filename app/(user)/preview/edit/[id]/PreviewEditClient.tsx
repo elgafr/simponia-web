@@ -16,8 +16,8 @@ import {
 } from "lucide-react";
 import Footer from "@/components/user/landing-page/Footer";
 import Image from "next/image";
-import { usePortfolioStore } from "@/store/portfolioStore";
-import type { PortfolioStore } from "@/store/portfolioStore";
+import { useEditPortfolioStore } from "@/store/editPortfolioStore";
+import type { EditPortfolioStore } from "@/store/editPortfolioStore";
 import { useEffect, useState } from 'react';
 import {
     Dialog,
@@ -35,12 +35,6 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-interface PreviewEditClientProps {
-    params: {
-        id: string;
-    };
-}
-
 interface TeamMember {
     name: string;
     role: string;
@@ -54,161 +48,57 @@ interface ProjectLink {
     url: string;
 }
 
-interface PortfolioData {
-    nama_projek: string;
-    kategori: string;
-    tahun: number;
-    deskripsi: string;
-    gambar: string;
-    anggota: Array<{
+interface PreviewEditClientProps {
+    params: {
         id: string;
-        user: {
-            id: string;
-            name: string;
-            nim: string;
-            role: string;
-        };
-        role: string;
-        angkatan: string;
-    }>;
-    detail_project: Array<{
-        id: string;
-        judul_link: string;
-        link_project: string;
-    }>;
-    tags: Array<{
-        id: string;
-        nama: string;
-    }>;
+    };
 }
 
 export default function PreviewEditClient({ params }: PreviewEditClientProps) {
     const [mounted, setMounted] = useState(false);
     const [isImageOpen, setIsImageOpen] = useState(false);
-    const router = useRouter();
-    const [isFromEdit, setIsFromEdit] = useState(false);
-    const [loading, setLoading] = useState(true);
     const [showSuccessDialog, setShowSuccessDialog] = useState(false);
-
-    // Log params when component mounts
-    useEffect(() => {
-        console.log('PreviewEditClient received params:', params);
-        console.log('Portfolio ID in PreviewEditClient:', params?.id);
-    }, [params]);
+    const [submittedPortfolioId, setSubmittedPortfolioId] = useState<string | null>(null);
+    const router = useRouter();
+    const [loading, setLoading] = useState(true);
 
     // Get all data from store
-    const title = usePortfolioStore((state: PortfolioStore) => state.title);
-    const projectImage = usePortfolioStore((state: PortfolioStore) => state.projectImage);
-    const tags = usePortfolioStore((state: PortfolioStore) => state.tags);
-    const description = usePortfolioStore((state: PortfolioStore) => state.description);
-    const contact = usePortfolioStore((state: PortfolioStore) => state.contact);
-    const projectLinks = usePortfolioStore((state: PortfolioStore) => state.projectLinks);
-    const teamMembers = usePortfolioStore((state: PortfolioStore) => state.teamMembers);
-    const category = usePortfolioStore((state: PortfolioStore) => state.category);
-    const year = usePortfolioStore((state: PortfolioStore) => state.year);
-    const currentPortfolioId = usePortfolioStore((state: PortfolioStore) => state.currentPortfolioId);
+    const title = useEditPortfolioStore((state: EditPortfolioStore) => state.title);
+    const projectImage = useEditPortfolioStore((state: EditPortfolioStore) => state.projectImage);
+    const tags = useEditPortfolioStore((state: EditPortfolioStore) => state.tags);
+    const description = useEditPortfolioStore((state: EditPortfolioStore) => state.description);
+    const contact = useEditPortfolioStore((state: EditPortfolioStore) => state.contact);
+    const projectLinks = useEditPortfolioStore((state: EditPortfolioStore) => state.projectLinks);
+    const teamMembers = useEditPortfolioStore((state: EditPortfolioStore) => state.teamMembers);
+    const category = useEditPortfolioStore((state: EditPortfolioStore) => state.category);
+    const year = useEditPortfolioStore((state: EditPortfolioStore) => state.year);
 
     useEffect(() => {
         setMounted(true);
-        // Check if we came from edit page
-        const previousPath = window.history.state?.as || '';
-        setIsFromEdit(previousPath.includes('/portfolio/'));
+        // Check if we have data in store
+        const storeData = useEditPortfolioStore.getState();
+        const hasStoreData = storeData.teamMembers && storeData.teamMembers.length > 0;
 
-        // Set the current portfolio ID in store if it's not already set
-        if (params?.id && !currentPortfolioId) {
-            usePortfolioStore.getState().setCurrentPortfolioId(params.id);
-            console.log('Set current portfolio ID in store:', params.id);
+        if (!hasStoreData) {
+            // If no data in store, redirect back to portfolio page
+            router.push('/portfolio');
+            return;
         }
-    }, [params?.id, currentPortfolioId]);
 
-    useEffect(() => {
-        const fetchPortfolioData = async () => {
-            // Use either params.id or currentPortfolioId
-            const portfolioId = params?.id || currentPortfolioId;
-            console.log('Fetching data for portfolio ID:', portfolioId);
+        setLoading(false);
+    }, [router]);
 
-            if (!portfolioId) {
-                console.error('No portfolio ID available for data fetching');
-                setLoading(false);
-                return;
-            }
-
-            // Check if we have data in store first
-            const storeData = usePortfolioStore.getState();
-            const hasStoreData = storeData.teamMembers && storeData.teamMembers.length > 0;
-
-            console.log('Store data available:', hasStoreData);
-            console.log('Current store data:', storeData);
-
-            if (hasStoreData) {
-                console.log('Using data from store');
-                setLoading(false);
-                return;
-            }
-
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    throw new Error('No authentication token found');
-                }
-
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/portofolio/${portfolioId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch portfolio: ${response.status}`);
-                }
-
-                const data: PortfolioData = await response.json();
-                console.log('Successfully fetched portfolio data from API:', data);
-
-                // Update the store with the fetched data
-                usePortfolioStore.getState().setPortfolioData({
-                    title: data.nama_projek,
-                    category: data.kategori,
-                    year: data.tahun.toString(),
-                    description: data.deskripsi,
-                    projectImage: data.gambar,
-                    teamMembers: data.anggota.map((member) => {
-                        console.log('Processing team member from API:', member);
-                        // Ensure we have all required data including userId
-                        if (!member.user?.id) {
-                            console.error('Missing user ID in API response:', member);
-                            throw new Error('User ID tidak ditemukan dalam data API');
-                        }
-                        return {
-                            name: member.user.name,
-                            role: member.role,
-                            nim: member.user.nim,
-                            angkatan: member.angkatan,
-                            userId: member.user.id  // Make sure userId is included
-                        };
-                    }),
-                    projectLinks: data.detail_project.map((link) => ({
-                        title: link.judul_link,
-                        url: link.link_project
-                    })),
-                    tags: data.tags.map((tag) => tag.nama)
-                });
-
-                // Log the updated team members data
-                console.log('Updated team members in store:', usePortfolioStore.getState().teamMembers);
-
-            } catch (err) {
-                console.error('Error fetching portfolio data:', err);
-                alert('Gagal mengambil data portfolio');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (mounted) {
-            fetchPortfolioData();
-        }
-    }, [mounted, params.id]);
+    // Cek jika semua data utama kosong
+    const isAllDataEmpty =
+        !title &&
+        !description &&
+        (!tags || tags.length === 0) &&
+        (!projectLinks || projectLinks.length === 0) &&
+        (!teamMembers || teamMembers.length === 0) &&
+        !projectImage &&
+        !category &&
+        !year &&
+        !contact;
 
     if (!mounted || loading) {
         return (
@@ -218,20 +108,40 @@ export default function PreviewEditClient({ params }: PreviewEditClientProps) {
         );
     }
 
+    // Jika semua data kosong, tampilkan halaman kosong dan pop up
+    if (isAllDataEmpty) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C]">
+                <div className="text-white text-2xl text-center opacity-60">
+                    {/* kosong */}
+                </div>
+                <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+                    <AlertDialogContent className="bg-[#001233] border border-white/10">
+                        <AlertDialogHeader>
+                            <AlertDialogTitle className="text-white">Berhasil!</AlertDialogTitle>
+                            <AlertDialogDescription className="text-gray-400">
+                                Portfolio Anda berhasil diupdate dan sedang menunggu verifikasi.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogAction 
+                                onClick={() => router.push(`/showcase/${submittedPortfolioId}`)}
+                                className="bg-green-600 text-white hover:bg-green-700"
+                            >
+                                Lihat Portfolio
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            </div>
+        );
+    }
+
     const handleBack = () => {
         router.back();
     };
 
-    const handleUpdate = async () => {
-        // Get the current portfolio ID from either params or store
-        const portfolioId = params?.id || currentPortfolioId;
-        console.log('Updating portfolio with ID:', portfolioId);
-
-        if (!portfolioId) {
-            alert('Portfolio ID tidak ditemukan');
-            return;
-        }
-
+    const handleSubmit = async () => {
         // Log the team members data before creating payload
         console.log('Team members from store:', teamMembers);
         console.log('Team members type:', typeof teamMembers);
@@ -308,8 +218,8 @@ export default function PreviewEditClient({ params }: PreviewEditClientProps) {
                 formData.append(`tags[${index}][nama]`, tag);
             });
 
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/portofolio/${portfolioId}`, {
-                method: 'PUT',
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/portofolio`, {
+                method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
                 },
@@ -324,7 +234,11 @@ export default function PreviewEditClient({ params }: PreviewEditClientProps) {
 
             const data = await res.json();
             console.log('Update successful:', data);
+            setSubmittedPortfolioId(data.id);
             setShowSuccessDialog(true);
+
+            // Clear the store after successful submission
+            useEditPortfolioStore.getState().resetStore();
         } catch (err) {
             console.error('Error updating portfolio:', err);
             alert(err instanceof Error ? err.message : 'Terjadi kesalahan saat update portfolio');
@@ -370,7 +284,7 @@ export default function PreviewEditClient({ params }: PreviewEditClientProps) {
                         </Button>
                         <Button
                             className="bg-green-500 text-white hover:bg-green-600"
-                            onClick={handleUpdate}
+                            onClick={handleSubmit}
                         >
                             Update Portfolio
                         </Button>
@@ -501,28 +415,26 @@ export default function PreviewEditClient({ params }: PreviewEditClientProps) {
                         </div>
                     </div>
                 </div>
-
-                {/* Success Dialog */}
-                <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
-                    <AlertDialogContent className="bg-[#001233] border border-white/10">
-                        <AlertDialogHeader>
-                            <AlertDialogTitle className="text-white">Berhasil!</AlertDialogTitle>
-                            <AlertDialogDescription className="text-gray-400">
-                                Portfolio Anda berhasil diupdate dan sedang menunggu verifikasi.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogAction 
-                                onClick={() => router.push(`/showcase/${params.id || currentPortfolioId}`)}
-                                className="bg-green-600 text-white hover:bg-green-700"
-                            >
-                                Lihat Portfolio
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
             </main>
-            <Footer />
+
+            <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+                <AlertDialogContent className="bg-[#001233] border border-white/10">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-white">Berhasil!</AlertDialogTitle>
+                        <AlertDialogDescription className="text-gray-400">
+                            Portfolio Anda berhasil diupdate dan sedang menunggu verifikasi.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogAction 
+                            onClick={() => router.push(`/showcase/${submittedPortfolioId}`)}
+                            className="bg-green-600 text-white hover:bg-green-700"
+                        >
+                            Lihat Portfolio
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 } 
