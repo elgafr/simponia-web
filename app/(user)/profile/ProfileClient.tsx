@@ -5,6 +5,9 @@ import { ProfileImage } from '@/components/user/profile/ProfileImage';
 import { ProfileBio } from '@/components/user/profile/ProfileBio';
 import { MyProfile } from '@/components/user/profile/MyProfile';
 import { AccountDetails } from '@/components/user/profile/AccountDetails';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { PenLine } from "lucide-react";
 
 interface ProfileData {
   id: string;
@@ -26,6 +29,10 @@ interface ProfileData {
   email: string;
   github: string;
   profilePicture: string;
+  namaKomunitas?: string;
+  divisi?: string;
+  joinKomunitas?: string;
+  posisi?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -48,6 +55,112 @@ interface AccountDetailsData {
 
 interface ProfileClientProps {
   profileData: ProfileData | null;
+}
+
+// Helper functions for date formatting
+function formatDate(dateString: string | null | undefined): string {
+  if (!dateString) return '-';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '-';
+  
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  
+  return `${day}/${month}/${year}`;
+}
+
+function formatDateForInput(dateString: string | null | undefined): string {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
+  
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  
+  return `${year}-${month}-${day}`;
+}
+
+// CommunityDetails Component
+interface CommunityDetailsProps {
+  profileData: ProfileData;
+  isEditing: string | null;
+  editValue: string;
+  onEdit: (field: string, value: string) => void;
+  onSave?: (field: string) => void;
+  onCancel?: () => void;
+  setEditValue: (value: string) => void;
+}
+
+function CommunityDetails({ 
+  profileData, 
+  isEditing, 
+  editValue, 
+  onEdit, 
+  onSave, 
+  onCancel, 
+  setEditValue 
+}: CommunityDetailsProps) {
+  const fields = [
+    { label: 'Community', value: profileData.namaKomunitas || '-', field: 'namaKomunitas' },
+    { label: 'Division', value: profileData.divisi || '-', field: 'divisi' },
+    { label: 'Date Joined', value: formatDate(profileData.joinKomunitas), field: 'joinKomunitas', type: 'date' },
+    { label: 'Position', value: profileData.posisi || '-', field: 'posisi' },
+  ];
+
+  return (
+    <div className="bg-[#182B4D] rounded-xl p-6 mt-6 text-white">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold">Community Details</h2>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {fields.map(({ label, value, field, type }) => (
+          <div key={field}>
+            <div className="flex justify-between items-center mb-2">
+              <label className="text-gray-300">{label}</label>
+              <Button
+                onClick={() => onEdit(field, value === '-' ? '' : value)}
+                variant="ghost"
+                size="sm"
+                className="text-gray-400 hover:text-white hover:bg-white/10"
+              >
+                <PenLine className="h-4 w-4" />
+              </Button>
+            </div>
+            {isEditing === field ? (
+              <div className="flex flex-col gap-2">
+                {type === 'date' ? (
+                  <Input
+                    type="date"
+                    value={editValue ? formatDateForInput(editValue) : ''}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    className="bg-white/5 border-0 text-white [&::-webkit-calendar-picker-indicator]:invert"
+                  />
+                ) : (
+                  <Input
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    className="bg-white/5 border-0 text-white"
+                  />
+                )}
+                <div className="flex gap-2 justify-end">
+                  <Button onClick={onCancel} className="bg-red-600 text-white hover:bg-red-700 transition-colors">
+                    Batal
+                  </Button>
+                  <Button onClick={() => onSave && onSave(field)} className="bg-emerald-600 text-white hover:bg-emerald-700 transition-colors">
+                    Simpan
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <p className="font-bold">{value}</p>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export default function ProfileClient({ profileData }: ProfileClientProps) {
@@ -202,7 +315,7 @@ export default function ProfileClient({ profileData }: ProfileClientProps) {
           <div className="flex items-center gap-8 mb-8">
             <ProfileImage
               profileImage={profile.profilePicture ? `${process.env.NEXT_PUBLIC_API_URL}${profile.profilePicture}` : "/default-avatar.png"}
-              onImageUpload={() => {}}
+              onImageUpload={handleImageUpload}
             />
             <div className="flex-1">
               <h1 className="text-2xl text-white mb-3">{profile.nama}</h1>
@@ -223,11 +336,10 @@ export default function ProfileClient({ profileData }: ProfileClientProps) {
               name: profile.nama,
               gender: profile.gender === 'P' ? 'Female' : 'Male',
               nim: profile.user.nim,
-              dateOfBirth: profile.tanggalLahir,
+              dateOfBirth: formatDate(profile.tanggalLahir),
               mobileNumber: profile.noHandphone,
               state: profile.kota,
             }}
-        
           />
           
           <AccountDetails
@@ -237,6 +349,16 @@ export default function ProfileClient({ profileData }: ProfileClientProps) {
               instagram: profile.instagram,
               github: profile.github,
             }}
+            isEditing={isEditing}
+            editValue={editValue}
+            onEdit={handleEdit}
+            onSave={handleSave}
+            onCancel={handleCancel}
+            setEditValue={setEditValue}
+          />
+
+          <CommunityDetails
+            profileData={profile}
             isEditing={isEditing}
             editValue={editValue}
             onEdit={handleEdit}

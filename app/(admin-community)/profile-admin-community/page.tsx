@@ -6,7 +6,7 @@ import ProfileAdminCommunityClient from './ProfileAdminCommunityClient';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 async function getProfileData(token: string) {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin-community`, {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user`, {
     headers: {
       'Authorization': `Bearer ${token}`
     }

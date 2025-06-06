@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ImageIcon, Plus, Trash2, X } from "lucide-react";
+import { ImageIcon, Plus, Trash2, X, Trash } from "lucide-react";
 import Footer from "@/components/user/landing-page/Footer";
 import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -227,21 +227,6 @@ export default function PortfolioClient() {
 
   const setPortfolioData = usePortfolioStore((state) => state.setPortfolioData);
 
-  // Reset store on component mount
-  useEffect(() => {
-    setPortfolioData({
-      title: '',
-      category: '',
-      year: '',
-      description: '',
-      projectImage: '',
-      teamMembers: [],
-      projectLinks: [],
-      tags: [],
-      contact: undefined
-    });
-  }, []);
-
   const validateAndScroll = () => {
     const newErrors: { [key: string]: string } = {};
     let hasError = false;
@@ -414,19 +399,21 @@ export default function PortfolioClient() {
         });
         if (response.ok) {
           const data = await response.json();
-          // Set baris pertama teamMembers dengan data user
-          setTeamMembers((prev) => [
-            {
-              ...prev[0],
-              name: data.nama || "",
-              nim: data.user?.nim || "",
-              role: prev[0].role || "", // biarkan role bisa diisi user
-              id_user: data.user?.id || "",
-              angkatan: data.user?.nim?.slice(0, 4) || "", // Take first 4 digits of NIM
-              userId: data.user?.id || "",
-            },
-            ...prev.slice(1)
-          ]);
+          // Only set the first team member if there's no existing data
+          if (!storedTeamMembers || storedTeamMembers.length === 0) {
+            setTeamMembers((prev) => [
+              {
+                ...prev[0],
+                name: data.nama || "",
+                nim: data.user?.nim || "",
+                role: prev[0].role || "",
+                id_user: data.user?.id || "",
+                angkatan: data.user?.nim?.slice(0, 4) || "",
+                userId: data.user?.id || "",
+              },
+              ...prev.slice(1)
+            ]);
+          }
         }
       } catch (err) {
         console.error('Failed to fetch profile user', err);
@@ -437,13 +424,53 @@ export default function PortfolioClient() {
   }, []);
 
   useEffect(() => {
-    setPortfolioData({
-      tags: tags.map(tag => tag.text),
-      projectLinks: projectLinks.map(link => ({ title: link.title, url: link.url })),
-      projectImage: projectImage.preview || '',
-      teamMembers: teamMembers.map(member => ({ userId: member.userId, name: member.name, role: member.role, nim: member.nim, angkatan: member.angkatan }))
-    });
-  }, [tags, projectLinks, projectImage, teamMembers]);
+    if (storedTeamMembers && storedTeamMembers.length > 0) {
+      setTeamMembers(storedTeamMembers.map((member, index) => ({
+        id: index + 1,
+        name: member.name,
+        nim: member.nim,
+        role: member.role,
+        id_user: member.userId,
+        angkatan: member.angkatan,
+        userId: member.userId
+      })));
+    }
+
+    if (storedProjectLinks && storedProjectLinks.length > 0) {
+      setProjectLinks(storedProjectLinks.map((link, index) => ({
+        id: index + 1,
+        title: link.title,
+        url: link.url
+      })));
+    }
+
+    if (storedTags && storedTags.length > 0) {
+      setTags(storedTags.map((tag, index) => ({
+        id: index + 1,
+        text: tag
+      })));
+    }
+
+    if (storedProjectImage) {
+      // Convert stored image URL to File object
+      fetch(storedProjectImage)
+        .then(res => res.blob())
+        .then(blob => {
+          const file = new File([blob], 'project-image.png', { type: 'image/png' });
+          setProjectImage({
+            file: file,
+            preview: storedProjectImage
+          });
+        })
+        .catch(err => {
+          console.error('Error loading stored image:', err);
+          setProjectImage({
+            file: null,
+            preview: storedProjectImage
+          });
+        });
+    }
+  }, []);
 
   // Add handler for user selection
   const handleUserSelect = (id: number, selectedNim: string) => {
@@ -549,6 +576,20 @@ export default function PortfolioClient() {
       console.log('Success Response Body:', data);
       setSubmittedPortfolioId(data.id);
       setShowSuccessDialog(true);
+
+      // Clear the store after successful submission
+      setPortfolioData({
+        title: '',
+        category: '',
+        year: '',
+        description: '',
+        projectImage: '',
+        teamMembers: [],
+        projectLinks: [],
+        tags: [],
+        contact: undefined
+      });
+
     } catch (err) {
       console.error('=== ERROR DETAILS ===');
       console.error('Error:', err);
@@ -607,6 +648,38 @@ export default function PortfolioClient() {
       <main className="flex-grow bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-10 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div ref={topRef}></div>
+
+          <div className="flex justify-end mb-6">
+            <Button 
+              variant="outline"
+              className="bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-white"
+              onClick={() => {
+                // Clear all form data
+                setTeamMembers([{ id: 1, name: "", nim: "", role: "", id_user: "", angkatan: "", userId: "" }]);
+                setProjectLinks([{ id: 1, title: "", url: "" }]);
+                setTags([]);
+                setTagInput('');
+                setProjectImage({ file: null, preview: "" });
+                setErrors({});
+                
+                // Clear store data
+                setPortfolioData({
+                  title: '',
+                  category: '',
+                  year: '',
+                  description: '',
+                  projectImage: '',
+                  teamMembers: [],
+                  projectLinks: [],
+                  tags: [],
+                  contact: undefined
+                });
+              }}
+            >
+              <Trash className="h-4 w-4 mr-0" />
+              Clear
+            </Button>
+          </div>
 
           <div className="flex gap-8">
             <SideMenu 

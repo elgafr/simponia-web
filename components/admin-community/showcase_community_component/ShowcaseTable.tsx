@@ -83,9 +83,9 @@ export function ShowcaseTable({ showcaseData }: ShowcaseTableProps) {
               <SelectValue placeholder="Tahun" />
             </SelectTrigger>
             <SelectContent className="bg-[#001233] border-[#001B45]">
-              <SelectItem value="all" className="text-white">Semua Tahun</SelectItem>
+              <SelectItem value="all" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Semua Tahun</SelectItem>
               {yearOptions.map(year => (
-                <SelectItem key={year} value={year} className="text-white">{year}</SelectItem>
+                <SelectItem key={year} value={year} className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">{year}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -94,20 +94,18 @@ export function ShowcaseTable({ showcaseData }: ShowcaseTableProps) {
               <SelectValue placeholder="Performance" />
             </SelectTrigger>
             <SelectContent className="bg-[#001233] border-[#001B45]">
-              <SelectItem value="all" className="text-white">Semua</SelectItem>
-              <SelectItem value="A" className="text-white">A</SelectItem>
-              <SelectItem value="B" className="text-white">B</SelectItem>
-              <SelectItem value="C" className="text-white">C</SelectItem>
-              <SelectItem value="D" className="text-white">D</SelectItem>
-              <SelectItem value="E" className="text-white">E</SelectItem>
+              <SelectItem value="all" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Semua</SelectItem>
+              <SelectItem value="A" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">A</SelectItem>
+              <SelectItem value="B" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">B</SelectItem>
+              <SelectItem value="C" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">C</SelectItem>
+              <SelectItem value="D" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">D</SelectItem>
+              <SelectItem value="E" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">E</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
-      
       <div className="bg-[#011B45]/50 backdrop-blur-sm rounded-xl border border-gray-700/50 overflow-hidden mb-10">
-        
         <table className="w-full table-fixed">
           <thead>
             <tr className="border-b border-gray-700">
@@ -190,4 +188,4 @@ export function ShowcaseTable({ showcaseData }: ShowcaseTableProps) {
       </div>
     </div>
   );
-} 
+}

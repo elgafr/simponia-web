@@ -34,32 +34,32 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) 
           {/* Judul Acara */}
           <div>
             <label className="block text-sm font-medium mb-1">Judul Acara*</label>
-            <input type="text" className="w-full p-2 rounded-md bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <input type="text" className="w-full p-2 rounded-md bg-[#002B6B] text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
 
           {/* Ketua Pelaksana */}
           <div>
             <label className="block text-sm font-medium mb-1">Ketua Pelaksana*</label>
-            <input type="text" className="w-full p-2 rounded-md bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <input type="text" className="w-full p-2 rounded-md bg-[#002B6B] text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
 
           {/* Tanggal Pelaksanaan */}
           <div>
             <label className="block text-sm font-medium mb-1">Tanggal Pelaksanaan*</label>
             <div className="flex space-x-2">
-              <select className="w-1/3 p-2 rounded-md bg-gray-800 text-white">
+              <select className="w-1/3 p-2 rounded-md bg-[#002B6B] text-white">
                 <option value="">Tanggal</option>
                 {[...Array(31)].map((_, i) => (
                   <option key={i} value={i + 1}>{i + 1}</option>
                 ))}
               </select>
-              <select className="w-1/3 p-2 rounded-md bg-gray-800 text-white">
+              <select className="w-1/3 p-2 rounded-md bg-[#002B6B] text-white">
                 <option value="">Bulan</option>
                 {["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"].map((bulan, i) => (
                   <option key={i} value={bulan}>{bulan}</option>
                 ))}
               </select>
-              <select className="w-1/3 p-2 rounded-md bg-gray-800 text-white">
+              <select className="w-1/3 p-2 rounded-md bg-[#002B6B] text-white">
                 <option value="">Tahun</option>
                 {[...Array(10)].map((_, i) => (
                   <option key={i} value={2024 - i}>{2024 - i}</option>
@@ -72,11 +72,11 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) 
           <div className="flex space-x-2">
             <div className="w-1/2">
               <label className="block text-sm font-medium mb-1">Jumlah Panitia</label>
-              <input type="number" className="w-full p-2 rounded-md bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <input type="number" className="w-full p-2 rounded-md bg-[#002B6B] text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <div className="w-1/2">
               <label className="block text-sm font-medium mb-1">Batas Score</label>
-              <input type="number" className="w-full p-2 rounded-md bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <input type="number" className="w-full p-2 rounded-md bg-[#002B6B] text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
           </div>
 
@@ -84,15 +84,15 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) 
           <div className="flex space-x-2">
             <div className="w-1/3">
               <label className="block text-sm font-medium mb-1">Nama Panitia</label>
-              <input type="text" value={panitia.nama} onChange={e => setPanitia({ ...panitia, nama: e.target.value })} className="w-full p-2 rounded-md bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <input type="text" value={panitia.nama} onChange={e => setPanitia({ ...panitia, nama: e.target.value })} className="w-full p-2 rounded-md bg-[#002B6B] text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <div className="w-1/3">
               <label className="block text-sm font-medium mb-1">NIM</label>
-              <input type="text" value={panitia.nim} onChange={e => setPanitia({ ...panitia, nim: e.target.value })} className="w-full p-2 rounded-md bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <input type="text" value={panitia.nim} onChange={e => setPanitia({ ...panitia, nim: e.target.value })} className="w-full p-2 rounded-md bg-[#002B6B] text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <div className="w-1/3">
               <label className="block text-sm font-medium mb-1">Jabatan</label>
-              <input type="text" value={panitia.jabatan} onChange={e => setPanitia({ ...panitia, jabatan: e.target.value })} className="w-full p-2 rounded-md bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <input type="text" value={panitia.jabatan} onChange={e => setPanitia({ ...panitia, jabatan: e.target.value })} className="w-full p-2 rounded-md bg-[#002B6B] text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
           </div>
 
@@ -108,7 +108,7 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) 
           {/* Deskripsi Acara */}
           <div>
             <label className="block text-sm font-medium mb-1">Deskripsi Acara*</label>
-            <textarea className="w-full p-2 rounded-md bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 h-24"></textarea>
+            <textarea className="w-full p-2 rounded-md bg-[#002B6B] text-white focus:outline-none focus:ring-2 focus:ring-blue-500 h-24"></textarea>
           </div>
 
           {/* Button Action */}

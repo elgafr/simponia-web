@@ -73,17 +73,14 @@ export default function PreviewClient() {
     const storeData = usePortfolioStore.getState();
     const hasStoreData = storeData.teamMembers && storeData.teamMembers.length > 0;
 
-    console.log('Store data available:', hasStoreData);
-    console.log('Current store data:', storeData);
-
-    if (hasStoreData) {
-      console.log('Using data from store');
-      setLoading(false);
-    } else {
-      console.log('No data in store');
-      setLoading(false);
+    if (!hasStoreData) {
+      // If no data in store, redirect back to portfolio page
+      router.push('/portfolio');
+      return;
     }
-  }, []);
+
+    setLoading(false);
+  }, [router]);
 
   if (!mounted || loading) {
     return (
@@ -369,7 +366,7 @@ export default function PreviewClient() {
           </div>
         </div>
       </main>
-      <Footer />
+   
 
       <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
         <AlertDialogContent className="bg-[#001233] border border-white/10">
@@ -391,4 +388,4 @@ export default function PreviewClient() {
       </AlertDialog>
     </div>
   );
-} 
+}  
