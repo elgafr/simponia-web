@@ -55,6 +55,7 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [userPortfolios, setUserPortfolios] = useState<PortfolioItem[]>([]);
+  const [timeRemaining, setTimeRemaining] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -95,6 +96,90 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
 
     fetchUserData();
   }, [portfolioData]);
+
+  // Add useEffect for countdown timer
+  useEffect(() => {
+    const calculateTimeRemaining = (updatedAt: string) => {
+      const updatedDate = new Date(updatedAt);
+      const deadline = new Date(updatedDate.getTime() + (3 * 24 * 60 * 60 * 1000)); // 3 days from updated_at
+      const now = new Date();
+
+      if (now >= deadline) {
+        return 'Waktu habis';
+      }
+
+      const diff = deadline.getTime() - now.getTime();
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+      return `${days} hari ${hours} jam ${minutes} menit`;
+    };
+
+    const updateTimeRemaining = () => {
+      const newTimeRemaining: { [key: string]: string } = {};
+      let needsUpdate = false;
+
+      userPortfolios.forEach(portfolio => {
+        if (portfolio.status === 'Perlu Perubahan' && portfolio.updated_at) {
+          const remaining = calculateTimeRemaining(portfolio.updated_at);
+          newTimeRemaining[portfolio.id] = remaining;
+
+          // Check if deadline has passed
+          const updatedDate = new Date(portfolio.updated_at);
+          const deadline = new Date(updatedDate.getTime() + (3 * 24 * 60 * 60 * 1000));
+          if (new Date() >= deadline) {
+            needsUpdate = true;
+          }
+        }
+      });
+
+      setTimeRemaining(newTimeRemaining);
+
+      // If any portfolio has passed its deadline, update its status
+      if (needsUpdate) {
+        const updateStatus = async () => {
+          try {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            const updatePromises = userPortfolios
+              .filter(portfolio => {
+                if (portfolio.status !== 'Perlu Perubahan' || !portfolio.updated_at) return false;
+                const updatedDate = new Date(portfolio.updated_at);
+                const deadline = new Date(updatedDate.getTime() + (3 * 24 * 60 * 60 * 1000));
+                return new Date() >= deadline;
+              })
+              .map(portfolio =>
+                fetch(`${process.env.NEXT_PUBLIC_API_URL}/portofolio/${portfolio.id}`, {
+                  method: 'PUT',
+                  headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    ...portfolio,
+                    status: "Dihapus"
+                  })
+                })
+              );
+
+            await Promise.all(updatePromises);
+            router.refresh(); // Refresh the page to update the table
+          } catch (error) {
+            console.error('Error updating portfolio statuses:', error);
+          }
+        };
+
+        updateStatus();
+      }
+    };
+
+    const timer = setInterval(updateTimeRemaining, 60000); // Update every minute
+    updateTimeRemaining(); // Initial update
+
+    return () => clearInterval(timer);
+  }, [userPortfolios, router]);
 
   // If no data, show empty state
   if (!userPortfolios || userPortfolios.length === 0) {
@@ -244,9 +329,18 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
                 <td className="px-6 py-4 text-gray-300 w-40 truncate">{item.kategori}</td>
                 <td className="px-6 py-4 text-gray-300 w-24">{item.tahun}</td>
                 <td className="px-6 py-4 w-40">
-                  <span className={`px-3 py-1 rounded-full text-xs text-white ${getStatusColor(item.status)}`}>
-                    {item.status}
-                  </span>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex">
+                      <span className={`px-3 py-1 rounded-full text-xs text-white ${getStatusColor(item.status)} whitespace-nowrap inline-block`}>
+                        {item.status}
+                      </span>
+                    </div>
+                    {item.status === 'Perlu Perubahan' && timeRemaining[item.id] && (
+                      <span className="text-xs text-yellow-500">
+                        Sisa waktu: {timeRemaining[item.id]}
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-6 py-4 w-32">
                   <div className="flex gap-2">

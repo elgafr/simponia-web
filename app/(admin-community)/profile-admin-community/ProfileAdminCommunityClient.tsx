@@ -7,6 +7,31 @@ import { PenLine, Pencil, User, Upload } from "lucide-react";
 import Image from 'next/image';
 import { useRef } from 'react';
 
+// Helper functions for date formatting
+function formatDate(dateString: string | null | undefined): string {
+  if (!dateString) return '-';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '-';
+  
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  
+  return `${day}/${month}/${year}`;
+}
+
+function formatDateForInput(dateString: string | null | undefined): string {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
+  
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  
+  return `${year}-${month}-${day}`;
+}
+
 interface ProfileData {
   id: string;
   nama: string;
@@ -20,6 +45,10 @@ interface ProfileData {
   email: string;
   github: string;
   profilePicture: string;
+  namaKomunitas?: string;
+  divisi?: string;
+  joinKomunitas?: string;
+  posisi?: string;
   user: {
     id: string;
     nim: string;
@@ -160,7 +189,7 @@ function MyProfile({ profileData }: MyProfileProps) {
         </div>
         <div>
           <p className="text-gray-400 mb-1">Date Of Birth</p>
-          <p className="text-white">{profileData.tanggalLahir}</p>
+          <p className="text-white">{formatDate(profileData.tanggalLahir)}</p>
         </div>
         <div>
           <p className="text-gray-400 mb-1">Mobile Number</p>
@@ -248,35 +277,81 @@ function AccountDetails({
 }
 
 // CommunityDetails Component
-function CommunityDetails() {
-  // Data dummy sementara
-  const data = {
-    community: "Infotech",
-    division: "Sistem Informasi",
-    dateJoined: "01/08/2024",
-    position: "Sekretaris",
-  };
+interface CommunityDetailsProps {
+  profileData: ProfileData;
+  isEditing: string | null;
+  editValue: string;
+  onEdit: (field: string, value: string) => void;
+  onSave?: (field: string) => void;
+  onCancel?: () => void;
+  setEditValue: (value: string) => void;
+}
+
+function CommunityDetails({ 
+  profileData, 
+  isEditing, 
+  editValue, 
+  onEdit, 
+  onSave, 
+  onCancel, 
+  setEditValue 
+}: CommunityDetailsProps) {
+  const fields = [
+    { label: 'Community', value: profileData.namaKomunitas || '-', field: 'namaKomunitas' },
+    { label: 'Division', value: profileData.divisi || '-', field: 'divisi' },
+    { label: 'Date Joined', value: formatDate(profileData.joinKomunitas), field: 'joinKomunitas', type: 'date' },
+    { label: 'Position', value: profileData.posisi || '-', field: 'posisi' },
+  ];
 
   return (
     <div className="bg-[#182B4D] rounded-xl p-6 mt-6 text-white">
-      <h2 className="text-xl font-semibold mb-6">Community Details</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold">Community Details</h2>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <p className="text-gray-300 mb-1">Community</p>
-          <p className="font-bold">{data.community}</p>
-        </div>
-        <div>
-          <p className="text-gray-300 mb-1">Division</p>
-          <p className="font-bold">{data.division}</p>
-        </div>
-        <div>
-          <p className="text-gray-300 mb-1">Date Joined</p>
-          <p className="font-bold">{data.dateJoined}</p>
-        </div>
-        <div>
-          <p className="text-gray-300 mb-1">Position</p>
-          <p className="font-bold">{data.position}</p>
-        </div>
+        {fields.map(({ label, value, field, type }) => (
+          <div key={field}>
+            <div className="flex justify-between items-center mb-2">
+              <label className="text-gray-300">{label}</label>
+              <Button
+                onClick={() => onEdit(field, value === '-' ? '' : value)}
+                variant="ghost"
+                size="sm"
+                className="text-gray-400 hover:text-white hover:bg-white/10"
+              >
+                <PenLine className="h-4 w-4" />
+              </Button>
+            </div>
+            {isEditing === field ? (
+              <div className="flex flex-col gap-2">
+                {type === 'date' ? (
+                  <Input
+                    type="date"
+                    value={editValue ? formatDateForInput(editValue) : ''}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    className="bg-white/5 border-0 text-white [&::-webkit-calendar-picker-indicator]:invert"
+                  />
+                ) : (
+                  <Input
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    className="bg-white/5 border-0 text-white"
+                  />
+                )}
+                <div className="flex gap-2 justify-end">
+                  <Button onClick={onCancel} className="bg-red-600 text-white hover:bg-red-700 transition-colors">
+                    Batal
+                  </Button>
+                  <Button onClick={() => onSave && onSave(field)} className="bg-emerald-600 text-white hover:bg-emerald-700 transition-colors">
+                    Simpan
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <p className="font-bold">{value}</p>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -303,9 +378,12 @@ export default function ProfileAdminCommunityClient({ profileData }: ProfileAdmi
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No token found');
 
-      const updateBody = { ...profile, [field]: editValue };
+      const updateBody = { 
+        ...profile, 
+        [field]: editValue || null // Set to null if empty string
+      };
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin-community/${profile.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user/${profile.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -352,7 +430,7 @@ export default function ProfileAdminCommunityClient({ profileData }: ProfileAdmi
         github: profile.github
       };
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin-community/${profile.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user/${profile.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -398,7 +476,7 @@ export default function ProfileAdminCommunityClient({ profileData }: ProfileAdmi
       formData.append('email', profile.email);
       formData.append('github', profile.github);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin-community/${profile.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user/${profile.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -452,7 +530,15 @@ export default function ProfileAdminCommunityClient({ profileData }: ProfileAdmi
             setEditValue={setEditValue}
           />
 
-          <CommunityDetails />
+          <CommunityDetails
+            profileData={profile}
+            isEditing={isEditing}
+            editValue={editValue}
+            onEdit={handleEdit}
+            onSave={handleSave}
+            onCancel={handleCancel}
+            setEditValue={setEditValue}
+          />
         </div>
       </div>
     </main>

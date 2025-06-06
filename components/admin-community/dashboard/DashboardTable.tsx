@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { EmptyState } from '@/components/ui/empty-state';
+import { useRouter } from 'next/navigation';
 
 interface Anggota {
   id: string;
@@ -58,7 +59,6 @@ interface Event {
   created_at: string;
   updated_at: string;
   created_by: User;
-  ketua_pelaksana: User;
   anggota: Anggota[];
 }
 
@@ -92,6 +92,7 @@ export function DashboardTable({ eventData: initialEventData }: DashboardTablePr
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const router = useRouter();
 
   // Fetch current user data
   useEffect(() => {
@@ -208,7 +209,7 @@ export function DashboardTable({ eventData: initialEventData }: DashboardTablePr
     const yearMatch = selectedYear === 'all' || new Date(event.tanggal).getFullYear().toString() === selectedYear;
     const statusMatch = selectedStatus === 'all' || (event.status?.toLowerCase() || '') === selectedStatus.toLowerCase();
     const searchMatch = (event.judul?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
-                       ((event.ketua_pelaksana?.name?.toLowerCase() || event.ketua_pelaksana?.nim?.toLowerCase() || '')).includes(searchQuery.toLowerCase());
+                       (event.anggota.find(a => a.jabatan === 'Ketua Pelaksana')?.nama?.toLowerCase() || '').includes(searchQuery.toLowerCase());
     
     return yearMatch && statusMatch && searchMatch;
   });
@@ -219,9 +220,38 @@ export function DashboardTable({ eventData: initialEventData }: DashboardTablePr
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const currentItems = filteredEvents.slice(startIndex, endIndex);
 
-  const handleView = (id: string) => {
-    // Add your view logic here
-    console.log('Viewing event:', id);
+  const handleView = async (id: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error('Authentication token not found');
+        return;
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/acara`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch event details');
+      }
+
+      const events = await response.json();
+      const event = events.find((e: Event) => e.id === id);
+
+      if (!event) {
+        toast.error('Event not found');
+        return;
+      }
+
+      router.push(`/event-detail-admin-community/${id}`);
+    } catch (error) {
+      console.error('Error fetching event details:', error);
+      toast.error('Failed to fetch event details');
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -331,7 +361,7 @@ export function DashboardTable({ eventData: initialEventData }: DashboardTablePr
                 <td className="px-6 py-4 text-gray-300 w-12">{startIndex + index + 1}</td>
                 <td className="px-6 py-4 text-white w-64 truncate">{event.judul || '-'}</td>
                 <td className="px-6 py-4 text-gray-300 w-40 truncate">
-                  {event.ketua_pelaksana?.name || event.ketua_pelaksana?.nim || '-'}
+                  {event.anggota.find(a => a.jabatan === 'Ketua Pelaksana')?.nama || '-'}
                 </td>
                 <td className="px-6 py-4 text-gray-300 w-40">
                   {event.tanggal ? new Date(event.tanggal).toLocaleDateString('id-ID') : '-'}

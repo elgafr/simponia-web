@@ -14,7 +14,6 @@ export default async function FAQPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <HeroSection1FAQ />
-      <Footer />
     </div>
   );
 }

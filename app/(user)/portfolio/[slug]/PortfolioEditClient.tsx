@@ -32,29 +32,47 @@ const dummyNotes = [
 ];
 
 interface VerificationStatus {
-  UniqueID: number;
-  id_portofolio: string;
-  portofolio: {
-    id: string;
-    nama_projek: string;
-    kategori: string;
-    tahun: number;
-    status: string;
-    gambar: string;
-    deskripsi: string;
-    created_at: string;
-    updated_at: string;
-  };
-  note: string;
-  updated_by: string;
-  updatedBy: {
-    id: string;
+  id: string;
+  nama_projek: string;
+  kategori: string;
+  tahun: number;
+  status: string;
+  gambar: string;
+  deskripsi: string;
+  creator: {
+    user_id: string;
     nim: string;
+    name: string;
     role: string;
+    noHandphone: string;
+    linkedin: string;
+    instagram: string;
+    email: string;
+    github: string;
+  };
+  created_at: string;
+  updated_at: string;
+  anggota: Array<{
+    id: string;
+    role: string;
+    nim: string;
+    angkatan: string;
+    id_user: string;
+    name: string;
+  }>;
+  detail_project: Array<{
+    id: string;
+    judul_link: string;
+    link_project: string;
     created_at: string;
     updated_at: string;
-  };
-  updated_at: string;
+  }>;
+  tags: Array<{
+    id: string;
+    nama: string;
+    created_at: string;
+    updated_at: string;
+  }>;
 }
 
 const menuItems = [
@@ -166,6 +184,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
   const [users, setUsers] = useState<User[]>([]);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [timeRemaining, setTimeRemaining] = useState<string>('');
 
   // Tambahkan ref untuk validasi scroll
   const nameRef = useRef<HTMLDivElement>(null!);
@@ -297,7 +316,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
           return;
         }
         
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/status-verifikasi/`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/portofolio/${slug}`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -307,26 +326,17 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
         });
 
         if (response.ok) {
-          const data: VerificationStatus[] = await response.json();
+          const data: VerificationStatus = await response.json();
           console.log('Verification Status Data:', data);
           
-          const currentVerification = data.find(item => item.id_portofolio === slug);
-          console.log('Current Portfolio Slug:', slug);
-          console.log('Found Current Verification:', currentVerification);
-          
-          if (currentVerification) {
-            console.log('Found matching verification:', currentVerification);
-            console.log('Portfolio Status:', currentVerification.portofolio.status);
-            setVerificationStatus(currentVerification);
-            if (currentVerification.note) {
-              console.log('Setting reviewer note:', currentVerification.note);
-              setReviewerNotes([currentVerification.note]);
-            } else {
-              console.log('No note found in response, using dummy notes');
-              setReviewerNotes(dummyNotes);
-            }
+          if (data) {
+            console.log('Found portfolio data:', data);
+            console.log('Portfolio Status:', data.status);
+            setVerificationStatus(data);
+            // For now, we'll use dummy notes since the actual notes are not in the response
+            setReviewerNotes(dummyNotes);
           } else {
-            console.log('No matching verification found for portfolio:', slug);
+            console.log('No portfolio data found');
             setVerificationStatus(null);
             setReviewerNotes(dummyNotes);
           }
@@ -833,6 +843,68 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
     }
   };
 
+  useEffect(() => {
+    const calculateTimeRemaining = () => {
+      if (!verificationStatus?.updated_at) return '';
+
+      const updatedDate = new Date(verificationStatus.updated_at);
+      const deadline = new Date(updatedDate.getTime() + (3 * 24 * 60 * 60 * 1000)); // 3 days from updated_at
+      const now = new Date();
+
+      if (now >= deadline) {
+        // If deadline has passed, update status to "Dihapus"
+        const updateStatus = async () => {
+          try {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/portofolio/${slug}`, {
+              method: 'PUT',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                ...verificationStatus,
+                status: "Dihapus"
+              })
+            });
+
+            if (response.ok) {
+              router.refresh();
+            }
+          } catch (error) {
+            console.error('Error updating status:', error);
+          }
+        };
+        updateStatus();
+        return 'Waktu habis';
+      }
+
+      const diff = deadline.getTime() - now.getTime();
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+      return `${days} hari ${hours} jam ${minutes} menit`;
+    };
+
+    const timer = setInterval(() => {
+      const remaining = calculateTimeRemaining();
+      if (remaining !== undefined) {
+        setTimeRemaining(remaining);
+      }
+    }, 60000); // Update every minute
+
+    // Initial calculation
+    const initialRemaining = calculateTimeRemaining();
+    if (initialRemaining !== undefined) {
+      setTimeRemaining(initialRemaining);
+    }
+
+    return () => clearInterval(timer);
+  }, [verificationStatus, slug, router]);
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -842,37 +914,38 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
       <main className="flex-grow bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-8 pb-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Status Banner: Perlu Perubahan */}
-          {(() => {
-            console.log('Checking banner conditions:');
-            console.log('verificationStatus:', verificationStatus);
-            console.log('portfolio status:', verificationStatus?.portofolio?.status);
-            return verificationStatus?.portofolio?.status === "Perlu Perubahan" && (
-              <div className="bg-yellow-500/20 backdrop-blur-sm rounded-xl p-6 mb-6 border border-yellow-500/30">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 mt-1">
-                    <AlertCircle className="h-6 w-6 text-yellow-500" />
+          {verificationStatus?.status === "Perlu Perubahan" && (
+            <div className="bg-yellow-500/20 backdrop-blur-sm rounded-xl p-6 mb-6 border border-yellow-500/30">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 mt-1">
+                  <AlertCircle className="h-6 w-6 text-yellow-500" />
+                </div>
+                <div className="flex-grow">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="px-3 py-1 rounded-full text-sm font-medium text-white bg-yellow-500">
+                      Perlu Perubahan
+                    </span>
+                    <span className="text-sm text-yellow-200">
+                      {verificationStatus?.updated_at ? new Date(verificationStatus.updated_at).toLocaleDateString('id-ID', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                      }) : ''}
+                    </span>
                   </div>
-                  <div className="flex-grow">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="px-3 py-1 rounded-full text-sm font-medium text-white bg-yellow-500">
-                        Perlu Perubahan
-                      </span>
-                      <span className="text-sm text-yellow-200">
-                        {verificationStatus?.updated_at ? new Date(verificationStatus.updated_at).toLocaleDateString('id-ID', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric'
-                        }) : ''}
-                      </span>
-                    </div>
-                    <p className="text-white text-lg">
-                      Portfolio Anda memerlukan beberapa perbaikan berdasarkan catatan reviewer. Silakan periksa catatan reviewer di sebelah kiri untuk detail perbaikan yang diperlukan.
-                    </p>
-                  </div>
+                  <p className="text-white text-lg mb-2">
+                    Portfolio Anda memerlukan beberapa perbaikan berdasarkan catatan reviewer. Silakan periksa catatan reviewer di sebelah kiri untuk detail perbaikan yang diperlukan.
+                  </p>
+                  <p className="text-yellow-200 text-sm">
+                    Sisa waktu untuk melakukan perubahan: <span className="font-semibold">{timeRemaining}</span>
+                  </p>
+                  <p className="text-yellow-200 text-sm mt-1">
+                    Jika tidak diupdate dalam 3 hari, portfolio akan otomatis dihapus.
+                  </p>
                 </div>
               </div>
-            );
-          })()}
+            </div>
+          )}
 
           {/* Reviewer Notes Popup */}
           {showReviewerNotes && reviewerNotes.length > 0 && (
