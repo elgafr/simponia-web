@@ -4,13 +4,13 @@ import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Footer from "@/components/user/landing-page/Footer";
 import { SideMenu } from "@/components/user/portfolio/SideMenu";
-import { ProjectNameSection } from "@/components/user/portfolio/ProjectNameSection";
-import { CategorySection } from "@/components/user/portfolio/CategorySection";
-import { ProfileSection } from "@/components/user/portfolio/ProfileSection";
-import { TeamProjectSection } from "@/components/user/portfolio/TeamProjectSection";
-import { DetailProjectSection } from "@/components/user/portfolio/DetailProjectSection";
+import { ProjectNameSectionEdit } from "@/components/user/portfolio/edit/ProjectNameSectionEdit";
+import { CategorySectionEdit } from "@/components/user/portfolio/edit/CategorySectionEdit";
+import { ProfileSectionEdit } from "@/components/user/portfolio/edit/ProfileSectionEdit";
+import { TeamProjectSectionEdit } from "@/components/user/portfolio/edit/TeamProjectSectionEdit";
+import { DetailProjectSectionEdit } from "@/components/user/portfolio/edit/DetailProjectSectionEdit";
 import { Maximize2, Minimize2, AlertCircle } from "lucide-react";
-import { usePortfolioStore } from '@/store/portfolioStore';
+import { useEditPortfolioStore } from '@/store/editPortfolioStore';
 import { Select, SelectItem } from "@/components/ui/select";
 import {
   AlertDialog,
@@ -21,6 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 
 // Dummy data for testing notes
 const dummyNotes = [
@@ -201,16 +202,16 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
     detailProject: useRef<HTMLDivElement>(null!),
   };
 
-  // Get data from store at component level
-  const title = usePortfolioStore((state) => state.title);
-  const category = usePortfolioStore((state) => state.category);
-  const year = usePortfolioStore((state) => state.year);
-  const description = usePortfolioStore((state) => state.description);
-  const storedTags = usePortfolioStore((state) => state.tags);
-  const storedProjectLinks = usePortfolioStore((state) => state.projectLinks);
-  const contact = usePortfolioStore((state) => state.contact);
-  const storedTeamMembers = usePortfolioStore((state) => state.teamMembers);
-  const storedProjectImage = usePortfolioStore((state) => state.projectImage);
+  // Get data from store
+  const title = useEditPortfolioStore((state) => state.title);
+  const category = useEditPortfolioStore((state) => state.category);
+  const year = useEditPortfolioStore((state) => state.year);
+  const description = useEditPortfolioStore((state) => state.description);
+  const storedTags = useEditPortfolioStore((state) => state.tags);
+  const storedProjectLinks = useEditPortfolioStore((state) => state.projectLinks);
+  const contact = useEditPortfolioStore((state) => state.contact);
+  const storedTeamMembers = useEditPortfolioStore((state) => state.teamMembers);
+  const storedProjectImage = useEditPortfolioStore((state) => state.projectImage);
 
   const scrollToSection = (ref: React.RefObject<HTMLDivElement>, sectionName: string) => {
     if (ref.current) {
@@ -232,6 +233,34 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
         const token = localStorage.getItem('token');
         if (!token) return;
         
+        // Check if we have data in store
+        const storeData = useEditPortfolioStore.getState();
+        const hasStoreData = storeData.teamMembers && storeData.teamMembers.length > 0;
+
+        // If we have store data, use it to populate local state
+        if (hasStoreData) {
+          console.log('Using data from store');
+          setTeamMembers(storeData.teamMembers.map((member, index) => ({
+            id: index + 1,
+            ...member
+          })));
+          setProjectLinks(storeData.projectLinks.map((link, index) => ({
+            id: index + 1,
+            ...link
+          })));
+          setTags(storeData.tags.map((tag, index) => ({
+            id: index + 1,
+            text: tag
+          })));
+          setProjectImage({
+            file: null,
+            preview: storeData.projectImage
+          });
+          setLoading(false);
+          return;
+        }
+        
+        // If no store data, fetch from API
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/portofolio/${slug}`, {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -252,13 +281,24 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
             userId: member.id_user
           }));
 
-          console.log('Mapped team members:', mappedTeamMembers);
-
           // Set local state
           setTeamMembers(mappedTeamMembers);
+          setProjectLinks(data.detail_project.map((link, index) => ({
+            id: index + 1,
+            title: link.judul_link,
+            url: link.link_project
+          })));
+          setTags(data.tags.map((tag, index) => ({
+            id: index + 1,
+            text: tag.nama
+          })));
+          setProjectImage({
+            file: null,
+            preview: data.gambar ? `${process.env.NEXT_PUBLIC_API_URL}${data.gambar}` : '/portfolio-1.png'
+          });
 
           // Update store with the fetched data
-          usePortfolioStore.getState().setPortfolioData({
+          useEditPortfolioStore.getState().setPortfolioData({
             title: data.nama_projek,
             category: data.kategori,
             year: data.tahun.toString(),
@@ -276,23 +316,6 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
               url: link.link_project
             })),
             tags: data.tags.map(tag => tag.nama)
-          });
-
-          // Set other local states
-          setProjectLinks(data.detail_project.map((link, index) => ({
-            id: index + 1,
-            title: link.judul_link,
-            url: link.link_project
-          })));
-
-          setTags(data.tags.map((tag, index) => ({
-            id: index + 1,
-            text: tag.nama
-          })));
-
-          setProjectImage({
-            file: null,
-            preview: data.gambar ? `${process.env.NEXT_PUBLIC_API_URL}${data.gambar}` : '/portfolio-1.png'
           });
         }
       } catch (err) {
@@ -426,7 +449,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
     setTeamMembers(updatedTeamMembers);
 
     // Update store
-    usePortfolioStore.getState().setPortfolioData({
+    useEditPortfolioStore.getState().setPortfolioData({
       teamMembers: updatedTeamMembers.map(member => ({
         name: member.name,
         role: member.role,
@@ -439,7 +462,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
     // Log updates
     console.log('Selected user:', selectedUser);
     console.log('Updated member:', updatedMember);
-    console.log('Updated team members in store:', usePortfolioStore.getState().teamMembers);
+    console.log('Updated team members in store:', useEditPortfolioStore.getState().teamMembers);
   };
 
   const handleMemberChange = (id: number, field: keyof TeamMember, value: string) => {
@@ -461,7 +484,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
     setTeamMembers(updatedMembers);
     
     // Update store
-    usePortfolioStore.getState().setPortfolioData({
+    useEditPortfolioStore.getState().setPortfolioData({
       teamMembers: updatedMembers.map(member => ({
         name: member.name,
         role: member.role,
@@ -490,7 +513,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
     setTeamMembers(updatedMembers);
     
     // Update store with new team members
-    usePortfolioStore.getState().setPortfolioData({
+    useEditPortfolioStore.getState().setPortfolioData({
       teamMembers: updatedMembers.map(member => ({
         name: member.name,
         role: member.role,
@@ -508,7 +531,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
     setProjectLinks(updatedLinks);
     
     // Update store with new project links
-    usePortfolioStore.getState().setPortfolioData({
+    useEditPortfolioStore.getState().setPortfolioData({
       projectLinks: updatedLinks.map(link => ({
         title: link.title,
         url: link.url
@@ -526,7 +549,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
     setProjectLinks(updatedLinks);
     
     // Update store with new project links
-    usePortfolioStore.getState().setPortfolioData({
+    useEditPortfolioStore.getState().setPortfolioData({
       projectLinks: updatedLinks.map(link => ({
         title: link.title,
         url: link.url
@@ -540,7 +563,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
     setProjectLinks(updatedLinks);
     
     // Update store with new project links
-    usePortfolioStore.getState().setPortfolioData({
+    useEditPortfolioStore.getState().setPortfolioData({
       projectLinks: updatedLinks.map(link => ({
         title: link.title,
         url: link.url
@@ -560,7 +583,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
       setTagInput('');
       
       // Update store with new tags
-      usePortfolioStore.getState().setPortfolioData({
+      useEditPortfolioStore.getState().setPortfolioData({
         tags: updatedTags.map(tag => tag.text)
       });
     }
@@ -571,7 +594,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
     setTags(updatedTags);
     
     // Update store with new tags
-    usePortfolioStore.getState().setPortfolioData({
+    useEditPortfolioStore.getState().setPortfolioData({
       tags: updatedTags.map(tag => tag.text)
     });
   };
@@ -637,7 +660,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
       });
 
       // Update store with the new image
-      usePortfolioStore.getState().setPortfolioData({
+      useEditPortfolioStore.getState().setPortfolioData({
         projectImage: data.gambar ? `${process.env.NEXT_PUBLIC_API_URL}${data.gambar}` : '/portfolio-1.png'
       });
 
@@ -781,7 +804,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
   const handlePreview = () => {
     if (validateAndScroll()) {
       // Store the current portfolio ID in the store
-      usePortfolioStore.getState().setCurrentPortfolioId(slug);
+      useEditPortfolioStore.getState().setCurrentPortfolioId(slug);
       console.log('Stored portfolio ID for preview:', slug);
       router.push(`/preview/edit/${slug}`);
     }
@@ -793,7 +816,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
     if (!validateAndScroll()) return;
 
     // Get data from store
-    const storeData = usePortfolioStore.getState();
+    const storeData = useEditPortfolioStore.getState();
     
     // Format data according to the required request structure
     const payload = {
@@ -838,6 +861,9 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
 
       const data = await res.json();
       setShowSuccessDialog(true);
+
+      // Clear the store after successful update
+      useEditPortfolioStore.getState().resetStore();
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Terjadi kesalahan saat update portfolio');
     }
@@ -1030,34 +1056,34 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
 
             <div className="flex-grow min-h-screen">
               <div className="space-y-8">
-                <div ref={nameRef}>
-                  <ProjectNameSection 
+                <div>
+                  <ProjectNameSectionEdit 
                     sectionRef={sections.projectName} 
                     errors={errors}
                     onTitleChange={(value) => {
-                      usePortfolioStore.getState().setPortfolioData({ title: value });
+                      useEditPortfolioStore.getState().setPortfolioData({ title: value });
                       clearError('title');
                     }}
                   />
                 </div>
-                <div ref={categoryRef}>
-                  <CategorySection 
+                <div>
+                  <CategorySectionEdit 
                     sectionRef={sections.category}
                     errors={errors}
                     onCategoryChange={(value) => {
-                      usePortfolioStore.getState().setPortfolioData({ category: value });
+                      useEditPortfolioStore.getState().setPortfolioData({ category: value });
                       clearError('category');
                     }}
                   />
                 </div>
-                <div ref={profileRef}>
-                  <ProfileSection 
+                <div>
+                  <ProfileSectionEdit 
                     sectionRef={sections.profile}
                     errors={errors}
                   />
                 </div>
-                <div ref={teamRef}>
-                  <TeamProjectSection 
+                <div>
+                  <TeamProjectSectionEdit 
                     sectionRef={sections.teamProject}
                     teamMembers={Array.isArray(teamMembers) ? teamMembers : []}
                     onAddMember={handleAddMember}
@@ -1068,8 +1094,8 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
                     errors={errors}
                   />
                 </div>
-                <div ref={detailRef}>
-                  <DetailProjectSection 
+                <div>
+                  <DetailProjectSectionEdit 
                     sectionRef={sections.detailProject}
                     projectLinks={projectLinks}
                     tags={tags}
@@ -1087,30 +1113,26 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
                     onPreview={handlePreview}
                     errors={errors}
                     onYearChange={(value) => {
-                      usePortfolioStore.getState().setPortfolioData({ year: value });
+                      useEditPortfolioStore.getState().setPortfolioData({ year: value });
                       clearError('year');
                     }}
                     onDescriptionChange={(value) => {
-                      usePortfolioStore.getState().setPortfolioData({ description: value });
+                      useEditPortfolioStore.getState().setPortfolioData({ description: value });
                       clearError('description');
                     }}
                   />
                 </div>
                 <div className="flex justify-end gap-4 mt-8">
-                  <button
-                    type="button"
-                    className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition"
+                  <Button 
+                    variant="outline" 
+                    className="bg-blue-500 text-white hover:bg-blue-600 border-0 hover:text-white"
                     onClick={handlePreview}
                   >
                     Preview Portfolio
-                  </button>
-                  <button
-                    type="button"
-                    className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition"
-                    onClick={handleUpdate}
-                  >
+                  </Button>
+                  <Button className="bg-green-500 text-white hover:bg-green-600" onClick={handleUpdate}>
                     Update Portfolio
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>

@@ -143,10 +143,10 @@ function ProfileBio({
             rows={4}
           />
           <div className="flex gap-2 justify-end">
-            <Button onClick={onCancel} className="bg-red-600 text-white hover:bg-red-700 transition-colors">
+            <Button onClick={onCancel} size="sm" variant="outline" className="text-white border-white/20 text-blue-500 hover:text-blue-600 hover:bg-white/90">
               Batal
             </Button>
-            <Button onClick={onSave} className="bg-emerald-600 text-white hover:bg-emerald-700 transition-colors">
+            <Button onClick={onSave} size="sm" className="bg-blue-500 text-white hover:bg-blue-600">
               Simpan
             </Button>
           </div>
@@ -258,10 +258,10 @@ function AccountDetails({
                   className="bg-white/5 border-0 text-white"
                 />
                 <div className="flex gap-2 justify-end">
-                  <Button onClick={onCancel} className="bg-red-600 text-white hover:bg-red-700 transition-colors">
+                  <Button onClick={onCancel} size="sm" variant="outline" className="text-white border-white/20 text-blue-500 hover:text-blue-600 hover:bg-white/90">
                     Batal
                   </Button>
-                  <Button onClick={() => onSave && onSave(field)} className="bg-emerald-600 text-white hover:bg-emerald-700 transition-colors">
+                  <Button onClick={() => onSave && onSave(field)} size="sm" className="bg-blue-500 text-white hover:bg-blue-600">
                     Simpan
                   </Button>
                 </div>
@@ -339,16 +339,16 @@ function CommunityDetails({
                   />
                 )}
                 <div className="flex gap-2 justify-end">
-                  <Button onClick={onCancel} className="bg-red-600 text-white hover:bg-red-700 transition-colors">
+                  <Button onClick={onCancel} size="sm" variant="outline" className="text-white border-white/20 text-blue-500 hover:text-blue-600 hover:bg-white/90">
                     Batal
                   </Button>
-                  <Button onClick={() => onSave && onSave(field)} className="bg-emerald-600 text-white hover:bg-emerald-700 transition-colors">
+                  <Button onClick={() => onSave && onSave(field)} size="sm" className="bg-blue-500 text-white hover:bg-blue-600">
                     Simpan
                   </Button>
                 </div>
               </div>
             ) : (
-              <p className="font-bold">{value}</p>
+              <p className="text-white">{value}</p>
             )}
           </div>
         ))}

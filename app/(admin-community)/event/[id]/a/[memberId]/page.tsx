@@ -109,66 +109,67 @@ const MemberDetailPage = () => {
   const [eventData, setEventData] = useState<EventData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          throw new Error('No authentication token found');
-        }
-
-        // Fetch anggota-acara data
-        const anggotaResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/anggota-acara/${memberId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (!anggotaResponse.ok) {
-          throw new Error('Failed to fetch anggota data');
-        }
-
-        const anggotaData = await anggotaResponse.json();
-        setAnggotaData(anggotaData);
-
-        // Fetch event data
-        const eventResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/acara/${anggotaData.acara.id}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (!eventResponse.ok) {
-          throw new Error('Failed to fetch event data');
-        }
-
-        const eventData = await eventResponse.json();
-        setEventData(eventData);
-
-        // Fetch user profile data
-        const profileResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user/${anggotaData.profile_user?.id || 'd98c0c5e-4d8a-4abe-a2e2-8f8809fdcc90'}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (!profileResponse.ok) {
-          throw new Error('Failed to fetch user profile');
-        }
-
-        const profileData = await profileResponse.json();
-        setUserProfile(profileData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        toast.error('Failed to fetch data');
-      } finally {
-        setLoading(false);
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
       }
-    };
 
+      // Fetch anggota-acara data
+      const anggotaResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/anggota-acara/${memberId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!anggotaResponse.ok) {
+        throw new Error('Failed to fetch anggota data');
+      }
+
+      const anggotaData = await anggotaResponse.json();
+      setAnggotaData(anggotaData);
+
+      // Fetch event data
+      const eventResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/acara/${anggotaData.acara.id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!eventResponse.ok) {
+        throw new Error('Failed to fetch event data');
+      }
+
+      const eventData = await eventResponse.json();
+      setEventData(eventData);
+
+      // Fetch user profile data
+      const profileResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user/${anggotaData.profile_user?.id || 'd98c0c5e-4d8a-4abe-a2e2-8f8809fdcc90'}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!profileResponse.ok) {
+        throw new Error('Failed to fetch user profile');
+      }
+
+      const profileData = await profileResponse.json();
+      setUserProfile(profileData);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      toast.error('Failed to fetch data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, [memberId]);
 
@@ -195,7 +196,10 @@ const MemberDetailPage = () => {
           userProfile={userProfile}
           anggotaData={anggotaData}
         />
-        <CommunityActivitySection eventData={eventData} />
+        <CommunityActivitySection 
+          eventData={eventData} 
+          onRefresh={fetchData}
+        />
       </div>
     </div>
   );
