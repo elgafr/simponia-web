@@ -608,12 +608,12 @@ const EventDetailView: React.FC = () => {
             className="bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-white"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
+            Kembali
           </Button>
         </div>
         <div className="text-white text-center py-10">
-          <h1 className="text-3xl md:text-5xl font-bold mb-4">Event Details</h1>
-          <p>Loading event details...</p>
+          <h1 className="text-3xl md:text-5xl font-bold mb-4">Detail Acara</h1>
+          <p>Memuat detail acara...</p>
         </div>
       </section>
     );
@@ -629,12 +629,12 @@ const EventDetailView: React.FC = () => {
             className="bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-white"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
+            Kembali
           </Button>
         </div>
         <div className="text-white text-center py-10">
-          <h1 className="text-3xl md:text-5xl font-bold mb-4">Event Details</h1>
-          <p>{error || "Event not found."}</p>
+          <h1 className="text-3xl md:text-5xl font-bold mb-4">Detail Acara</h1>
+          <p>{error || "Acara tidak ditemukan."}</p>
         </div>
       </section>
     );
@@ -651,7 +651,7 @@ const EventDetailView: React.FC = () => {
               className="bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-white"
             >
               <ArrowLeft className="h-4 w-4 mr-0" />
-              Back
+              Kembali
             </Button>
           </div>
           <div className="flex justify-center items-center gap-4 mb-8">
@@ -774,13 +774,13 @@ const EventDetailView: React.FC = () => {
                       </SelectTrigger>
                       <SelectContent className="bg-[#001233] border-[#001B45]">
                         <SelectItem value="Active" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">
-                          Active
+                          Aktif
                         </SelectItem>
                         <SelectItem value="Ongoing" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">
-                          Ongoing
+                          Sedang Berlangsung
                         </SelectItem>
                         <SelectItem value="Finished" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">
-                          Finished
+                          Selesai
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -869,14 +869,14 @@ const EventDetailView: React.FC = () => {
                               <SelectValue placeholder="Status" />
                             </SelectTrigger>
                             <SelectContent className="bg-[#001233] border-[#001B45]">
-                              <SelectItem value="PRESENT" className="text-white  hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">
-                                Present
+                              <SelectItem value="PRESENT" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">
+                                Hadir
                               </SelectItem>
-                              <SelectItem value="ABSENT" className="text-white  hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">
-                                Absent
+                              <SelectItem value="ABSENT" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">
+                                Tidak Hadir
                               </SelectItem>
-                              <SelectItem value="PERMISSION" className="text-white  hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">
-                                Permission
+                              <SelectItem value="PERMISSION" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">
+                                Izin
                               </SelectItem>
                             </SelectContent>
                           </Select>
@@ -954,14 +954,14 @@ const EventDetailView: React.FC = () => {
                               <SelectValue placeholder="Status" />
                             </SelectTrigger>
                             <SelectContent className="bg-[#001233] border-[#001B45]">
-                              <SelectItem value="PRESENT" className=" text-white  hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">
-                                Present
+                              <SelectItem value="PRESENT" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">
+                                Hadir
                               </SelectItem>
-                              <SelectItem value="ABSENT" className=" text-white  hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">
-                                Absent
+                              <SelectItem value="ABSENT" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">
+                                Tidak Hadir
                               </SelectItem>
-                              <SelectItem value="PERMISSION" className=" text-white  hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">
-                                Permission
+                              <SelectItem value="PERMISSION" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">
+                                Izin
                               </SelectItem>
                             </SelectContent>
                           </Select>
@@ -1013,7 +1013,7 @@ const EventDetailView: React.FC = () => {
                 {totalPages > 1 && (
                   <div className="flex items-center justify-between px-6 py-4 border-t border-gray-700/50">
                     <div className="text-sm text-gray-400">
-                      Showing {startIndex + 1} to {Math.min(endIndex, eventDetail.anggota.length)} of {eventDetail.anggota.length} entries
+                      Menampilkan {startIndex + 1} sampai {Math.min(endIndex, eventDetail.anggota.length)} dari {eventDetail.anggota.length} data
                     </div>
                     <div className="flex items-center gap-2">
                       <button

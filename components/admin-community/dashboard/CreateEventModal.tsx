@@ -203,7 +203,7 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) 
   return (
     <div className="fixed inset-0 flex items-center justify-center backdrop-blur-md bg-black/60 z-50">
       <div className="bg-[#001B45] text-white p-6 rounded-lg w-full max-w-2xl shadow-lg max-h-[90vh] overflow-y-auto">
-        <h2 className="text-2xl font-semibold mb-4">Event Details</h2>
+        <h2 className="text-2xl font-semibold mb-4">Detail Acara</h2>
         <form className="space-y-4" onSubmit={handleSubmit}>
           {/* Judul Acara */}
           <div>
@@ -389,10 +389,10 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose }) 
           {/* Button Action */}
           <div className="flex justify-end space-x-2">
             <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-600 rounded-md text-white hover:bg-gray-500 transition">
-              Cancel
+              Batal
             </button>
             <button type="submit" className="px-4 py-2 bg-blue-600 rounded-md text-white hover:bg-blue-500 transition">
-              Submit
+              Kirim
             </button>
           </div>
         </form>

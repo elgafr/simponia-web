@@ -27,15 +27,15 @@ export function ProjectNameSectionEdit({ sectionRef, errors = {}, onTitleChange 
 
   return (
     <div ref={sectionRef} className="mb-8 scroll-mt-24">
-      <h2 className="text-xl font-semibold text-white mb-4">Nama Project</h2>
+      <h2 className="text-xl font-semibold text-white mb-4">Nama Proyek</h2>
       <div className="space-y-4">
         <div>
-          <RequiredLabel>Nama Project</RequiredLabel>
+          <RequiredLabel>Nama Proyek</RequiredLabel>
           <Input
             value={title}
             onChange={(e) => onTitleChange(e.target.value)}
             className={`bg-white/5 border-0 text-white placeholder:text-gray-400 focus:bg-blue-900/30 focus-visible:ring-2 focus-visible:ring-blue-500 ${errors.title ? 'border-red-500' : ''}`}
-            placeholder="Masukkan nama project"
+            placeholder="Masukkan nama proyek"
           />
           {errors.title && (
             <p className="text-red-500 text-sm mt-1">{errors.title}</p>

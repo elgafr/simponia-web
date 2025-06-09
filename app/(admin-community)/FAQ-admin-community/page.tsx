@@ -1,8 +1,8 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import HeroSection1FAQ from "@/components/admin-community/FAQ_component/HeroSection1FAQ";
-import Footer from '@/components/user/landing-page/Footer';
 
+import Footer from '@/components/user/landing-page/Footer';
+import FAQ from '@/components/admin-community/FAQ_component/FAQ';
 export default async function FAQPage() {
   const cookieStore = await cookies();
   const token = cookieStore.get('token')?.value;
@@ -13,7 +13,7 @@ export default async function FAQPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <HeroSection1FAQ />
+      <FAQ/>
     </div>
   );
 }

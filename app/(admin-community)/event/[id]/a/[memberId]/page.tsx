@@ -176,7 +176,7 @@ const MemberDetailPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
+        <div className="text-white text-xl">Memuat...</div>
       </div>
     );
   }
@@ -184,7 +184,7 @@ const MemberDetailPage = () => {
   if (!anggotaData || !userProfile || !eventData) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] flex items-center justify-center">
-        <div className="text-white text-xl">Data not found</div>
+        <div className="text-white text-xl">Data tidak ditemukan</div>
       </div>
     );
   }

@@ -79,6 +79,19 @@ const getStatusColor = (status: string) => {
   }
 };
 
+const getStatusText = (status: string) => {
+  switch (status.toLowerCase()) {
+    case 'active':
+      return 'Aktif';
+    case 'ongoing':
+      return 'Sedang Berlangsung';
+    case 'finished':
+      return 'Selesai';
+    default:
+      return status;
+  }
+};
+
 const ITEMS_PER_PAGE = 5;
 
 export function DashboardTable({ eventData: initialEventData }: DashboardTableProps) {
@@ -159,6 +172,11 @@ export function DashboardTable({ eventData: initialEventData }: DashboardTablePr
         console.log('Response ok:', response.ok);
 
         if (!response.ok) {
+          if (response.status === 404) {
+            // If no events found, set empty array
+            setEvents([]);
+            return;
+          }
           const errorData = await response.json().catch(() => null);
           console.error('API Error:', {
             status: response.status,
@@ -188,7 +206,12 @@ export function DashboardTable({ eventData: initialEventData }: DashboardTablePr
         }
       } catch (error) {
         console.error('Error fetching events:', error);
-        toast.error(error instanceof Error ? error.message : 'Failed to fetch events');
+        // Don't show error toast for 404 (no data) case
+        if (!(error instanceof Error && error.message.includes('404'))) {
+          toast.error(error instanceof Error ? error.message : 'Failed to fetch events');
+        }
+        // Set empty array on error to show empty state
+        setEvents([]);
       } finally {
         setIsLoading(false);
       }
@@ -284,7 +307,7 @@ export function DashboardTable({ eventData: initialEventData }: DashboardTablePr
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-white">Loading...</div>
+        <div className="text-white">Memuat...</div>
       </div>
     );
   }
@@ -309,7 +332,7 @@ export function DashboardTable({ eventData: initialEventData }: DashboardTablePr
         <div className="relative flex-grow">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
-            placeholder="Cari event..."
+            placeholder="Cari acara..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 bg-white/5 border-0 text-white placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-blue-500"
@@ -334,9 +357,9 @@ export function DashboardTable({ eventData: initialEventData }: DashboardTablePr
             </SelectTrigger>
             <SelectContent className="bg-[#001233] border-[#001B45]">
               <SelectItem value="all" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Semua Status</SelectItem>
-              <SelectItem value="active" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Active</SelectItem>
-              <SelectItem value="ongoing" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Ongoing</SelectItem>
-              <SelectItem value="finished" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Finished</SelectItem>
+              <SelectItem value="active" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Aktif</SelectItem>
+              <SelectItem value="ongoing" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Sedang Berlangsung</SelectItem>
+              <SelectItem value="finished" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Selesai</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -369,10 +392,10 @@ export function DashboardTable({ eventData: initialEventData }: DashboardTablePr
                 <td className="px-6 py-4 text-gray-300 w-32">{event.jumlah_panitia || 0}</td>
                 <td className="px-6 py-4 w-40">
                   <span className={`px-3 py-1 rounded-full text-xs text-white ${getStatusColor(event.status || '')}`}>
-                    {event.status ? event.status.charAt(0).toUpperCase() + event.status.slice(1) : '-'}
+                    {event.status ? getStatusText(event.status) : '-'}
                   </span>
                 </td>
-                <td className="px-6 py-4 w-32">
+                <td className="px-6 py-4 w-24">
                   <div className="flex gap-2">
                     <button 
                       onClick={() => handleView(event.id)}
@@ -393,7 +416,7 @@ export function DashboardTable({ eventData: initialEventData }: DashboardTablePr
                         <AlertDialogHeader>
                           <AlertDialogTitle className="text-white">Konfirmasi Hapus</AlertDialogTitle>
                           <AlertDialogDescription className="text-gray-400">
-                            Apakah Anda yakin ingin menghapus event ini? Tindakan ini tidak dapat dibatalkan.
+                            Apakah Anda yakin ingin menghapus acara ini? Tindakan ini tidak dapat dibatalkan.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -419,7 +442,7 @@ export function DashboardTable({ eventData: initialEventData }: DashboardTablePr
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-6 py-4 border-t border-gray-700/50">
             <div className="text-sm text-gray-400">
-              Showing {startIndex + 1} to {Math.min(endIndex, filteredEvents.length)} of {filteredEvents.length} entries
+              Menampilkan {startIndex + 1} sampai {Math.min(endIndex, filteredEvents.length)} dari {filteredEvents.length} data
             </div>
             <div className="flex items-center gap-2">
               <button

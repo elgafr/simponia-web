@@ -19,12 +19,11 @@ interface ShowcaseDetailClientProps {
   data: PortfolioItem | null;
 }
 
-
-
 export default function ShowcaseDetailClient({ data }: ShowcaseDetailClientProps) {
   const [isImageOpen, setIsImageOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Log the received data
@@ -34,19 +33,47 @@ export default function ShowcaseDetailClient({ data }: ShowcaseDetailClientProps
 
     // Handle redirect if needed
     if (!data || data.status === 'Perlu Perubahan' || data.status === 'Dihapus') {
-      router.push('/showcase');
+      // Set loading to false first to show proper background
+      setLoading(false);
+      // Use setTimeout to ensure the background is rendered before redirect
+      setTimeout(() => {
+        router.push('/showcase');
+      }, 100);
       return;
     }
+
+    setLoading(false);
   }, [data, router]);
 
-  // Show loading state if no data
-  if (!data) {
+  // Check if all main data is empty
+  const isAllDataEmpty =
+    !data?.title &&
+    !data?.description &&
+    (!data?.tags || data.tags.length === 0) &&
+    (!data?.links || data.links.length === 0) &&
+    (!data?.teamMembers || data.teamMembers.length === 0) &&
+    !data?.image &&
+    !data?.category &&
+    !data?.tahun &&
+    !data?.creator;
+
+  // Show loading state if loading
+  if (loading) {
     return (
-      <main className="flex-1 bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-8 pb-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-white text-center">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C]">
+        <div className="text-white text-xl">Memuat...</div>
+      </div>
+    );
+  }
+
+  // Show empty state if no data
+  if (!data || isAllDataEmpty) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C]">
+        <div className="text-white text-2xl text-center opacity-60">
+          Showcase tidak ditemukan atau data kosong.
         </div>
-      </main>
+      </div>
     );
   }
 
@@ -99,7 +126,7 @@ export default function ShowcaseDetailClient({ data }: ShowcaseDetailClientProps
                 </div>
               </DialogTrigger>
               <DialogContent className="max-w-4xl bg-[#001233] border-white/10">
-                <DialogTitle className="sr-only">Preview Image</DialogTitle>
+                <DialogTitle className="sr-only">Pratinjau Gambar</DialogTitle>
                 <div className="relative max-h-[80vh] overflow-y-auto">
                   <Image
                     src={`${process.env.NEXT_PUBLIC_API_URL}${data.image}`}
@@ -146,10 +173,10 @@ export default function ShowcaseDetailClient({ data }: ShowcaseDetailClientProps
               <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 w-fit mt-6 break-all max-w-full">
                 <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
                   <MessageSquare className="h-5 w-5" />
-                  Get in Touch
+                  Hubungi Kami
                 </h2>
                 <p className="text-gray-300 mb-4">
-                  {data.creator ? `${data.creator.name}/${data.creator.nim}` : 'No creator information available'}
+                  {data.creator ? `${data.creator.name}/${data.creator.nim}` : 'Informasi pembuat tidak tersedia'}
                 </p>
                 <div className="flex gap-3">
                   {socialIcons.map((social, index) => {
@@ -174,8 +201,8 @@ export default function ShowcaseDetailClient({ data }: ShowcaseDetailClientProps
                       >
                         <Icon className="h-5 w-5" />
                         {social.name === 'email' && copied && (
-                          <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-[#011B45] px-2 py-1 rounded text-sm text-white">
-                            Email copied!
+                          <span className="fixed ml-6 top-16 left-1/3 transform -translate-x-1/2 bg-[#011B45] px-4 py-2 rounded-lg text-sm text-white shadow-lg z-50">
+                            Email disalin!
                           </span>
                         )}
                       </a>
@@ -213,7 +240,7 @@ export default function ShowcaseDetailClient({ data }: ShowcaseDetailClientProps
               <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6">
                 <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
                   <Users className="h-5 w-5" />
-                  Team Project
+                  Tim Proyek
                 </h2>
                 <div className="space-y-4">
                   {data?.teamMembers && data.teamMembers.map((member: { name: string; role: string; nim: string }, index: number) => (

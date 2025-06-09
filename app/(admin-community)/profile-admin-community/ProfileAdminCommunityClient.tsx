@@ -7,7 +7,7 @@ import { PenLine, Pencil, User, Upload } from "lucide-react";
 import Image from 'next/image';
 import { useRef } from 'react';
 
-// Helper functions for date formatting
+// Fungsi pembantu untuk format tanggal
 function formatDate(dateString: string | null | undefined): string {
   if (!dateString) return '-';
   const date = new Date(dateString);
@@ -60,7 +60,7 @@ interface ProfileAdminCommunityClientProps {
   profileData: ProfileData | null;
 }
 
-// ProfileImage Component
+// Komponen Gambar Profil
 interface ProfileImageProps {
   profileImage: string;
   onImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -83,7 +83,7 @@ function ProfileImage({ profileImage, onImageUpload }: ProfileImageProps) {
         <div className="relative w-full h-full">
           <Image
             src={profileImage}
-            alt="Profile Picture"
+            alt="Foto Profil"
             fill
             className="object-cover"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -112,7 +112,7 @@ function ProfileImage({ profileImage, onImageUpload }: ProfileImageProps) {
   );
 }
 
-// ProfileBio Component
+// Komponen Bio Profil
 interface ProfileBioProps {
   bio: string;
   isEditing: boolean;
@@ -165,7 +165,7 @@ function ProfileBio({
   );
 }
 
-// MyProfile Component
+// Komponen Profil Saya
 interface MyProfileProps {
   profileData: ProfileData;
 }
@@ -173,14 +173,14 @@ interface MyProfileProps {
 function MyProfile({ profileData }: MyProfileProps) {
   return (
     <div className="bg-white/5 backdrop-blur-sm rounded-lg p-6 mb-6">
-      <h2 className="text-xl font-semibold text-white mb-6">My Profile</h2>
+      <h2 className="text-xl font-semibold text-white mb-6">Profil Saya</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <p className="text-gray-400 mb-1">Name</p>
+          <p className="text-gray-400 mb-1">Nama</p>
           <p className="text-white">{profileData.nama}</p>
         </div>
         <div>
-          <p className="text-gray-400 mb-1">Gender</p>
+          <p className="text-gray-400 mb-1">Jenis Kelamin</p>
           <p className="text-white">{profileData.gender}</p>
         </div>
         <div>
@@ -188,15 +188,15 @@ function MyProfile({ profileData }: MyProfileProps) {
           <p className="text-white">{profileData.user.nim}</p>
         </div>
         <div>
-          <p className="text-gray-400 mb-1">Date Of Birth</p>
+          <p className="text-gray-400 mb-1">Tanggal Lahir</p>
           <p className="text-white">{formatDate(profileData.tanggalLahir)}</p>
         </div>
         <div>
-          <p className="text-gray-400 mb-1">Mobile Number</p>
+          <p className="text-gray-400 mb-1">Nomor Telepon</p>
           <p className="text-white">{profileData.noHandphone}</p>
         </div>
         <div>
-          <p className="text-gray-400 mb-1">State</p>
+          <p className="text-gray-400 mb-1">Kota</p>
           <p className="text-white">{profileData.kota}</p>
         </div>
       </div>
@@ -204,7 +204,7 @@ function MyProfile({ profileData }: MyProfileProps) {
   );
 }
 
-// AccountDetails Component
+// Komponen Detail Akun
 interface AccountDetailsProps {
   profileData: ProfileData;
   isEditing: string | null;
@@ -234,7 +234,7 @@ function AccountDetails({
   return (
     <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold text-white">Account Details</h2>
+        <h2 className="text-xl font-semibold text-white">Detail Akun</h2>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {fields.map(({ label, value, field }) => (
@@ -276,7 +276,7 @@ function AccountDetails({
   );
 }
 
-// CommunityDetails Component
+// Komponen Detail Komunitas
 interface CommunityDetailsProps {
   profileData: ProfileData;
   isEditing: string | null;
@@ -297,16 +297,16 @@ function CommunityDetails({
   setEditValue 
 }: CommunityDetailsProps) {
   const fields = [
-    { label: 'Community', value: profileData.namaKomunitas || '-', field: 'namaKomunitas' },
-    { label: 'Division', value: profileData.divisi || '-', field: 'divisi' },
-    { label: 'Date Joined', value: formatDate(profileData.joinKomunitas), field: 'joinKomunitas', type: 'date' },
-    { label: 'Position', value: profileData.posisi || '-', field: 'posisi' },
+    { label: 'Komunitas', value: profileData.namaKomunitas || '-', field: 'namaKomunitas' },
+    { label: 'Divisi', value: profileData.divisi || '-', field: 'divisi' },
+    { label: 'Tanggal Bergabung', value: formatDate(profileData.joinKomunitas), field: 'joinKomunitas', type: 'date' },
+    { label: 'Posisi', value: profileData.posisi || '-', field: 'posisi' },
   ];
 
   return (
     <div className="bg-[#182B4D] rounded-xl p-6 mt-6 text-white">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold">Community Details</h2>
+        <h2 className="text-xl font-semibold">Detail Komunitas</h2>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {fields.map(({ label, value, field, type }) => (
@@ -365,7 +365,7 @@ export default function ProfileAdminCommunityClient({ profileData }: ProfileAdmi
   const [profile, setProfile] = useState(profileData);
 
   if (!profile) {
-    return <div>Loading...</div>;
+    return <div>Memuat...</div>;
   }
 
   const handleEdit = (field: string, value: string) => {
@@ -376,11 +376,11 @@ export default function ProfileAdminCommunityClient({ profileData }: ProfileAdmi
   const handleSave = async (field: string) => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) throw new Error('No token found');
+      if (!token) throw new Error('Token tidak ditemukan');
 
       const updateBody = { 
         ...profile, 
-        [field]: editValue || null // Set to null if empty string
+        [field]: editValue || null // Set ke null jika string kosong
       };
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user/${profile.id}`, {
@@ -398,8 +398,8 @@ export default function ProfileAdminCommunityClient({ profileData }: ProfileAdmi
       setIsEditing(null);
       setProfile(responseData);
     } catch (error) {
-      console.error('Error updating field:', error);
-      alert('Failed to update field. Please try again.');
+      console.error('Error memperbarui field:', error);
+      alert('Gagal memperbarui field. Silakan coba lagi.');
     }
   };
 
@@ -415,7 +415,7 @@ export default function ProfileAdminCommunityClient({ profileData }: ProfileAdmi
   const handleSaveBio = async () => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) throw new Error('No token found');
+      if (!token) throw new Error('Token tidak ditemukan');
 
       const requestBody = {
         keterangan: bioValue,
@@ -445,8 +445,8 @@ export default function ProfileAdminCommunityClient({ profileData }: ProfileAdmi
       setIsEditingBio(false);
       setProfile(responseData);
     } catch (error) {
-      console.error('Error updating bio:', error);
-      alert('Failed to update bio. Please try again.');
+      console.error('Error memperbarui bio:', error);
+      alert('Gagal memperbarui bio. Silakan coba lagi.');
     }
   };
 
@@ -460,7 +460,7 @@ export default function ProfileAdminCommunityClient({ profileData }: ProfileAdmi
 
     try {
       const token = localStorage.getItem('token');
-      if (!token) throw new Error('No token found');
+      if (!token) throw new Error('Token tidak ditemukan');
 
       const formData = new FormData();
       formData.append('profilePicture', file);
@@ -489,8 +489,8 @@ export default function ProfileAdminCommunityClient({ profileData }: ProfileAdmi
 
       setProfile(responseData);
     } catch (error) {
-      console.error('Error uploading image:', error);
-      alert('Failed to upload image. Please try again.');
+      console.error('Error mengunggah gambar:', error);
+      alert('Gagal mengunggah gambar. Silakan coba lagi.');
     }
   };
 

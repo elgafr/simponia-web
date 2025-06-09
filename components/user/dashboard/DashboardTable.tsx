@@ -23,6 +23,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PortfolioItem } from '@/types/portfolio';
+import { useEditPortfolioStore } from '@/store/editPortfolioStore';
 
 interface DashboardTableProps {
   portfolioData: PortfolioItem[];
@@ -186,9 +187,9 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
     return (
       <div className="bg-[#011B45]/50 backdrop-blur-sm rounded-xl border border-gray-700/50 mt-8 mb-8">
         <EmptyState 
-          title="Belum ada portfolio"
-          description="Anda belum memiliki portfolio. Mulai buat portfolio Anda sekarang!"
-          actionLabel="Buat Portfolio"
+          title="Belum ada portofolio"
+          description="Anda belum memiliki portofolio. Mulai buat portofolio Anda sekarang!"
+          actionLabel="Buat Portofolio"
           actionHref="/portfolio"
         />
       </div>
@@ -241,6 +242,8 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
   };
 
   const handleEdit = (id: string, name: string) => {
+    // Clear the edit portfolio store before navigating
+    useEditPortfolioStore.getState().resetStore();
     router.push(`/portfolio/${id}`);
   };
 
@@ -274,7 +277,7 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
         <div className="relative flex-grow">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
-            placeholder="Cari nama project..."
+            placeholder="Cari nama proyek..."
             value={searchQuery}
             onChange={handleSearchChange}
             className="pl-10 bg-white/5 border-0 text-white placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-blue-500"
@@ -283,7 +286,7 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
         <div className="flex gap-4">
           <Select value={categoryFilter} onValueChange={(value) => handleFilterChange(value, 'category')}>
             <SelectTrigger className="w-[180px] bg-white/5 border-0 text-white hover:bg-white/10 transition-colors">
-              <SelectValue placeholder="Kategori Portfolio" />
+              <SelectValue placeholder="Kategori Portofolio" />
             </SelectTrigger>
             <SelectContent className="bg-[#001233] border-[#001B45]">
               <SelectItem value="all" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Semua Kategori</SelectItem>
@@ -295,7 +298,7 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
           </Select>
           <Select value={statusFilter} onValueChange={(value) => handleFilterChange(value, 'status')}>
             <SelectTrigger className="w-[180px] bg-white/5 border-0 text-white hover:bg-white/10 transition-colors">
-              <SelectValue placeholder="Status Portfolio" />
+              <SelectValue placeholder="Status Portofolio" />
             </SelectTrigger>
             <SelectContent className="bg-[#001233] border-[#001B45]">
               <SelectItem value="all" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Semua Status</SelectItem>
@@ -314,7 +317,7 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
           <thead>
             <tr className="border-b border-gray-700">
               <th className="px-6 py-4 text-left text-sm font-semibold text-white w-12">No.</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-white w-64">Nama Project</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-white w-64">Nama Proyek</th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-white w-40">Kategori</th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-white w-24">Tahun</th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-white w-40">Status</th>
@@ -348,6 +351,7 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
                       <button 
                         onClick={() => handleView(item.id)}
                         className="p-1 text-gray-400 hover:text-white hover:bg-transparent"
+                        title="Lihat"
                       >
                         <Eye className="h-4 w-4" />
                       </button>
@@ -356,6 +360,7 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
                       <button 
                         onClick={() => handleEdit(item.id, item.nama_projek)}
                         className="p-1 text-gray-400 hover:text-white hover:bg-transparent"
+                        title="Edit"
                       >
                         <PenLine className="h-4 w-4" />
                       </button>
@@ -366,6 +371,7 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
                           <button 
                             className="p-1 text-gray-400 hover:text-white hover:bg-transparent"
                             disabled={isDeleting}
+                            title="Hapus"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -374,7 +380,7 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
                           <AlertDialogHeader>
                             <AlertDialogTitle className="text-white">Konfirmasi Hapus</AlertDialogTitle>
                             <AlertDialogDescription className="text-gray-400">
-                              Apakah Anda yakin ingin menghapus portfolio ini? Tindakan ini tidak dapat dibatalkan.
+                              Apakah Anda yakin ingin menghapus portofolio ini? Tindakan ini tidak dapat dibatalkan.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
@@ -401,13 +407,14 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-6 py-4 border-t border-gray-700/50">
             <div className="text-sm text-gray-400">
-              Showing {startIndex + 1} to {Math.min(endIndex, filteredData.length)} of {filteredData.length} entries
+              Menampilkan {startIndex + 1} sampai {Math.min(endIndex, filteredData.length)} dari {filteredData.length} entri
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
                 className="p-2 text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Halaman Sebelumnya"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
@@ -430,6 +437,7 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
                 className="p-2 text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Halaman Selanjutnya"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>

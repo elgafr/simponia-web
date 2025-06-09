@@ -30,7 +30,7 @@ interface AnggotaAcara {
   updated_at: string;
 }
 
-interface UserProfile {
+interface ProfilPengguna {
   id: string;
   user: {
     id: string;
@@ -56,13 +56,13 @@ interface UserProfile {
   updatedAt: string;
 }
 
-interface CommunityProfileSectionProps {
-  userProfile: UserProfile;
+interface PropsBagianProfilKomunitas {
+  userProfile: ProfilPengguna;
   anggotaData: AnggotaAcara;
 }
 
-const CommunityProfileSection: React.FC<CommunityProfileSectionProps> = ({ userProfile, anggotaData }) => {
-  // Default profile user ID if not provided in the response
+const BagianProfilKomunitas: React.FC<PropsBagianProfilKomunitas> = ({ userProfile, anggotaData }) => {
+  // ID profil pengguna default jika tidak disediakan dalam respons
   const profileUserId = anggotaData.profile_user?.id || "d98c0c5e-4d8a-4abe-a2e2-8f8809fdcc90";
 
   const getStatusBg = (status: string) => {
@@ -89,56 +89,59 @@ const CommunityProfileSection: React.FC<CommunityProfileSectionProps> = ({ userP
 
   return (
     <section className="text-white px-2 md:px-8 py-10">
-      {/* Profile Section */}
+      {/* Bagian Profil */}
       <div className="max-w-6xl mx-auto w-full">
         <div className="text-white mb-10 text-left">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-3xl"><i className="fa fa-user" /></span>
-            <h2 className="text-2xl font-bold">Profile</h2>
+            <h2 className="text-2xl font-bold">Profil</h2>
           </div>
           <div className="border-t border-gray-400 mb-6" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-base md:text-md">
-          {/* Profile Card */}
+          {/* Kartu Profil */}
           <div className="bg-white/10 rounded-xl shadow p-6 flex flex-col gap-2 flex-1">
             <div className="flex"><span className="w-40 text-gray-300">Nama Lengkap</span>: {userProfile.nama}</div>
             <div className="flex"><span className="w-40 text-gray-300">NIM</span>: {userProfile.user.nim}</div>
             <div className="flex"><span className="w-40 text-gray-300">Email</span>: {userProfile.email}</div>
-            <div className="flex"><span className="w-40 text-gray-300">Gender</span>: {userProfile.gender === 'L' ? 'Laki-laki' : 'Perempuan'}</div>
+            <div className="flex"><span className="w-40 text-gray-300">Jenis Kelamin</span>: {userProfile.gender === 'L' ? 'Laki-laki' : 'Perempuan'}</div>
             <div className="flex"><span className="w-40 text-gray-300">No. Handphone</span>: {userProfile.noHandphone}</div>
            
           </div>
-          {/* Community Card */}
+          {/* Kartu Komunitas */}
           <div className="bg-white/10 rounded-xl shadow p-6 mt-6 md:mt-0 flex-1">
-            <span className="font-bold text-lg mb-2 block">Community</span>
+            <span className="font-bold text-lg mb-2 block">Komunitas</span>
             <div className="font-semibold ml-2">{userProfile.namaKomunitas}</div>
-            <div className="flex"><span className="ml-2 w-32 text-gray-300">Join Date</span>: {formatDate(userProfile.joinKomunitas)}</div>
-            <div className="flex"><span className="ml-2 w-32 text-gray-300">Division</span>: {userProfile.divisi}</div>
-            <div className="flex"><span className="ml-2 w-32 text-gray-300">Position</span>: {userProfile.posisi}</div>
+            <div className="flex"><span className="ml-2 w-40 text-gray-300">Tanggal Bergabung</span>: {formatDate(userProfile.joinKomunitas)}</div>
+            <div className="flex"><span className="ml-2 w-40 text-gray-300">Divisi</span>: {userProfile.divisi}</div>
+            <div className="flex"><span className="ml-2 w-40 text-gray-300">Posisi</span>: {userProfile.posisi}</div>
           </div>
         </div>
       </div>
 
       <div className="bg-[#0A1E42] rounded-lg p-6 mt-4">
-        <span className="font-bold text-lg mb-2 block">Event Details</span>
+        <span className="font-bold text-lg mb-2 block">Detail Acara</span>
         <div className="flex"><span className="ml-2 w-32 text-gray-300">Jabatan</span>: <span className="ml-2" >{anggotaData.jabatan}</span></div>
         <div className="flex items-center">
           <span className="ml-2 w-32 text-gray-300">Status</span>: 
           <span className={`${getStatusBg(anggotaData.status)} text-white ml-2 mt-2 mb-2 px-3 py-1 rounded-full text-sm`}>
-            {anggotaData.status}
+            {anggotaData.status === "PRESENT" ? "Hadir" : 
+             anggotaData.status === "ABSENT" ? "Tidak Hadir" : 
+             anggotaData.status === "PERMISSION" ? "Izin" : 
+             anggotaData.status}
           </span>
         </div>
         <div className="flex"><span className="ml-2 w-32 text-gray-300">Catatan</span>: <span className="ml-2" >{anggotaData.catatan || "-"}</span></div>
         
-        {/* Grade Information */}
+        {/* Informasi Nilai */}
         <div className="mt-4">
-          <span className="font-bold text-lg mb-2 block">Grade Information</span>
+          <span className="font-bold text-lg mb-2 block">Informasi Nilai</span>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             <div className="flex"><span className="ml-2 w-32 text-gray-300">Kerjasama</span>: <span className="ml-2">{anggotaData.kerjasama || "-"}</span></div>
             <div className="flex"><span className="ml-2 w-32 text-gray-300">Kedisiplinan</span>: <span className="ml-2">{anggotaData.kedisiplinan || "-"}</span></div>
             <div className="flex"><span className="ml-2 w-32 text-gray-300">Komunikasi</span>: <span className="ml-2">{anggotaData.komunikasi || "-"}</span></div>
             <div className="flex"><span className="ml-2 w-32 text-gray-300">Tanggung Jawab</span>: <span className="ml-2">{anggotaData.tanggung_jawab || "-"}</span></div>
-            <div className="flex"><span className="ml-2 w-32 text-gray-300">Grade</span>: <span className="ml-2 font-semibold">{anggotaData.grade || "-"}</span></div>
+            <div className="flex"><span className="ml-2 w-32 text-gray-300">Nilai</span>: <span className="ml-2 font-semibold">{anggotaData.grade || "-"}</span></div>
           </div>
         </div>
       </div>
@@ -146,4 +149,4 @@ const CommunityProfileSection: React.FC<CommunityProfileSectionProps> = ({ userP
   );
 };
 
-export default CommunityProfileSection;
+export default BagianProfilKomunitas;

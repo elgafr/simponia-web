@@ -98,7 +98,7 @@ export default function PreviewClient() {
   if (!mounted || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C]">
-        <div className="text-white text-xl">Loading...</div>
+        <div className="text-white text-xl">Memuat...</div>
       </div>
     );
   }
@@ -159,7 +159,7 @@ export default function PreviewClient() {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        throw new Error('No authentication token found');
+        throw new Error('Token autentikasi tidak ditemukan');
       }
 
       // Create FormData for the entire portfolio submission
@@ -190,7 +190,7 @@ export default function PreviewClient() {
           throw new Error('Gagal memproses gambar. Pastikan format gambar valid (jpg, jpeg, png, gif)');
         }
       } else {
-        throw new Error('Gambar project diperlukan');
+        throw new Error('Gambar proyek diperlukan');
       }
 
       formData.append('deskripsi', description);
@@ -285,14 +285,14 @@ export default function PreviewClient() {
               variant="outline"
               className="bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-white"
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
+              <ArrowLeft className="h-4 w-4 mr-0" />
+              Kembali
             </Button>
             <Button
               className="bg-green-500 text-white hover:bg-green-600"
               onClick={handleSubmit}
             >
-              Submit Portfolio
+              Kirim Portofolio
             </Button>
           </div>
 
@@ -304,7 +304,7 @@ export default function PreviewClient() {
                   <div className="cursor-pointer">
                     <Image
                       src={projectImage}
-                      alt={title || 'Project Image'}
+                      alt={title || 'Gambar Proyek'}
                       width={1200}
                       height={300}
                       className="w-full h-[300px] object-cover hover:opacity-90 transition-opacity"
@@ -312,11 +312,11 @@ export default function PreviewClient() {
                   </div>
                 </DialogTrigger>
                 <DialogContent className="max-w-4xl bg-[#001233] border-white/10">
-                  <DialogTitle className="sr-only">Preview Image</DialogTitle>
+                  <DialogTitle className="sr-only">Pratinjau Gambar</DialogTitle>
                   <div className="relative max-h-[80vh] overflow-y-auto">
                     <Image
                       src={projectImage}
-                      alt={title || 'Project Image'}
+                      alt={title || 'Gambar Proyek'}
                       width={1200}
                       height={800}
                       className="w-full h-auto object-contain"
@@ -331,7 +331,7 @@ export default function PreviewClient() {
           <div className="mb-12">
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
               <div className="lg:col-span-3 break-all max-w-full">
-                <h1 className="text-4xl font-bold text-white mb-2">{title || 'Project Title'}</h1>
+                <h1 className="text-4xl font-bold text-white mb-2">{title || 'Judul Proyek'}</h1>
                 {(category || year) && (
                   <div className="text-lg text-gray-300 mb-4">
                     {categoryLabel(category)}
@@ -351,13 +351,13 @@ export default function PreviewClient() {
                     ))}
                   </div>
                 )}
-                <p className="text-gray-300">{description || 'Project Description'}</p>
+                <p className="text-gray-300">{description || 'Deskripsi Proyek'}</p>
                 {/* Get in Touch */}
                 {contact && (
                   <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 w-fit mt-6 break-all max-w-full">
                     <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
                       <MessageSquare className="h-5 w-5" />
-                      Get in Touch
+                      Hubungi Kami
                     </h2>
                     <p className="text-gray-300 mb-4">
                       {contact.name && contact.id
@@ -413,7 +413,7 @@ export default function PreviewClient() {
                   <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6">
                     <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
                       <Users className="h-5 w-5" />
-                      Team Project
+                      Tim Proyek
                     </h2>
                     <div className="space-y-4">
                       {teamMembers.map((member: TeamMember, index: number) => (

@@ -76,11 +76,11 @@ const RequiredLabel = ({ children }: { children: React.ReactNode }) => (
 );
 
 const menuItems = [
-  { id: 'projectName', label: 'Nama Project' },
+  { id: 'projectName', label: 'Nama Proyek' },
   { id: 'category', label: 'Kategori' },
-  { id: 'profile', label: 'Profile' },
-  { id: 'teamProject', label: 'Team Project' },
-  { id: 'detailProject', label: 'Detail Project' },
+  { id: 'profile', label: 'Profil' },
+  { id: 'teamProject', label: 'Tim Proyek' },
+  { id: 'detailProject', label: 'Detail Proyek' },
 ];
 
 export default function PortfolioClient() {
@@ -233,7 +233,7 @@ export default function PortfolioClient() {
 
     // Validate title
     if (!title) {
-      newErrors.title = "Nama project harus diisi";
+      newErrors.title = "Nama proyek harus diisi";
       hasError = true;
     }
 
@@ -251,13 +251,13 @@ export default function PortfolioClient() {
 
     // Validate year
     if (!year) {
-      newErrors.year = "Tahun project harus diisi";
+      newErrors.year = "Tahun proyek harus diisi";
       hasError = true;
     }
 
     // Validate description
     if (!description) {
-      newErrors.description = "Deskripsi project harus diisi";
+      newErrors.description = "Deskripsi proyek harus diisi";
       hasError = true;
     }
 
@@ -274,7 +274,7 @@ export default function PortfolioClient() {
         hasError = true;
       }
       if (!link.url.trim()) {
-        newErrors[`projectLink_${link.id}_url`] = "Link project harus diisi";
+        newErrors[`projectLink_${link.id}_url`] = "Link proyek harus diisi";
         hasError = true;
       }
     });
@@ -286,14 +286,14 @@ export default function PortfolioClient() {
         hasError = true;
       }
       if (!member.role) {
-        newErrors[`teamMember_${member.id}_role`] = "Role harus diisi";
+        newErrors[`teamMember_${member.id}_role`] = "Peran harus diisi";
         hasError = true;
       }
     });
 
     // Validate project image
     if (!projectImage.file) {
-      newErrors.projectImage = "Gambar project harus diisi";
+      newErrors.projectImage = "Gambar proyek harus diisi";
       hasError = true;
     }
 
@@ -677,7 +677,7 @@ export default function PortfolioClient() {
               }}
             >
               <Trash className="h-4 w-4 mr-0" />
-              Clear
+              Reset Portofolio
             </Button>
           </div>
 
@@ -742,10 +742,10 @@ export default function PortfolioClient() {
                   className="bg-blue-500 text-white hover:bg-blue-600 border-0 hover:text-white"
                   onClick={handlePreview}
                 >
-                  Preview Portfolio
+                  Pratinjau Portofolio
                 </Button>
                 <Button className="bg-green-500 text-white hover:bg-green-600" onClick={handleSubmit}>
-                  Submit Portfolio
+                  Kirim Portofolio
                 </Button>
               </div>
             </div>
@@ -759,7 +759,7 @@ export default function PortfolioClient() {
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white">Berhasil!</AlertDialogTitle>
             <AlertDialogDescription className="text-gray-400">
-              Portfolio Anda berhasil dikirim dan sedang menunggu verifikasi.
+              Portofolio Anda berhasil dikirim dan sedang menunggu verifikasi.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -767,7 +767,7 @@ export default function PortfolioClient() {
               onClick={() => router.push(`/showcase/${submittedPortfolioId}`)}
               className="bg-green-600 text-white hover:bg-green-700"
             >
-              Lihat Portfolio
+              Lihat Portofolio
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

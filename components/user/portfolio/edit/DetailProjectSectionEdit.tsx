@@ -101,18 +101,18 @@ export function DetailProjectSectionEdit({
 
   return (
     <div ref={sectionRef} className="mb-8 scroll-mt-24">
-      <h2 className="text-xl font-semibold text-white mb-4">Detail Project</h2>
+      <h2 className="text-xl font-semibold text-white mb-4">Detail Proyek</h2>
       <div className="space-y-6">
         {/* Tahun Project */}
         <div>
-          <RequiredLabel>Tahun Project Dibuat</RequiredLabel>
+          <RequiredLabel>Tahun Proyek Dibuat</RequiredLabel>
           <Input
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"
             value={year}
             onChange={handleYearChange}
-            placeholder="Masukkan Tahun Project Dibuat"
+            placeholder="Masukkan Tahun Proyek Dibuat"
             className={`bg-white/5 border-0 text-white placeholder:text-gray-400 focus:bg-blue-900/30 focus-visible:ring-2 focus-visible:ring-blue-500 ${errors.year ? 'border-red-500' : ''}`}
           />
           {errors.year && (
@@ -137,12 +137,12 @@ export function DetailProjectSectionEdit({
                 )}
               </div>
               <div className="flex-1">
-                <RequiredLabel>Link Project</RequiredLabel>
+                <RequiredLabel>Link Proyek</RequiredLabel>
                 <Input
                   value={link.url}
                   onChange={(e) => onLinkChange(link.id, 'url', e.target.value)}
                   className={`bg-white/5 border-0 text-white placeholder:text-gray-400 focus:bg-blue-900/30 focus-visible:ring-2 focus-visible:ring-blue-500 ${errors[`projectLink_${link.id}_url`] ? 'border-red-500' : ''}`}
-                  placeholder="Masukkan Link Project"
+                  placeholder="Masukkan Link Proyek"
                 />
                 {errors[`projectLink_${link.id}_url`] && (
                   <p className="text-red-500 text-sm mt-1">{errors[`projectLink_${link.id}_url`]}</p>
@@ -207,11 +207,11 @@ export function DetailProjectSectionEdit({
 
         {/* Description */}
         <div>
-          <RequiredLabel>Description</RequiredLabel>
+          <RequiredLabel>Deskripsi</RequiredLabel>
           <Textarea
             value={description}
             onChange={(e) => onDescriptionChange(e.target.value)}
-            placeholder="Description"
+            placeholder="Masukkan deskripsi proyek"
             className={`bg-white/5 border-0 text-white placeholder:text-gray-400 focus:bg-blue-900/30 focus-visible:ring-2 focus-visible:ring-blue-500 min-h-[150px] ${errors.description ? 'border-red-500' : ''}`}
           />
           {errors.description && (
@@ -221,7 +221,7 @@ export function DetailProjectSectionEdit({
 
         {/* Image Upload */}
         <div>
-          <RequiredLabel>Image</RequiredLabel>
+          <RequiredLabel>Gambar</RequiredLabel>
           <div 
             onClick={onImageClick}
             className={`relative w-full h-[200px] bg-white/5 rounded-lg cursor-pointer hover:bg-white/10 transition-colors ${errors.projectImage ? 'border-2 border-red-500' : ''}`}
@@ -229,14 +229,14 @@ export function DetailProjectSectionEdit({
             {projectImage.preview ? (
               <Image
                 src={projectImage.preview}
-                alt="Project Preview"
+                alt="Pratinjau Proyek"
                 fill
                 className="object-cover rounded-lg"
               />
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-gray-400">
                 <ImageIcon className="w-12 h-12 mb-2" />
-                <p>Klik untuk upload gambar</p>
+                <p>Klik untuk unggah gambar</p>
               </div>
             )}
             <input

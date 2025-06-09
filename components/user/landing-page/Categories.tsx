@@ -5,25 +5,25 @@ const categories = [
   {
     icon: '/Source Code.svg',
     title: 'Rekayasa\nPerangkat Lunak',
-    description: 'Lorem ipsum dolor sit amet, consectetur. Tellus aliquet amet tortor ut donec. Suscipit, tortor cursus est ac.',
+    description: 'Tampilkan proyek pengembangan aplikasi, website, dan sistem perangkat lunak lainnya. Bagikan pengalaman Anda dalam membangun solusi teknologi.',
     link: '/category/software'
   },
   {
     icon: '/Game Controller.svg',
     title: 'Game\nIntelligence',
-    description: 'Lorem ipsum dolor sit amet, consectetur. Tellus aliquet amet tortor ut donec. Suscipit, tortor cursus est ac.',
+    description: 'Pamerkan karya game development Anda, mulai dari desain game, pengembangan, hingga implementasi kecerdasan buatan dalam game.',
     link: '/category/game'
   },
   {
     icon: '/Slice.svg',
-    title: 'Data\nScience',
-    description: 'Lorem ipsum dolor sit amet, consectetur. Tellus aliquet amet tortor ut donec. Suscipit, tortor cursus est ac.',
+    title: 'Data\nSains',
+    description: 'Bagikan proyek analisis data, machine learning, dan visualisasi data Anda. Tunjukkan kemampuan Anda dalam mengolah dan menganalisis data.',
     link: '/category/data'
   },
   {
     icon: '/Network.svg',
-    title: 'Network\nand Security',
-    description: 'Lorem ipsum dolor sit amet, consectetur. Tellus aliquet amet tortor ut donec. Suscipit, tortor cursus est ac.',
+    title: 'Jaringan dan\nKeamanan',
+    description: 'Tampilkan proyek terkait jaringan komputer, keamanan siber, dan implementasi sistem keamanan. Bagikan pengalaman Anda dalam mengamankan sistem.',
     link: '/category/network'
   }
 ];

@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export interface Showcase {
   id: number;
@@ -43,6 +44,7 @@ const getPerformanceColor = (performance: string) => {
 const ITEMS_PER_PAGE = 5;
 
 export function ShowcaseTable({ showcaseData }: ShowcaseTableProps) {
+  const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedYear, setSelectedYear] = useState('all');
@@ -65,13 +67,17 @@ export function ShowcaseTable({ showcaseData }: ShowcaseTableProps) {
   // Get unique years for select
   const yearOptions = Array.from(new Set(showcaseData.map(item => item.year)));
 
+  const handleViewDetail = (id: number) => {
+    router.push(`/showcase-detail-admin-community/${id}`);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-grow">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
-            placeholder="Search Name..."
+            placeholder="Cari Nama..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 bg-white/5 border-0 text-white placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-blue-500"
@@ -91,7 +97,7 @@ export function ShowcaseTable({ showcaseData }: ShowcaseTableProps) {
           </Select>
           <Select value={selectedPerformance} onValueChange={setSelectedPerformance}>
             <SelectTrigger className="w-[140px] bg-white/5 border-0 text-white hover:bg-white/10 transition-colors">
-              <SelectValue placeholder="Performance" />
+              <SelectValue placeholder="Prestasi" />
             </SelectTrigger>
             <SelectContent className="bg-[#001233] border-[#001B45]">
               <SelectItem value="all" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Semua</SelectItem>
@@ -113,14 +119,14 @@ export function ShowcaseTable({ showcaseData }: ShowcaseTableProps) {
               <th className="px-4 py-3 text-left text-sm font-semibold text-white w-55">Nama</th>
               <th className="px-4 py-3 text-left text-sm font-semibold text-white">Kegiatan</th>
               <th className="px-4 py-3 text-left text-sm font-semibold text-white w-20">Tahun</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-white w-32">Performance</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-white w-32">Prestasi</th>
               <th className="px-4 py-3 text-left text-sm font-semibold text-white w-16">Aksi</th>
             </tr>
           </thead>
           <tbody>
             {currentItems.length === 0 && (
               <tr>
-                <td colSpan={6} className="text-center text-gray-400 py-8">No data found.</td>
+                <td colSpan={6} className="text-center text-gray-400 py-8">Tidak ada data ditemukan.</td>
               </tr>
             )}
             {currentItems.map((showcase, index) => (
@@ -137,7 +143,10 @@ export function ShowcaseTable({ showcaseData }: ShowcaseTableProps) {
                   </span>
                 </td>
                 <td className="px-4 py-3 w-16 text-center">
-                  <button className="text-gray-400 hover:text-white">
+                  <button 
+                    onClick={() => handleViewDetail(showcase.id)}
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
                     <Eye className="h-5 w-5" />
                   </button>
                 </td>
@@ -150,7 +159,7 @@ export function ShowcaseTable({ showcaseData }: ShowcaseTableProps) {
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-6 py-4 border-t border-gray-700/50">
             <div className="text-sm text-gray-400">
-              Showing {startIndex + 1} to {Math.min(endIndex, filteredShowcases.length)} of {filteredShowcases.length} entries
+              Menampilkan {startIndex + 1} sampai {Math.min(endIndex, filteredShowcases.length)} dari {filteredShowcases.length} data
             </div>
             <div className="flex items-center gap-2">
               <button

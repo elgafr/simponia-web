@@ -30,7 +30,7 @@ export function ProjectSidebar({ project }: ProjectSidebarProps) {
         <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6">
           <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
             <Users className="h-5 w-5" />
-            Team Project
+            Tim Proyek
           </h2>
           <div className="space-y-4">
             {project.teamMembers.map((member, index) => (
