@@ -25,11 +25,7 @@ import { Button } from "@/components/ui/button";
 
 // Dummy data for testing notes
 const dummyNotes = [
-  "Judulnya kurang tepat, diperbaiki lagi. Pastikan judul mencerminkan isi dari portfolio dengan lebih baik.",
-  "Deskripsi project perlu ditambahkan lebih detail, terutama pada bagian metodologi dan hasil yang dicapai.",
-  "Tambahkan screenshot atau gambar yang lebih relevan untuk mendukung penjelasan project.",
-  "Link project tidak dapat diakses, mohon periksa kembali URL yang diberikan.",
-  "Perbaiki format penulisan pada bagian team members, pastikan konsisten."
+  "Belum ada catatan. Silahkan hubungi admin untuk melihat catatan dari reviewer."
 ];
 
 interface VerificationStatus {
@@ -77,11 +73,11 @@ interface VerificationStatus {
 }
 
 const menuItems = [
-  { id: 'projectName', label: 'Nama Project' },
+  { id: 'projectName', label: 'Nama Proyek' },
   { id: 'category', label: 'Kategori' },
-  { id: 'profile', label: 'Profile' },
-  { id: 'teamProject', label: 'Team Project' },
-  { id: 'detailProject', label: 'Detail Project' },
+  { id: 'profile', label: 'Profil' },
+  { id: 'teamProject', label: 'Tim Proyek' },
+  { id: 'detailProject', label: 'Detail Proyek' },
 ];
 
 interface PortfolioData {
@@ -267,57 +263,64 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
           }
         });
 
-        if (response.ok) {
-          const data: PortfolioData = await response.json();
-          console.log('Fetched portfolio data:', data);
-          
-          // Map the team members data correctly
-          const mappedTeamMembers = data.anggota.map((member, index) => ({
-            id: index + 1,
+        if (!response.ok) {
+          if (response.status === 404) {
+            // Portfolio not found, redirect to portfolio page
+            router.push('/portfolio');
+            return;
+          }
+          throw new Error(`Failed to fetch portfolio: ${response.status}`);
+        }
+
+        const data: PortfolioData = await response.json();
+        console.log('Fetched portfolio data:', data);
+        
+        // Map the team members data correctly
+        const mappedTeamMembers = data.anggota.map((member, index) => ({
+          id: index + 1,
+          name: member.name,
+          role: member.role,
+          nim: member.nim,
+          angkatan: member.angkatan,
+          userId: member.id_user
+        }));
+
+        // Set local state
+        setTeamMembers(mappedTeamMembers);
+        setProjectLinks(data.detail_project.map((link, index) => ({
+          id: index + 1,
+          title: link.judul_link,
+          url: link.link_project
+        })));
+        setTags(data.tags.map((tag, index) => ({
+          id: index + 1,
+          text: tag.nama
+        })));
+        setProjectImage({
+          file: null,
+          preview: data.gambar ? `${process.env.NEXT_PUBLIC_API_URL}${data.gambar}` : '/portfolio-1.png'
+        });
+
+        // Update store with the fetched data
+        useEditPortfolioStore.getState().setPortfolioData({
+          title: data.nama_projek,
+          category: data.kategori,
+          year: data.tahun.toString(),
+          description: data.deskripsi,
+          projectImage: data.gambar ? `${process.env.NEXT_PUBLIC_API_URL}${data.gambar}` : '/portfolio-1.png',
+          teamMembers: mappedTeamMembers.map(member => ({
             name: member.name,
             role: member.role,
             nim: member.nim,
             angkatan: member.angkatan,
-            userId: member.id_user
-          }));
-
-          // Set local state
-          setTeamMembers(mappedTeamMembers);
-          setProjectLinks(data.detail_project.map((link, index) => ({
-            id: index + 1,
+            userId: member.userId
+          })),
+          projectLinks: data.detail_project.map(link => ({
             title: link.judul_link,
             url: link.link_project
-          })));
-          setTags(data.tags.map((tag, index) => ({
-            id: index + 1,
-            text: tag.nama
-          })));
-          setProjectImage({
-            file: null,
-            preview: data.gambar ? `${process.env.NEXT_PUBLIC_API_URL}${data.gambar}` : '/portfolio-1.png'
-          });
-
-          // Update store with the fetched data
-          useEditPortfolioStore.getState().setPortfolioData({
-            title: data.nama_projek,
-            category: data.kategori,
-            year: data.tahun.toString(),
-            description: data.deskripsi,
-            projectImage: data.gambar ? `${process.env.NEXT_PUBLIC_API_URL}${data.gambar}` : '/portfolio-1.png',
-            teamMembers: mappedTeamMembers.map(member => ({
-              name: member.name,
-              role: member.role,
-              nim: member.nim,
-              angkatan: member.angkatan,
-              userId: member.userId
-            })),
-            projectLinks: data.detail_project.map(link => ({
-              title: link.judul_link,
-              url: link.link_project
-            })),
-            tags: data.tags.map(tag => tag.nama)
-          });
-        }
+          })),
+          tags: data.tags.map(tag => tag.nama)
+        });
       } catch (err) {
         console.error('Failed to fetch portfolio data', err);
       } finally {
@@ -326,7 +329,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
     };
 
     fetchPortfolioData();
-  }, [slug]);
+  }, [slug, router]);
 
   useEffect(() => {
     const fetchVerificationStatus = async () => {
@@ -932,7 +935,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
   }, [verificationStatus, slug, router]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div>Memuat...</div>;
   }
 
   return (
@@ -960,13 +963,13 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
                     </span>
                   </div>
                   <p className="text-white text-lg mb-2">
-                    Portfolio Anda memerlukan beberapa perbaikan berdasarkan catatan reviewer. Silakan periksa catatan reviewer di sebelah kiri untuk detail perbaikan yang diperlukan.
+                    Portofolio Anda memerlukan beberapa perbaikan berdasarkan catatan reviewer. Silakan periksa catatan reviewer di sebelah kiri untuk detail perbaikan yang diperlukan.
                   </p>
                   <p className="text-yellow-200 text-sm">
                     Sisa waktu untuk melakukan perubahan: <span className="font-semibold">{timeRemaining}</span>
                   </p>
                   <p className="text-yellow-200 text-sm mt-1">
-                    Jika tidak diupdate dalam 3 hari, portfolio akan otomatis dihapus.
+                    Jika tidak diupdate dalam 3 hari, portofolio akan otomatis dihapus.
                   </p>
                 </div>
               </div>
@@ -1128,10 +1131,10 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
                     className="bg-blue-500 text-white hover:bg-blue-600 border-0 hover:text-white"
                     onClick={handlePreview}
                   >
-                    Preview Portfolio
+                    Pratinjau Portofolio
                   </Button>
                   <Button className="bg-green-500 text-white hover:bg-green-600" onClick={handleUpdate}>
-                    Update Portfolio
+                    Perbarui Portofolio
                   </Button>
                 </div>
               </div>
@@ -1146,7 +1149,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white">Berhasil!</AlertDialogTitle>
             <AlertDialogDescription className="text-gray-400">
-              Portfolio Anda berhasil diupdate dan sedang menunggu verifikasi.
+              Portofolio Anda berhasil diperbarui dan sedang menunggu verifikasi.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1154,7 +1157,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
               onClick={() => router.push(`/showcase/${slug}`)}
               className="bg-green-600 text-white hover:bg-green-700"
             >
-              Lihat Portfolio
+              Lihat Portofolio
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

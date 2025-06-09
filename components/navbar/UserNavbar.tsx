@@ -76,7 +76,7 @@ export default function UserNavbar({ isStudentMode, onStudentModeChange, showSwi
                 Dashboard
               </Link>
               <Link href="/portfolio" className={isActive('/portfolio')}>
-                Portfolio
+                Portofolio
               </Link>
               <Link href="/showcase" className={isActive('/showcase')}>
                 Showcase

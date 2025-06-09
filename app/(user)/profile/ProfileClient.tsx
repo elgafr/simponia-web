@@ -103,16 +103,16 @@ function CommunityDetails({
   setEditValue 
 }: CommunityDetailsProps) {
   const fields = [
-    { label: 'Community', value: profileData.namaKomunitas || '-', field: 'namaKomunitas' },
-    { label: 'Division', value: profileData.divisi || '-', field: 'divisi' },
-    { label: 'Date Joined', value: formatDate(profileData.joinKomunitas), field: 'joinKomunitas', type: 'date' },
-    { label: 'Position', value: profileData.posisi || '-', field: 'posisi' },
+    { label: 'Komunitas', value: profileData.namaKomunitas || '-', field: 'namaKomunitas' },
+    { label: 'Divisi', value: profileData.divisi || '-', field: 'divisi' },
+    { label: 'Tanggal Bergabung', value: formatDate(profileData.joinKomunitas), field: 'joinKomunitas', type: 'date' },
+    { label: 'Posisi', value: profileData.posisi || '-', field: 'posisi' },
   ];
 
   return (
     <div className="bg-[#182B4D] rounded-xl p-6 mt-6 text-white">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold">Community Details</h2>
+        <h2 className="text-xl font-semibold">Detail Komunitas</h2>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {fields.map(({ label, value, field, type }) => (
@@ -171,7 +171,7 @@ export default function ProfileClient({ profileData }: ProfileClientProps) {
   const [profile, setProfile] = useState(profileData);
 
   if (!profile) {
-    return <div>Loading...</div>;
+    return <div>Memuat...</div>;
   }
 
   const handleEdit = (field: string, value: string) => {
@@ -182,7 +182,7 @@ export default function ProfileClient({ profileData }: ProfileClientProps) {
   const handleSave = async (field: string) => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) throw new Error('No token found');
+      if (!token) throw new Error('Token tidak ditemukan');
 
       // Buat objek update dinamis
       const updateBody = { ...profile, [field]: editValue };
@@ -203,7 +203,7 @@ export default function ProfileClient({ profileData }: ProfileClientProps) {
       setProfile(responseData);
     } catch (error) {
       console.error('Error updating field:', error);
-      alert('Failed to update field. Please try again.');
+      alert('Gagal memperbarui data. Silakan coba lagi.');
     }
   };
 
@@ -220,7 +220,7 @@ export default function ProfileClient({ profileData }: ProfileClientProps) {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        throw new Error('No token found');
+        throw new Error('Token tidak ditemukan');
       }
 
       const requestBody = {
@@ -258,7 +258,7 @@ export default function ProfileClient({ profileData }: ProfileClientProps) {
       setProfile(responseData);
     } catch (error) {
       console.error('Error updating bio:', error);
-      alert('Failed to update bio. Please try again.');
+      alert('Gagal memperbarui bio. Silakan coba lagi.');
     }
   };
 
@@ -272,7 +272,7 @@ export default function ProfileClient({ profileData }: ProfileClientProps) {
 
     try {
       const token = localStorage.getItem('token');
-      if (!token) throw new Error('No token found');
+      if (!token) throw new Error('Token tidak ditemukan');
 
       const formData = new FormData();
       formData.append('profilePicture', file);
@@ -303,7 +303,7 @@ export default function ProfileClient({ profileData }: ProfileClientProps) {
 
     } catch (error) {
       console.error('Error uploading image:', error);
-      alert('Failed to upload image. Please try again.');
+      alert('Gagal mengunggah gambar. Silakan coba lagi.');
     }
   };
 
@@ -334,7 +334,7 @@ export default function ProfileClient({ profileData }: ProfileClientProps) {
           <MyProfile
             profileData={{
               name: profile.nama,
-              gender: profile.gender === 'P' ? 'Female' : 'Male',
+              gender: profile.gender === 'P' ? 'Perempuan' : 'Laki-laki',
               nim: profile.user.nim,
               dateOfBirth: formatDate(profile.tanggalLahir),
               mobileNumber: profile.noHandphone,

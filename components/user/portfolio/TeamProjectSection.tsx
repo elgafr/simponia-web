@@ -167,7 +167,7 @@ export function TeamProjectSection({
 
   return (
     <div ref={sectionRef} className="mb-8 scroll-mt-24">
-      <h2 className="text-xl font-semibold text-white mb-4">Team Project</h2>
+      <h2 className="text-xl font-semibold text-white mb-4">Tim Proyek</h2>
       <div className="space-y-6">
         {teamMembers.map((member, index) => (
           <div key={member.id} className="flex gap-6">
@@ -211,12 +211,12 @@ export function TeamProjectSection({
               )}
             </div>
             <div className="flex-1">
-              <RequiredLabel>Role</RequiredLabel>
+              <RequiredLabel>Peran</RequiredLabel>
               <Input
                 value={member.role || ""}
                 onChange={(e) => onMemberChange(member.id, 'role', e.target.value)}
                 className={`bg-white/5 border-0 text-white placeholder:text-gray-400 focus:bg-blue-900/30 focus-visible:ring-2 focus-visible:ring-blue-500 ${errors[`teamMember_${member.id}_role`] ? 'border-red-500' : ''}`}
-                placeholder="Masukkan Role"
+                placeholder="Masukkan Peran"
               />
               {errors[`teamMember_${member.id}_role`] && (
                 <p className="text-red-500 text-sm mt-1">{errors[`teamMember_${member.id}_role`]}</p>

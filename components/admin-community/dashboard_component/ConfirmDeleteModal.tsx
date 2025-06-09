@@ -19,7 +19,7 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
         <p className="text-xl text-center">Are you sure you want to delete this Event?</p>
         <div className="flex justify-end mt-6 space-x-3">
           <button onClick={onClose} className="px-4 py-2 border rounded-2xl text-blue-400 hover:bg-blue-700 hover:text-white">
-            Cancel
+            Batal
           </button>
           <button onClick={onConfirm} className="px-4 py-2 bg-blue-600 text-white rounded-2xl hover:bg-red-500">
             Yes

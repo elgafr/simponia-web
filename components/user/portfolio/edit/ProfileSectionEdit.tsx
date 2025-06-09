@@ -62,7 +62,7 @@ export function ProfileSectionEdit({ sectionRef, errors = {} }: ProfileSectionEd
 
   return (
     <div ref={sectionRef} className="mb-8 scroll-mt-24">
-      <h2 className="text-xl font-semibold text-white mb-4">Profile</h2>
+      <h2 className="text-xl font-semibold text-white mb-4">Profil</h2>
       <div className="space-y-4">
         <div className="flex gap-4">
           <div className="flex-1">

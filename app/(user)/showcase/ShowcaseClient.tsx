@@ -40,9 +40,9 @@ export default function ShowcaseClient({ initialData }: ShowcaseClientProps) {
           />
           <div className="bg-[#011B45]/50 backdrop-blur-sm rounded-xl border border-gray-700/50 mt-8 mb-8">
             <EmptyState 
-              title={!initialData || initialData.length === 0 ? "Belum ada portfolio" : "Tidak ada hasil ditemukan"}
+              title={!initialData || initialData.length === 0 ? "Belum ada portofolio" : "Tidak ada hasil ditemukan"}
               description={!initialData || initialData.length === 0 
-                ? "Belum ada portfolio yang ditampilkan. Coba lagi nanti!" 
+                ? "Belum ada portofolio yang ditampilkan. Coba lagi nanti!" 
                 : "Coba ubah filter atau kata kunci pencarian Anda."}
               showAction={false}
             />

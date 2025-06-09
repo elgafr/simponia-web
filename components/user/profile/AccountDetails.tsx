@@ -31,7 +31,7 @@ export function AccountDetails({
   return (
     <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold text-white">Account Details</h2>
+        <h2 className="text-xl font-semibold text-white">Detail Akun</h2>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Email */}

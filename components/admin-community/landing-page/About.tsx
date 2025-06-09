@@ -9,7 +9,7 @@ export default function About() {
             <div className="relative w-[380px] h-[250px] rounded-lg overflow-hidden shadow-xl">
               <Image
                 src="/portfolio-preview.png"
-                alt="Portfolio Preview"
+                alt="Pratinjau Portofolio"
                 fill
                 className="object-cover"
                 priority
@@ -22,10 +22,10 @@ export default function About() {
             </h2>
             <div className="space-y-4">
               <p className="text-gray-300 leading-relaxed">
-                Lorem ipsum dolor sit amet consectetur. Quisque purus risus in purus at a. Tincidunt et sapien donec id integer pulvinar. Eu purus accumsan a ornare dictum massa mattis. Suspendisse at dolor
+                Simponia adalah platform portofolio digital yang dirancang khusus untuk mahasiswa dan profesional di bidang teknologi. Kami menyediakan wadah untuk menampilkan karya dan keahlian Anda dalam berbagai bidang seperti pengembangan perangkat lunak, game development, ilmu data, dan keamanan jaringan.
               </p>
               <p className="text-gray-300 leading-relaxed">
-                Lorem ipsum dolor sit amet consectetur. Quisque purus risus in purus at a. Tincidunt et sapien donec id integer pulvinar. Eu purus accumsan a ornare dictum massa mattis. Suspendisse at dolor molestie etiam blandit ac pellentesque consectetur.
+                Dengan Simponia, Anda dapat membangun portofolio profesional yang menarik, terhubung dengan komunitas teknologi, dan mendapatkan peluang karir yang sesuai dengan keahlian Anda. Platform kami memudahkan Anda untuk menampilkan proyek-proyek terbaik dan mendapatkan pengakuan dari industri teknologi.
               </p>
             </div>
           </div>

@@ -74,7 +74,7 @@ export default function AdminCommunityNavbar({ isStudentMode, onStudentModeChang
                     Dashboard
                   </Link>
                   <Link href="/portfolio" className={isActive('/portfolio')}>
-                    Portfolio
+                    Portofolio
                   </Link>
                   <Link href="/showcase" className={isActive('/showcase')}>
                     Showcase
