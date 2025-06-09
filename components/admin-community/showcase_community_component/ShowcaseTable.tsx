@@ -119,7 +119,7 @@ export function ShowcaseTable({ showcaseData }: ShowcaseTableProps) {
               <th className="px-4 py-3 text-left text-sm font-semibold text-white w-55">Nama</th>
               <th className="px-4 py-3 text-left text-sm font-semibold text-white">Kegiatan</th>
               <th className="px-4 py-3 text-left text-sm font-semibold text-white w-20">Tahun</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-white w-32">Prestasi</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-white w-32">Nilai</th>
               <th className="px-4 py-3 text-left text-sm font-semibold text-white w-16">Aksi</th>
             </tr>
           </thead>
