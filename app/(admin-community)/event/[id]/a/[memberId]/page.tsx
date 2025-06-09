@@ -16,7 +16,7 @@ interface AnggotaAcara {
     nim: string;
     role: string;
   };
-  profile_user: {
+  profile_id: {
     id: string;
   };
   id_user: string;
@@ -148,7 +148,7 @@ const MemberDetailPage = () => {
       setEventData(eventData);
 
       // Fetch user profile data
-      const profileResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user/${anggotaData.profile_user?.id || 'd98c0c5e-4d8a-4abe-a2e2-8f8809fdcc90'}`, {
+      const profileResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user/${anggotaData.profile_id?.id }`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

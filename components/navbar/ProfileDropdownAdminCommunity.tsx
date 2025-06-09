@@ -41,7 +41,7 @@ export default function ProfileDropdownAdminCommunity({ isStudentMode }: Profile
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin-community`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
