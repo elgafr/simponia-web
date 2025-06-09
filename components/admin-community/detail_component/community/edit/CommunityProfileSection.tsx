@@ -7,7 +7,7 @@ interface AnggotaAcara {
   acara: {
     id: string;
   };
-  profile_user: {
+  profile_id: {
     id: string;
   };
   created_by: {
@@ -63,7 +63,7 @@ interface PropsBagianProfilKomunitas {
 
 const BagianProfilKomunitas: React.FC<PropsBagianProfilKomunitas> = ({ userProfile, anggotaData }) => {
   // ID profil pengguna default jika tidak disediakan dalam respons
-  const profileUserId = anggotaData.profile_user?.id || "d98c0c5e-4d8a-4abe-a2e2-8f8809fdcc90";
+  const profileUserId = anggotaData.profile_id?.id;
 
   const getStatusBg = (status: string) => {
     switch (status) {

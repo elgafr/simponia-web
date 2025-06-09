@@ -383,7 +383,7 @@ export default function ProfileAdminCommunityClient({ profileData }: ProfileAdmi
         [field]: editValue || null // Set ke null jika string kosong
       };
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user/${profile.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin-community/${profile.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -430,7 +430,7 @@ export default function ProfileAdminCommunityClient({ profileData }: ProfileAdmi
         github: profile.github
       };
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user/${profile.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin-community/${profile.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -476,7 +476,7 @@ export default function ProfileAdminCommunityClient({ profileData }: ProfileAdmi
       formData.append('email', profile.email);
       formData.append('github', profile.github);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user/${profile.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin-community/${profile.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`
