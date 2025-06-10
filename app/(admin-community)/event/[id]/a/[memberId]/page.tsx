@@ -147,19 +147,56 @@ const MemberDetailPage = () => {
       const eventData = await eventResponse.json();
       setEventData(eventData);
 
-      // Fetch user profile data
-      const profileResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user/${anggotaData.profile_id?.id }`, {
+      // Try to fetch user profile data from profile-user first
+      let profileResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user/${anggotaData.profile_id?.id}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
 
+      // If profile-user fetch fails, try profile-admin-community
       if (!profileResponse.ok) {
-        throw new Error('Failed to fetch user profile');
+        profileResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin-community/${anggotaData.profile_id?.id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
       }
 
-      const profileData = await profileResponse.json();
+      let profileData;
+      if (!profileResponse.ok) {
+        // If both fetches fail, create a fallback profile using anggotaData
+        profileData = {
+          id: anggotaData.profile_id?.id || "-",
+          user: {
+            id: anggotaData.id_user || "-",
+            nim: anggotaData.nim || "-",
+            role: "-"
+          },
+          nama: anggotaData.nama || "-",
+          noHandphone: "-",
+          gender: "-",
+          tanggalLahir: "-",
+          kota: "-",
+          keterangan: "-",
+          linkedin: "-",
+          instagram: "-",
+          email: "-",
+          github: "-",
+          profilePicture: null,
+          namaKomunitas: "-",
+          joinKomunitas: "-",
+          divisi: "-",
+          posisi: "-",
+          createdAt: "-",
+          updatedAt: "-"
+        };
+      } else {
+        profileData = await profileResponse.json();
+      }
+
       setUserProfile(profileData);
     } catch (error) {
       console.error('Error fetching data:', error);

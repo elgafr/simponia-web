@@ -104,7 +104,7 @@ const BagianProfilKomunitas: React.FC<PropsBagianProfilKomunitas> = ({ userProfi
             <div className="flex"><span className="w-40 text-gray-300">Nama Lengkap</span>: {userProfile.nama}</div>
             <div className="flex"><span className="w-40 text-gray-300">NIM</span>: {userProfile.user.nim}</div>
             <div className="flex"><span className="w-40 text-gray-300">Email</span>: {userProfile.email}</div>
-            <div className="flex"><span className="w-40 text-gray-300">Jenis Kelamin</span>: {userProfile.gender === 'L' ? 'Laki-laki' : 'Perempuan'}</div>
+            <div className="flex"><span className="w-40 text-gray-300">Jenis Kelamin</span>: {userProfile.gender === '-' ? '-' : userProfile.gender === 'L' ? 'Laki-laki' : 'Perempuan'}</div>
             <div className="flex"><span className="w-40 text-gray-300">No. Handphone</span>: {userProfile.noHandphone}</div>
            
           </div>
