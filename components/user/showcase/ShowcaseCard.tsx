@@ -57,7 +57,7 @@ export function ShowcaseCard({ item }: ShowcaseCardProps) {
         {/* Footer - Fixed Height */}
         <CardFooter className="pt-4 pb-4 mt-auto">
           <span className="text-white text-sm font-medium group-hover:text-blue-400 transition-colors ml-auto">
-            See More
+            Lihat Selengkapnya
           </span>
         </CardFooter>
       </Card>

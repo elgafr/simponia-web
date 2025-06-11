@@ -40,10 +40,19 @@ export const useAuth = () => {
 
       // Only set localStorage and cookies after successful login
       if (mounted) {
+        const rememberMe = credentials.rememberMe;
+        
+        // Store token and role
         localStorage.setItem('token', data.access_token);
         localStorage.setItem('userRole', data.role);
-        document.cookie = `token=${data.access_token}; path=/`;
-        document.cookie = `userRole=${data.role}; path=/`;
+        
+        // Set cookies with appropriate expiration
+        const cookieOptions = rememberMe 
+          ? '; path=/; max-age=2592000' // 30 days for rememberMe
+          : '; path=/; max-age=3600';   // 1 hour for normal login
+          
+        document.cookie = `token=${data.access_token}${cookieOptions}`;
+        document.cookie = `userRole=${data.role}${cookieOptions}`;
 
         // Redirect ke halaman yang diinginkan atau berdasarkan role
         const callbackUrl = searchParams.get('callbackUrl');

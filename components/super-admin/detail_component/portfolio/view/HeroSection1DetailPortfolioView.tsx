@@ -51,6 +51,7 @@ interface BackendPortfolioItem {
   anggota: {
     id: string;
     role: string;
+    nim: string;
     angkatan: string;
     id_user: string;
     name: string;
@@ -81,32 +82,6 @@ interface BackendPortfolioItem {
   };
 }
 
-interface ProfileItem {
-  id: string;
-  user: {
-    id: string;
-    nim: string;
-    password: string;
-    role: string;
-    remember_token: string | null;
-    created_at: string;
-    updated_at: string;
-  };
-  nama: string;
-  noHandphone: string;
-  gender: string;
-  tanggalLahir: string;
-  kota: string;
-  keterangan: string;
-  linkedin: string;
-  instagram: string;
-  email: string;
-  github: string;
-  profilePicture: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
 const SocialLinks: React.FC<{ socialLinks?: { [key: string]: string } }> = ({ socialLinks = {} }) => {
   const socialIcons: { icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; name: string; url: string }[] = [
     { icon: MessageCircle, name: 'whatsapp', url: socialLinks.whatsapp || '#' },
@@ -120,7 +95,6 @@ const SocialLinks: React.FC<{ socialLinks?: { [key: string]: string } }> = ({ so
     <div className="flex gap-3 mt-4">
       {socialIcons.map((social, index) => {
         const Icon = social.icon;
-        // Only render the icon if a valid URL exists (not '#')
         if (social.url === '#') return null;
         return (
           <a
@@ -142,7 +116,7 @@ const ProjectHeader: React.FC<{ project: PortfolioItem }> = ({ project }) => {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
   const imageUrl = `${baseUrl}${project.image.startsWith('/') ? '' : '/'}${project.image}`;
 
-  console.log('Attempting to load image from:', imageUrl); // Debug log
+  console.log('Attempting to load image from:', imageUrl);
 
   return (
     <>
@@ -155,7 +129,7 @@ const ProjectHeader: React.FC<{ project: PortfolioItem }> = ({ project }) => {
           className="w-full object-cover h-130"
           onError={(e) => {
             console.error('Image load failed, falling back to default. URL:', imageUrl);
-            e.currentTarget.src = '/default-image.png'; // Fallback image
+            e.currentTarget.src = '/default-image.png';
           }}
         />
       </div>
@@ -177,7 +151,7 @@ const ProjectHeader: React.FC<{ project: PortfolioItem }> = ({ project }) => {
 };
 
 const ProjectContent: React.FC<{ project: PortfolioItem }> = ({ project }) => {
-  const contact = project.creator; // Use creator data for "Get in Touch"
+  const contact = project.creator;
   const socialLinks = contact
     ? Object.fromEntries(
         Object.entries({
@@ -290,7 +264,6 @@ const HeroSection1DetailPortfolioView: React.FC = () => {
       }
 
       try {
-        // Step 1: Fetch portfolio details
         const portfolioUrl = `${process.env.NEXT_PUBLIC_API_URL}/portofolio/${portfolioId}`;
         console.log(`Fetching portfolio from: ${portfolioUrl}`);
         const response = await fetch(portfolioUrl, {
@@ -308,66 +281,6 @@ const HeroSection1DetailPortfolioView: React.FC = () => {
 
         const data: BackendPortfolioItem = await response.json();
 
-        // Step 2: Fetch user profiles to map id_user to nim
-        const userIdToNimMap = new Map<string, string>();
-
-        // Fetch profiles for role 3 (Users)
-        const profileUserResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!profileUserResponse.ok) {
-          const errorText = await profileUserResponse.text();
-          throw new Error(`Failed to fetch user profiles: ${profileUserResponse.status} - ${errorText}`);
-        }
-
-        const profileUserData: ProfileItem[] = await profileUserResponse.json();
-        profileUserData.forEach(profile => {
-          userIdToNimMap.set(profile.user.id, profile.user.nim);
-        });
-
-        // Fetch profiles for role 2 (Admin Community)
-        const profileAdminCommunityResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin-community`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (profileAdminCommunityResponse.ok) {
-          const profileAdminCommunityData: ProfileItem[] = await profileAdminCommunityResponse.json();
-          profileAdminCommunityData.forEach(profile => {
-            userIdToNimMap.set(profile.user.id, profile.user.nim);
-          });
-        }
-
-        // Fetch profile for role 1 (Admin)
-        const profileAdminResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (profileAdminResponse.ok) {
-          const profileAdminData: ProfileItem = await profileAdminResponse.json();
-          userIdToNimMap.set(profileAdminData.user.id, profileAdminData.user.nim);
-        }
-
-        // Step 3: Map team members with their NIMs
-        const teamMembersWithNames = data.anggota.map(member => ({
-          name: member.name,
-          role: member.role,
-          nim: userIdToNimMap.get(member.id_user) || "N/A",
-        }));
-
-        // Step 4: Map the portfolio item
         const mappedItem: PortfolioItem = {
           id: data.id,
           title: data.nama_projek,
@@ -381,7 +294,11 @@ const HeroSection1DetailPortfolioView: React.FC = () => {
             title: detail.judul_link,
             url: detail.link_project,
           })),
-          teamMembers: teamMembersWithNames,
+          teamMembers: data.anggota.map(member => ({
+            name: member.name,
+            role: member.role,
+            nim: member.nim,
+          })),
           creator: data.creator,
         };
 

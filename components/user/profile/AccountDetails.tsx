@@ -31,7 +31,7 @@ export function AccountDetails({
   return (
     <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold text-white">Account Details</h2>
+        <h2 className="text-xl font-semibold text-white">Detail Akun</h2>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Email */}
@@ -55,7 +55,7 @@ export function AccountDetails({
           />
           {isEditing === 'email' && (
             <div className="flex gap-2 mt-2 justify-end">
-              <Button size="sm" variant="outline" className="text-white border-white/20 text-blue-500 hover:text-blue-600" onClick={onCancel}>Batal</Button>
+              <Button size="sm" variant="outline" className="text-white border-white/20 text-blue-500 hover:text-blue-600 hover:bg-white/90" onClick={onCancel}>Batal</Button>
               <Button size="sm" className="bg-blue-500 text-white hover:bg-blue-600" onClick={() => onSave('email')}>Simpan</Button>
             </div>
           )}
@@ -82,9 +82,8 @@ export function AccountDetails({
           />
           {isEditing === 'linkedin' && (
             <div className="flex gap-2 mt-2 justify-end">
-              <Button size="sm" variant="outline" className="text-white border-white/20 text-blue-500 hover:text-blue-600" onClick={onCancel}>Batal</Button>
-              <Button size="sm" className="bg-blue-500 text-white" onClick={() => onSave('linkedin')}>Simpan</Button>
-              
+              <Button size="sm" variant="outline" className="text-white border-white/20 text-blue-500 hover:text-blue-600 hover:bg-white/90" onClick={onCancel}>Batal</Button>
+              <Button size="sm" className="bg-blue-500 text-white hover:bg-blue-600" onClick={() => onSave('linkedin')}>Simpan</Button>
             </div>
           )}
         </div>
@@ -110,9 +109,8 @@ export function AccountDetails({
           />
           {isEditing === 'instagram' && (
             <div className="flex gap-2 mt-2 justify-end">
-              <Button size="sm" variant="outline" className="text-white border-white/20 text-blue-500 hover:text-blue-600" onClick={onCancel}>Batal</Button>
-              <Button size="sm" className="bg-blue-500 text-white" onClick={() => onSave('instagram')}>Simpan</Button>
-
+              <Button size="sm" variant="outline" className="text-white border-white/20 text-blue-500 hover:text-blue-600 hover:bg-white/90" onClick={onCancel}>Batal</Button>
+              <Button size="sm" className="bg-blue-500 text-white hover:bg-blue-600" onClick={() => onSave('instagram')}>Simpan</Button>
             </div>
           )}
         </div>
@@ -138,8 +136,8 @@ export function AccountDetails({
           />
           {isEditing === 'github' && (
             <div className="flex gap-2 mt-2 justify-end">
-              <Button size="sm" variant="outline" className="text-white border-white/20 text-blue-500 hover:text-blue-600" onClick={onCancel}>Batal</Button>
-              <Button size="sm" className="bg-blue-500 text-white" onClick={() => onSave('github')}>Simpan</Button>
+              <Button size="sm" variant="outline" className="text-white border-white/20 text-blue-500 hover:text-blue-600 hover:bg-white/90" onClick={onCancel}>Batal</Button>
+              <Button size="sm" className="bg-blue-500 text-white hover:bg-blue-600" onClick={() => onSave('github')}>Simpan</Button>
             </div>
           )}
         </div>

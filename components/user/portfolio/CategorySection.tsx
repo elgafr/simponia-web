@@ -48,7 +48,7 @@ export function CategorySection({ sectionRef, errors = {}, onCategoryChange }: C
       <h2 className="text-xl font-semibold text-white mb-4">Kategori</h2>
       <div className="space-y-4">
         <div>
-          <RequiredLabel>Kategori Project</RequiredLabel>
+          <RequiredLabel>Kategori Proyek</RequiredLabel>
           <Select
             value={getCategoryValue(category)}
             onValueChange={(value) => onCategoryChange(getApiCategory(value))}

@@ -23,22 +23,22 @@ const categories = [
   {
     icon: '/Source Code.svg',
     title: 'Rekayasa Perangkat Lunak',
-    description: 'Lorem ipsum dolor sit amet consectetur. Tellus aliquet amet tortor ut donec. Suscipit, tortor cursus est ac.',
+    description: 'Pengembangan dan pembuatan perangkat lunak berkualitas tinggi dengan fokus pada desain, pengujian, dan pemeliharaan sistem.',
   },
   {
     icon: '/Game Controller.svg',
     title: 'Game Cerdas',
-    description: 'Lorem ipsum dolor sit amet consectetur. Tellus aliquet amet tortor ut donec. Suscipit, tortor cursus est ac.',
+    description: 'Pengembangan game dengan integrasi kecerdasan buatan dan teknologi interaktif untuk pengalaman bermain yang lebih menarik.',
   },
   {
     icon: '/Slice.svg',
     title: 'Data Sains',
-    description: 'Lorem ipsum dolor sit amet consectetur. Tellus aliquet amet tortor ut donec. Suscipit, tortor cursus est ac.',
+    description: 'Analisis dan pengolahan data untuk mendapatkan wawasan berharga dan pengambilan keputusan berbasis data.',
   },
   {
     icon: '/Network.svg',
     title: 'Keamanan Jaringan',
-    description: 'Lorem ipsum dolor sit amet consectetur. Tellus aliquet amet tortor ut donec. Suscipit, tortor cursus est ac.',
+    description: 'Implementasi dan pengelolaan sistem keamanan jaringan untuk melindungi infrastruktur digital dari ancaman siber.',
   }
 ];
 
@@ -56,11 +56,11 @@ export default function DashboardContent({ portfolioData, userData }: DashboardC
   }, [userData, portfolioData]);
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-24 pb-16">
+    <main className="min-h-screen bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-12 pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <DashboardHeader 
           title="Dashboard"
-          description="Lorem ipsum dolor sit amet consectetur. Quisque purus risus in purus at et. Tincidunt et sapien donec id integer pulvinar. Scelerisque accumsan a ornare dictum massa media. Suspendisse at dolor."
+          description="Selamat datang di dashboard Anda. Di sini Anda dapat melihat dan mengelola portofolio Anda. Jelajahi berbagai kategori dan lihat proyek-proyek yang telah Anda buat."
         />
         <DashboardTable portfolioData={filteredPortfolioData} />
         <CategoryCards categories={categories} portfolioData={filteredPortfolioData} />

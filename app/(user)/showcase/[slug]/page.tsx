@@ -16,7 +16,7 @@ async function getPortfolioById(token: string, id: string) {
   });
   
   if (!response.ok) {
-    throw new Error('Failed to fetch portfolio data');
+    return null;
   }
   
   return response.json();
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   try {
     const portfolioData = await getPortfolioById(token, params.slug);
     return {
-      title: portfolioData.nama_projek,
+      title: portfolioData?.nama_projek || 'Portfolio Not Found',
     };
   } catch (error) {
     return {
@@ -55,10 +55,15 @@ export default async function ShowcaseDetailPage({ params }: PageProps) {
   try {
     // Ensure params.slug is available before using it
     if (!params?.slug) {
-      throw new Error('Portfolio ID is required');
+      redirect('/showcase');
     }
 
     const portfolioData = await getPortfolioById(token, params.slug);
+    
+    // If no data or error occurred, redirect to showcase page
+    if (!portfolioData) {
+      redirect('/showcase');
+    }
     
     // Transform the API data to match the expected format
     const transformedData = {
@@ -100,18 +105,26 @@ export default async function ShowcaseDetailPage({ params }: PageProps) {
     };
 
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C]">
         <ShowcaseDetailClient data={transformedData} />
         <Footer />
       </div>
     );
   } catch (error) {
-    console.error('Error fetching portfolio data:', error);
-    return (
-      <div className="min-h-screen flex flex-col">
-        <ShowcaseDetailClient data={null} />
-        <Footer />
-      </div>
-    );
+    // Redirect to showcase page on any error
+    redirect('/showcase');
   }
+}
+
+// Add loading state
+export function Loading() {
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16">
+        <div className="flex items-center justify-center h-[calc(100vh-8rem)]">
+          <div className="text-white text-xl">Memuat...</div>
+        </div>
+      </div>
+    </div>
+  );
 }

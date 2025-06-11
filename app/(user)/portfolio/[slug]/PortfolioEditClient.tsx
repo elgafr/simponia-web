@@ -4,13 +4,13 @@ import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Footer from "@/components/user/landing-page/Footer";
 import { SideMenu } from "@/components/user/portfolio/SideMenu";
-import { ProjectNameSection } from "@/components/user/portfolio/ProjectNameSection";
-import { CategorySection } from "@/components/user/portfolio/CategorySection";
-import { ProfileSection } from "@/components/user/portfolio/ProfileSection";
-import { TeamProjectSection } from "@/components/user/portfolio/TeamProjectSection";
-import { DetailProjectSection } from "@/components/user/portfolio/DetailProjectSection";
+import { ProjectNameSectionEdit } from "@/components/user/portfolio/edit/ProjectNameSectionEdit";
+import { CategorySectionEdit } from "@/components/user/portfolio/edit/CategorySectionEdit";
+import { ProfileSectionEdit } from "@/components/user/portfolio/edit/ProfileSectionEdit";
+import { TeamProjectSectionEdit } from "@/components/user/portfolio/edit/TeamProjectSectionEdit";
+import { DetailProjectSectionEdit } from "@/components/user/portfolio/edit/DetailProjectSectionEdit";
 import { Maximize2, Minimize2, AlertCircle } from "lucide-react";
-import { usePortfolioStore } from '@/store/portfolioStore';
+import { useEditPortfolioStore } from '@/store/editPortfolioStore';
 import { Select, SelectItem } from "@/components/ui/select";
 import {
   AlertDialog,
@@ -21,48 +21,63 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 
 // Dummy data for testing notes
 const dummyNotes = [
-  "Judulnya kurang tepat, diperbaiki lagi. Pastikan judul mencerminkan isi dari portfolio dengan lebih baik.",
-  "Deskripsi project perlu ditambahkan lebih detail, terutama pada bagian metodologi dan hasil yang dicapai.",
-  "Tambahkan screenshot atau gambar yang lebih relevan untuk mendukung penjelasan project.",
-  "Link project tidak dapat diakses, mohon periksa kembali URL yang diberikan.",
-  "Perbaiki format penulisan pada bagian team members, pastikan konsisten."
+  "Belum ada catatan. Silahkan hubungi admin untuk melihat catatan dari reviewer."
 ];
 
 interface VerificationStatus {
-  UniqueID: number;
-  id_portofolio: string;
-  portofolio: {
-    id: string;
-    nama_projek: string;
-    kategori: string;
-    tahun: number;
-    status: string;
-    gambar: string;
-    deskripsi: string;
-    created_at: string;
-    updated_at: string;
-  };
-  note: string;
-  updated_by: string;
-  updatedBy: {
-    id: string;
+  id: string;
+  nama_projek: string;
+  kategori: string;
+  tahun: number;
+  status: string;
+  gambar: string;
+  deskripsi: string;
+  creator: {
+    user_id: string;
     nim: string;
+    name: string;
     role: string;
+    noHandphone: string;
+    linkedin: string;
+    instagram: string;
+    email: string;
+    github: string;
+  };
+  created_at: string;
+  updated_at: string;
+  anggota: Array<{
+    id: string;
+    role: string;
+    nim: string;
+    angkatan: string;
+    id_user: string;
+    name: string;
+  }>;
+  detail_project: Array<{
+    id: string;
+    judul_link: string;
+    link_project: string;
     created_at: string;
     updated_at: string;
-  };
-  updated_at: string;
+  }>;
+  tags: Array<{
+    id: string;
+    nama: string;
+    created_at: string;
+    updated_at: string;
+  }>;
 }
 
 const menuItems = [
-  { id: 'projectName', label: 'Nama Project' },
+  { id: 'projectName', label: 'Nama Proyek' },
   { id: 'category', label: 'Kategori' },
-  { id: 'profile', label: 'Profile' },
-  { id: 'teamProject', label: 'Team Project' },
-  { id: 'detailProject', label: 'Detail Project' },
+  { id: 'profile', label: 'Profil' },
+  { id: 'teamProject', label: 'Tim Proyek' },
+  { id: 'detailProject', label: 'Detail Proyek' },
 ];
 
 interface PortfolioData {
@@ -166,6 +181,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
   const [users, setUsers] = useState<User[]>([]);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [timeRemaining, setTimeRemaining] = useState<string>('');
 
   // Tambahkan ref untuk validasi scroll
   const nameRef = useRef<HTMLDivElement>(null!);
@@ -182,16 +198,16 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
     detailProject: useRef<HTMLDivElement>(null!),
   };
 
-  // Get data from store at component level
-  const title = usePortfolioStore((state) => state.title);
-  const category = usePortfolioStore((state) => state.category);
-  const year = usePortfolioStore((state) => state.year);
-  const description = usePortfolioStore((state) => state.description);
-  const storedTags = usePortfolioStore((state) => state.tags);
-  const storedProjectLinks = usePortfolioStore((state) => state.projectLinks);
-  const contact = usePortfolioStore((state) => state.contact);
-  const storedTeamMembers = usePortfolioStore((state) => state.teamMembers);
-  const storedProjectImage = usePortfolioStore((state) => state.projectImage);
+  // Get data from store
+  const title = useEditPortfolioStore((state) => state.title);
+  const category = useEditPortfolioStore((state) => state.category);
+  const year = useEditPortfolioStore((state) => state.year);
+  const description = useEditPortfolioStore((state) => state.description);
+  const storedTags = useEditPortfolioStore((state) => state.tags);
+  const storedProjectLinks = useEditPortfolioStore((state) => state.projectLinks);
+  const contact = useEditPortfolioStore((state) => state.contact);
+  const storedTeamMembers = useEditPortfolioStore((state) => state.teamMembers);
+  const storedProjectImage = useEditPortfolioStore((state) => state.projectImage);
 
   const scrollToSection = (ref: React.RefObject<HTMLDivElement>, sectionName: string) => {
     if (ref.current) {
@@ -213,69 +229,98 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
         const token = localStorage.getItem('token');
         if (!token) return;
         
+        // Check if we have data in store
+        const storeData = useEditPortfolioStore.getState();
+        const hasStoreData = storeData.teamMembers && storeData.teamMembers.length > 0;
+
+        // If we have store data, use it to populate local state
+        if (hasStoreData) {
+          console.log('Using data from store');
+          setTeamMembers(storeData.teamMembers.map((member, index) => ({
+            id: index + 1,
+            ...member
+          })));
+          setProjectLinks(storeData.projectLinks.map((link, index) => ({
+            id: index + 1,
+            ...link
+          })));
+          setTags(storeData.tags.map((tag, index) => ({
+            id: index + 1,
+            text: tag
+          })));
+          setProjectImage({
+            file: null,
+            preview: storeData.projectImage
+          });
+          setLoading(false);
+          return;
+        }
+        
+        // If no store data, fetch from API
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/portofolio/${slug}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
 
-        if (response.ok) {
-          const data: PortfolioData = await response.json();
-          console.log('Fetched portfolio data:', data);
-          
-          // Map the team members data correctly
-          const mappedTeamMembers = data.anggota.map((member, index) => ({
-            id: index + 1,
+        if (!response.ok) {
+          if (response.status === 404) {
+            // Portfolio not found, redirect to portfolio page
+            router.push('/portfolio');
+            return;
+          }
+          throw new Error(`Failed to fetch portfolio: ${response.status}`);
+        }
+
+        const data: PortfolioData = await response.json();
+        console.log('Fetched portfolio data:', data);
+        
+        // Map the team members data correctly
+        const mappedTeamMembers = data.anggota.map((member, index) => ({
+          id: index + 1,
+          name: member.name,
+          role: member.role,
+          nim: member.nim,
+          angkatan: member.angkatan,
+          userId: member.id_user
+        }));
+
+        // Set local state
+        setTeamMembers(mappedTeamMembers);
+        setProjectLinks(data.detail_project.map((link, index) => ({
+          id: index + 1,
+          title: link.judul_link,
+          url: link.link_project
+        })));
+        setTags(data.tags.map((tag, index) => ({
+          id: index + 1,
+          text: tag.nama
+        })));
+        setProjectImage({
+          file: null,
+          preview: data.gambar ? `${process.env.NEXT_PUBLIC_API_URL}${data.gambar}` : '/portfolio-1.png'
+        });
+
+        // Update store with the fetched data
+        useEditPortfolioStore.getState().setPortfolioData({
+          title: data.nama_projek,
+          category: data.kategori,
+          year: data.tahun.toString(),
+          description: data.deskripsi,
+          projectImage: data.gambar ? `${process.env.NEXT_PUBLIC_API_URL}${data.gambar}` : '/portfolio-1.png',
+          teamMembers: mappedTeamMembers.map(member => ({
             name: member.name,
             role: member.role,
             nim: member.nim,
             angkatan: member.angkatan,
-            userId: member.id_user
-          }));
-
-          console.log('Mapped team members:', mappedTeamMembers);
-
-          // Set local state
-          setTeamMembers(mappedTeamMembers);
-
-          // Update store with the fetched data
-          usePortfolioStore.getState().setPortfolioData({
-            title: data.nama_projek,
-            category: data.kategori,
-            year: data.tahun.toString(),
-            description: data.deskripsi,
-            projectImage: data.gambar ? `${process.env.NEXT_PUBLIC_API_URL}${data.gambar}` : '/portfolio-1.png',
-            teamMembers: mappedTeamMembers.map(member => ({
-              name: member.name,
-              role: member.role,
-              nim: member.nim,
-              angkatan: member.angkatan,
-              userId: member.userId
-            })),
-            projectLinks: data.detail_project.map(link => ({
-              title: link.judul_link,
-              url: link.link_project
-            })),
-            tags: data.tags.map(tag => tag.nama)
-          });
-
-          // Set other local states
-          setProjectLinks(data.detail_project.map((link, index) => ({
-            id: index + 1,
+            userId: member.userId
+          })),
+          projectLinks: data.detail_project.map(link => ({
             title: link.judul_link,
             url: link.link_project
-          })));
-
-          setTags(data.tags.map((tag, index) => ({
-            id: index + 1,
-            text: tag.nama
-          })));
-
-          setProjectImage({
-            file: null,
-            preview: data.gambar ? `${process.env.NEXT_PUBLIC_API_URL}${data.gambar}` : '/portfolio-1.png'
-          });
-        }
+          })),
+          tags: data.tags.map(tag => tag.nama)
+        });
       } catch (err) {
         console.error('Failed to fetch portfolio data', err);
       } finally {
@@ -284,7 +329,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
     };
 
     fetchPortfolioData();
-  }, [slug]);
+  }, [slug, router]);
 
   useEffect(() => {
     const fetchVerificationStatus = async () => {
@@ -297,7 +342,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
           return;
         }
         
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/status-verifikasi/`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/portofolio/${slug}`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -307,26 +352,17 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
         });
 
         if (response.ok) {
-          const data: VerificationStatus[] = await response.json();
+          const data: VerificationStatus = await response.json();
           console.log('Verification Status Data:', data);
           
-          const currentVerification = data.find(item => item.id_portofolio === slug);
-          console.log('Current Portfolio Slug:', slug);
-          console.log('Found Current Verification:', currentVerification);
-          
-          if (currentVerification) {
-            console.log('Found matching verification:', currentVerification);
-            console.log('Portfolio Status:', currentVerification.portofolio.status);
-            setVerificationStatus(currentVerification);
-            if (currentVerification.note) {
-              console.log('Setting reviewer note:', currentVerification.note);
-              setReviewerNotes([currentVerification.note]);
-            } else {
-              console.log('No note found in response, using dummy notes');
-              setReviewerNotes(dummyNotes);
-            }
+          if (data) {
+            console.log('Found portfolio data:', data);
+            console.log('Portfolio Status:', data.status);
+            setVerificationStatus(data);
+            // For now, we'll use dummy notes since the actual notes are not in the response
+            setReviewerNotes(dummyNotes);
           } else {
-            console.log('No matching verification found for portfolio:', slug);
+            console.log('No portfolio data found');
             setVerificationStatus(null);
             setReviewerNotes(dummyNotes);
           }
@@ -416,7 +452,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
     setTeamMembers(updatedTeamMembers);
 
     // Update store
-    usePortfolioStore.getState().setPortfolioData({
+    useEditPortfolioStore.getState().setPortfolioData({
       teamMembers: updatedTeamMembers.map(member => ({
         name: member.name,
         role: member.role,
@@ -429,7 +465,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
     // Log updates
     console.log('Selected user:', selectedUser);
     console.log('Updated member:', updatedMember);
-    console.log('Updated team members in store:', usePortfolioStore.getState().teamMembers);
+    console.log('Updated team members in store:', useEditPortfolioStore.getState().teamMembers);
   };
 
   const handleMemberChange = (id: number, field: keyof TeamMember, value: string) => {
@@ -451,7 +487,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
     setTeamMembers(updatedMembers);
     
     // Update store
-    usePortfolioStore.getState().setPortfolioData({
+    useEditPortfolioStore.getState().setPortfolioData({
       teamMembers: updatedMembers.map(member => ({
         name: member.name,
         role: member.role,
@@ -480,7 +516,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
     setTeamMembers(updatedMembers);
     
     // Update store with new team members
-    usePortfolioStore.getState().setPortfolioData({
+    useEditPortfolioStore.getState().setPortfolioData({
       teamMembers: updatedMembers.map(member => ({
         name: member.name,
         role: member.role,
@@ -498,7 +534,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
     setProjectLinks(updatedLinks);
     
     // Update store with new project links
-    usePortfolioStore.getState().setPortfolioData({
+    useEditPortfolioStore.getState().setPortfolioData({
       projectLinks: updatedLinks.map(link => ({
         title: link.title,
         url: link.url
@@ -516,7 +552,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
     setProjectLinks(updatedLinks);
     
     // Update store with new project links
-    usePortfolioStore.getState().setPortfolioData({
+    useEditPortfolioStore.getState().setPortfolioData({
       projectLinks: updatedLinks.map(link => ({
         title: link.title,
         url: link.url
@@ -530,7 +566,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
     setProjectLinks(updatedLinks);
     
     // Update store with new project links
-    usePortfolioStore.getState().setPortfolioData({
+    useEditPortfolioStore.getState().setPortfolioData({
       projectLinks: updatedLinks.map(link => ({
         title: link.title,
         url: link.url
@@ -550,7 +586,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
       setTagInput('');
       
       // Update store with new tags
-      usePortfolioStore.getState().setPortfolioData({
+      useEditPortfolioStore.getState().setPortfolioData({
         tags: updatedTags.map(tag => tag.text)
       });
     }
@@ -561,7 +597,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
     setTags(updatedTags);
     
     // Update store with new tags
-    usePortfolioStore.getState().setPortfolioData({
+    useEditPortfolioStore.getState().setPortfolioData({
       tags: updatedTags.map(tag => tag.text)
     });
   };
@@ -627,7 +663,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
       });
 
       // Update store with the new image
-      usePortfolioStore.getState().setPortfolioData({
+      useEditPortfolioStore.getState().setPortfolioData({
         projectImage: data.gambar ? `${process.env.NEXT_PUBLIC_API_URL}${data.gambar}` : '/portfolio-1.png'
       });
 
@@ -771,7 +807,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
   const handlePreview = () => {
     if (validateAndScroll()) {
       // Store the current portfolio ID in the store
-      usePortfolioStore.getState().setCurrentPortfolioId(slug);
+      useEditPortfolioStore.getState().setCurrentPortfolioId(slug);
       console.log('Stored portfolio ID for preview:', slug);
       router.push(`/preview/edit/${slug}`);
     }
@@ -783,7 +819,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
     if (!validateAndScroll()) return;
 
     // Get data from store
-    const storeData = usePortfolioStore.getState();
+    const storeData = useEditPortfolioStore.getState();
     
     // Format data according to the required request structure
     const payload = {
@@ -828,13 +864,78 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
 
       const data = await res.json();
       setShowSuccessDialog(true);
+
+      // Clear the store after successful update
+      useEditPortfolioStore.getState().resetStore();
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Terjadi kesalahan saat update portfolio');
     }
   };
 
+  useEffect(() => {
+    const calculateTimeRemaining = () => {
+      if (!verificationStatus?.updated_at) return '';
+
+      const updatedDate = new Date(verificationStatus.updated_at);
+      const deadline = new Date(updatedDate.getTime() + (3 * 24 * 60 * 60 * 1000)); // 3 days from updated_at
+      const now = new Date();
+
+      if (now >= deadline) {
+        // If deadline has passed, update status to "Dihapus"
+        const updateStatus = async () => {
+          try {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/portofolio/${slug}`, {
+              method: 'PUT',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                ...verificationStatus,
+                status: "Dihapus"
+              })
+            });
+
+            if (response.ok) {
+              router.refresh();
+            }
+          } catch (error) {
+            console.error('Error updating status:', error);
+          }
+        };
+        updateStatus();
+        return 'Waktu habis';
+      }
+
+      const diff = deadline.getTime() - now.getTime();
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+      return `${days} hari ${hours} jam ${minutes} menit`;
+    };
+
+    const timer = setInterval(() => {
+      const remaining = calculateTimeRemaining();
+      if (remaining !== undefined) {
+        setTimeRemaining(remaining);
+      }
+    }, 60000); // Update every minute
+
+    // Initial calculation
+    const initialRemaining = calculateTimeRemaining();
+    if (initialRemaining !== undefined) {
+      setTimeRemaining(initialRemaining);
+    }
+
+    return () => clearInterval(timer);
+  }, [verificationStatus, slug, router]);
+
   if (loading) {
-    return <div>Loading...</div>;
+    return <div>Memuat...</div>;
   }
 
   return (
@@ -842,37 +943,38 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
       <main className="flex-grow bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-8 pb-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Status Banner: Perlu Perubahan */}
-          {(() => {
-            console.log('Checking banner conditions:');
-            console.log('verificationStatus:', verificationStatus);
-            console.log('portfolio status:', verificationStatus?.portofolio?.status);
-            return verificationStatus?.portofolio?.status === "Perlu Perubahan" && (
-              <div className="bg-yellow-500/20 backdrop-blur-sm rounded-xl p-6 mb-6 border border-yellow-500/30">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 mt-1">
-                    <AlertCircle className="h-6 w-6 text-yellow-500" />
+          {verificationStatus?.status === "Perlu Perubahan" && (
+            <div className="bg-yellow-500/20 backdrop-blur-sm rounded-xl p-6 mb-6 border border-yellow-500/30">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 mt-1">
+                  <AlertCircle className="h-6 w-6 text-yellow-500" />
+                </div>
+                <div className="flex-grow">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="px-3 py-1 rounded-full text-sm font-medium text-white bg-yellow-500">
+                      Perlu Perubahan
+                    </span>
+                    <span className="text-sm text-yellow-200">
+                      {verificationStatus?.updated_at ? new Date(verificationStatus.updated_at).toLocaleDateString('id-ID', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                      }) : ''}
+                    </span>
                   </div>
-                  <div className="flex-grow">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="px-3 py-1 rounded-full text-sm font-medium text-white bg-yellow-500">
-                        Perlu Perubahan
-                      </span>
-                      <span className="text-sm text-yellow-200">
-                        {verificationStatus?.updated_at ? new Date(verificationStatus.updated_at).toLocaleDateString('id-ID', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric'
-                        }) : ''}
-                      </span>
-                    </div>
-                    <p className="text-white text-lg">
-                      Portfolio Anda memerlukan beberapa perbaikan berdasarkan catatan reviewer. Silakan periksa catatan reviewer di sebelah kiri untuk detail perbaikan yang diperlukan.
-                    </p>
-                  </div>
+                  <p className="text-white text-lg mb-2">
+                    Portofolio Anda memerlukan beberapa perbaikan berdasarkan catatan reviewer. Silakan periksa catatan reviewer di sebelah kiri untuk detail perbaikan yang diperlukan.
+                  </p>
+                  <p className="text-yellow-200 text-sm">
+                    Sisa waktu untuk melakukan perubahan: <span className="font-semibold">{timeRemaining}</span>
+                  </p>
+                  <p className="text-yellow-200 text-sm mt-1">
+                    Jika tidak diupdate dalam 3 hari, portofolio akan otomatis dihapus.
+                  </p>
                 </div>
               </div>
-            );
-          })()}
+            </div>
+          )}
 
           {/* Reviewer Notes Popup */}
           {showReviewerNotes && reviewerNotes.length > 0 && (
@@ -957,34 +1059,34 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
 
             <div className="flex-grow min-h-screen">
               <div className="space-y-8">
-                <div ref={nameRef}>
-                  <ProjectNameSection 
+                <div>
+                  <ProjectNameSectionEdit 
                     sectionRef={sections.projectName} 
                     errors={errors}
                     onTitleChange={(value) => {
-                      usePortfolioStore.getState().setPortfolioData({ title: value });
+                      useEditPortfolioStore.getState().setPortfolioData({ title: value });
                       clearError('title');
                     }}
                   />
                 </div>
-                <div ref={categoryRef}>
-                  <CategorySection 
+                <div>
+                  <CategorySectionEdit 
                     sectionRef={sections.category}
                     errors={errors}
                     onCategoryChange={(value) => {
-                      usePortfolioStore.getState().setPortfolioData({ category: value });
+                      useEditPortfolioStore.getState().setPortfolioData({ category: value });
                       clearError('category');
                     }}
                   />
                 </div>
-                <div ref={profileRef}>
-                  <ProfileSection 
+                <div>
+                  <ProfileSectionEdit 
                     sectionRef={sections.profile}
                     errors={errors}
                   />
                 </div>
-                <div ref={teamRef}>
-                  <TeamProjectSection 
+                <div>
+                  <TeamProjectSectionEdit 
                     sectionRef={sections.teamProject}
                     teamMembers={Array.isArray(teamMembers) ? teamMembers : []}
                     onAddMember={handleAddMember}
@@ -995,8 +1097,8 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
                     errors={errors}
                   />
                 </div>
-                <div ref={detailRef}>
-                  <DetailProjectSection 
+                <div>
+                  <DetailProjectSectionEdit 
                     sectionRef={sections.detailProject}
                     projectLinks={projectLinks}
                     tags={tags}
@@ -1014,30 +1116,26 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
                     onPreview={handlePreview}
                     errors={errors}
                     onYearChange={(value) => {
-                      usePortfolioStore.getState().setPortfolioData({ year: value });
+                      useEditPortfolioStore.getState().setPortfolioData({ year: value });
                       clearError('year');
                     }}
                     onDescriptionChange={(value) => {
-                      usePortfolioStore.getState().setPortfolioData({ description: value });
+                      useEditPortfolioStore.getState().setPortfolioData({ description: value });
                       clearError('description');
                     }}
                   />
                 </div>
                 <div className="flex justify-end gap-4 mt-8">
-                  <button
-                    type="button"
-                    className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition"
+                  <Button 
+                    variant="outline" 
+                    className="bg-blue-500 text-white hover:bg-blue-600 border-0 hover:text-white"
                     onClick={handlePreview}
                   >
-                    Preview Portfolio
-                  </button>
-                  <button
-                    type="button"
-                    className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition"
-                    onClick={handleUpdate}
-                  >
-                    Update Portfolio
-                  </button>
+                    Pratinjau Portofolio
+                  </Button>
+                  <Button className="bg-green-500 text-white hover:bg-green-600" onClick={handleUpdate}>
+                    Perbarui Portofolio
+                  </Button>
                 </div>
               </div>
             </div>
@@ -1051,7 +1149,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
           <AlertDialogHeader>
             <AlertDialogTitle className="text-white">Berhasil!</AlertDialogTitle>
             <AlertDialogDescription className="text-gray-400">
-              Portfolio Anda berhasil diupdate dan sedang menunggu verifikasi.
+              Portofolio Anda berhasil diperbarui dan sedang menunggu verifikasi.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1059,7 +1157,7 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
               onClick={() => router.push(`/showcase/${slug}`)}
               className="bg-green-600 text-white hover:bg-green-700"
             >
-              Lihat Portfolio
+              Lihat Portofolio
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

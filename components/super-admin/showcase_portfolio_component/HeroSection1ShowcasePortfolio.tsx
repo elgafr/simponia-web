@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 // Import necessary modules and components
 import { useState, useEffect } from 'react';
@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { EmptyState } from '@/components/ui/empty-state'; // Import the EmptyState component
 
 // Define interfaces
 export interface PortfolioItem {
@@ -104,7 +105,7 @@ export function ShowcaseHeader() {
         Portfolio Showcase
       </h1>
       <p className="text-gray-300 max-w-3xl mx-auto">
-        Lorem ipsum dolor sit amet consectetur. Quisque purus risus in purus at a. Tincidunt et sapien donec id integer pulvinar. Eu purus accumsan a ornare dictum massa mattis. Suspendisse at dolor
+        Jelajahi berbagai portofolio proyek yang telah dibuat oleh mahasiswa. Temukan inspirasi dan lihat hasil karya mereka dalam berbagai kategori seperti Rekayasa Perangkat Lunak, Game Cerdas, Data Sains, dan Keamanan Jaringan.
       </p>
     </div>
   );
@@ -211,6 +212,19 @@ interface ShowcaseGridProps {
 }
 
 export function ShowcaseGrid({ items }: ShowcaseGridProps) {
+  if (items.length === 0) {
+    return <div>
+      <EmptyState 
+        title="Tidak Ada Portofolio Yang Terverifikasi" 
+        description="Tidak ada Portofolio yang Terverifikasi, Tolong periksa lagi nanti atau kontak admin jika terdapat error berkelanjutan ." 
+        actionLabel="Menuju Dashboard"
+        actionHref="/dashboard-super-admin"
+        showAction={true}
+        />
+
+      </div>
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {items.map((item) => (
@@ -252,37 +266,39 @@ export default function HeroSection1ShowcasePortfolio() {
 
         const data: BackendPortfolioItem[] = await response.json();
 
-        // Map backend response to PortfolioItem interface
-        const mappedItems: PortfolioItem[] = data.map((item) => ({
-          id: item.id,
-          title: item.nama_projek,
-          image: item.gambar,
-          category: item.kategori,
-          tags: item.tags.map(tag => tag.nama),
-          date: item.created_at,
-          subtitle: item.kategori, // Using category as fallback
-          description: item.deskripsi,
-          links: item.detail_project.map(detail => ({
-            title: detail.judul_link,
-            url: detail.link_project,
-          })),
-          teamMembers: item.anggota.map(member => ({
-            name: member.name,
-            role: member.role,
-            nim: member.nim,
-          })),
-          contact: {
-            name: item.creator.name,
-            nim: item.creator.nim,
-            socialLinks: {
-              whatsapp: item.creator.noHandphone ? `https://wa.me/${item.creator.noHandphone.replace(/[^0-9]/g, '')}` : undefined,
-              linkedin: item.creator.linkedin.startsWith('http') ? item.creator.linkedin : `https://${item.creator.linkedin}`,
-              instagram: item.creator.instagram.startsWith('http') ? item.creator.instagram : `https://${item.creator.instagram}`,
-              email: item.creator.email,
-              github: item.creator.github.startsWith('http') ? item.creator.github : `https://${item.creator.github}`,
+        // Map backend response to PortfolioItem interface and filter for "Terverifikasi" status
+        const mappedItems: PortfolioItem[] = data
+          .filter(item => item.status === "Terverifikasi")
+          .map((item) => ({
+            id: item.id,
+            title: item.nama_projek,
+            image: item.gambar,
+            category: item.kategori,
+            tags: item.tags.map(tag => tag.nama),
+            date: item.created_at,
+            subtitle: item.kategori, // Using category as fallback
+            description: item.deskripsi,
+            links: item.detail_project.map(detail => ({
+              title: detail.judul_link,
+              url: detail.link_project,
+            })),
+            teamMembers: item.anggota.map(member => ({
+              name: member.name,
+              role: member.role,
+              nim: member.nim,
+            })),
+            contact: {
+              name: item.creator.name,
+              nim: item.creator.nim,
+              socialLinks: {
+                whatsapp: item.creator.noHandphone ? `https://wa.me/${item.creator.noHandphone.replace(/[^0-9]/g, '')}` : undefined,
+                linkedin: item.creator.linkedin.startsWith('http') ? item.creator.linkedin : `https://${item.creator.linkedin}`,
+                instagram: item.creator.instagram.startsWith('http') ? item.creator.instagram : `https://${item.creator.instagram}`,
+                email: item.creator.email,
+                github: item.creator.github.startsWith('http') ? item.creator.github : `https://${item.creator.github}`,
+              },
             },
-          },
-        }));
+          }));
 
         setPortfolioItems(mappedItems);
       } catch (err) {

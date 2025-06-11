@@ -12,7 +12,7 @@ interface ShowcaseLayoutPortfolioProps {
 const ShowcaseLayoutPortfolio = ({ children }: ShowcaseLayoutPortfolioProps) => {
   return (
     <html lang="id">
-      <body className="bg-gray-950 text-white min-h-screen">
+      <body className="min-h-screen">
         <Navbar />
         <main>{children}</main>
         <Footer />

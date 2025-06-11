@@ -7,6 +7,31 @@ import { PenLine, Pencil, User, Upload } from "lucide-react";
 import Image from 'next/image';
 import { useRef } from 'react';
 
+// Fungsi pembantu untuk format tanggal
+function formatDate(dateString: string | null | undefined): string {
+  if (!dateString) return '-';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '-';
+  
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  
+  return `${day}/${month}/${year}`;
+}
+
+function formatDateForInput(dateString: string | null | undefined): string {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
+  
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  
+  return `${year}-${month}-${day}`;
+}
+
 interface ProfileData {
   id: string;
   nama: string;
@@ -20,6 +45,10 @@ interface ProfileData {
   email: string;
   github: string;
   profilePicture: string;
+  namaKomunitas?: string;
+  divisi?: string;
+  joinKomunitas?: string;
+  posisi?: string;
   user: {
     id: string;
     nim: string;
@@ -31,7 +60,7 @@ interface ProfileAdminCommunityClientProps {
   profileData: ProfileData | null;
 }
 
-// ProfileImage Component
+// Komponen Gambar Profil
 interface ProfileImageProps {
   profileImage: string;
   onImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -54,7 +83,7 @@ function ProfileImage({ profileImage, onImageUpload }: ProfileImageProps) {
         <div className="relative w-full h-full">
           <Image
             src={profileImage}
-            alt="Profile Picture"
+            alt="Foto Profil"
             fill
             className="object-cover"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -83,7 +112,7 @@ function ProfileImage({ profileImage, onImageUpload }: ProfileImageProps) {
   );
 }
 
-// ProfileBio Component
+// Komponen Bio Profil
 interface ProfileBioProps {
   bio: string;
   isEditing: boolean;
@@ -114,10 +143,10 @@ function ProfileBio({
             rows={4}
           />
           <div className="flex gap-2 justify-end">
-            <Button onClick={onCancel} className="bg-red-600 text-white hover:bg-red-700 transition-colors">
+            <Button onClick={onCancel} size="sm" variant="outline" className="text-white border-white/20 text-blue-500 hover:text-blue-600 hover:bg-white/90">
               Batal
             </Button>
-            <Button onClick={onSave} className="bg-emerald-600 text-white hover:bg-emerald-700 transition-colors">
+            <Button onClick={onSave} size="sm" className="bg-blue-500 text-white hover:bg-blue-600">
               Simpan
             </Button>
           </div>
@@ -136,7 +165,7 @@ function ProfileBio({
   );
 }
 
-// MyProfile Component
+// Komponen Profil Saya
 interface MyProfileProps {
   profileData: ProfileData;
 }
@@ -144,14 +173,14 @@ interface MyProfileProps {
 function MyProfile({ profileData }: MyProfileProps) {
   return (
     <div className="bg-white/5 backdrop-blur-sm rounded-lg p-6 mb-6">
-      <h2 className="text-xl font-semibold text-white mb-6">My Profile</h2>
+      <h2 className="text-xl font-semibold text-white mb-6">Profil Saya</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <p className="text-gray-400 mb-1">Name</p>
+          <p className="text-gray-400 mb-1">Nama</p>
           <p className="text-white">{profileData.nama}</p>
         </div>
         <div>
-          <p className="text-gray-400 mb-1">Gender</p>
+          <p className="text-gray-400 mb-1">Jenis Kelamin</p>
           <p className="text-white">{profileData.gender}</p>
         </div>
         <div>
@@ -159,15 +188,15 @@ function MyProfile({ profileData }: MyProfileProps) {
           <p className="text-white">{profileData.user.nim}</p>
         </div>
         <div>
-          <p className="text-gray-400 mb-1">Date Of Birth</p>
-          <p className="text-white">{profileData.tanggalLahir}</p>
+          <p className="text-gray-400 mb-1">Tanggal Lahir</p>
+          <p className="text-white">{formatDate(profileData.tanggalLahir)}</p>
         </div>
         <div>
-          <p className="text-gray-400 mb-1">Mobile Number</p>
+          <p className="text-gray-400 mb-1">Nomor Telepon</p>
           <p className="text-white">{profileData.noHandphone}</p>
         </div>
         <div>
-          <p className="text-gray-400 mb-1">State</p>
+          <p className="text-gray-400 mb-1">Kota</p>
           <p className="text-white">{profileData.kota}</p>
         </div>
       </div>
@@ -175,7 +204,7 @@ function MyProfile({ profileData }: MyProfileProps) {
   );
 }
 
-// AccountDetails Component
+// Komponen Detail Akun
 interface AccountDetailsProps {
   profileData: ProfileData;
   isEditing: string | null;
@@ -205,7 +234,7 @@ function AccountDetails({
   return (
     <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold text-white">Account Details</h2>
+        <h2 className="text-xl font-semibold text-white">Detail Akun</h2>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {fields.map(({ label, value, field }) => (
@@ -229,10 +258,10 @@ function AccountDetails({
                   className="bg-white/5 border-0 text-white"
                 />
                 <div className="flex gap-2 justify-end">
-                  <Button onClick={onCancel} className="bg-red-600 text-white hover:bg-red-700 transition-colors">
+                  <Button onClick={onCancel} size="sm" variant="outline" className="text-white border-white/20 text-blue-500 hover:text-blue-600 hover:bg-white/90">
                     Batal
                   </Button>
-                  <Button onClick={() => onSave && onSave(field)} className="bg-emerald-600 text-white hover:bg-emerald-700 transition-colors">
+                  <Button onClick={() => onSave && onSave(field)} size="sm" className="bg-blue-500 text-white hover:bg-blue-600">
                     Simpan
                   </Button>
                 </div>
@@ -247,36 +276,82 @@ function AccountDetails({
   );
 }
 
-// CommunityDetails Component
-function CommunityDetails() {
-  // Data dummy sementara
-  const data = {
-    community: "Infotech",
-    division: "Sistem Informasi",
-    dateJoined: "01/08/2024",
-    position: "Sekretaris",
-  };
+// Komponen Detail Komunitas
+interface CommunityDetailsProps {
+  profileData: ProfileData;
+  isEditing: string | null;
+  editValue: string;
+  onEdit: (field: string, value: string) => void;
+  onSave?: (field: string) => void;
+  onCancel?: () => void;
+  setEditValue: (value: string) => void;
+}
+
+function CommunityDetails({ 
+  profileData, 
+  isEditing, 
+  editValue, 
+  onEdit, 
+  onSave, 
+  onCancel, 
+  setEditValue 
+}: CommunityDetailsProps) {
+  const fields = [
+    { label: 'Komunitas', value: profileData.namaKomunitas || '-', field: 'namaKomunitas' },
+    { label: 'Divisi', value: profileData.divisi || '-', field: 'divisi' },
+    { label: 'Tanggal Bergabung', value: formatDate(profileData.joinKomunitas), field: 'joinKomunitas', type: 'date' },
+    { label: 'Posisi', value: profileData.posisi || '-', field: 'posisi' },
+  ];
 
   return (
     <div className="bg-[#182B4D] rounded-xl p-6 mt-6 text-white">
-      <h2 className="text-xl font-semibold mb-6">Community Details</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold">Detail Komunitas</h2>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <p className="text-gray-300 mb-1">Community</p>
-          <p className="font-bold">{data.community}</p>
-        </div>
-        <div>
-          <p className="text-gray-300 mb-1">Division</p>
-          <p className="font-bold">{data.division}</p>
-        </div>
-        <div>
-          <p className="text-gray-300 mb-1">Date Joined</p>
-          <p className="font-bold">{data.dateJoined}</p>
-        </div>
-        <div>
-          <p className="text-gray-300 mb-1">Position</p>
-          <p className="font-bold">{data.position}</p>
-        </div>
+        {fields.map(({ label, value, field, type }) => (
+          <div key={field}>
+            <div className="flex justify-between items-center mb-2">
+              <label className="text-gray-300">{label}</label>
+              <Button
+                onClick={() => onEdit(field, value === '-' ? '' : value)}
+                variant="ghost"
+                size="sm"
+                className="text-gray-400 hover:text-white hover:bg-white/10"
+              >
+                <PenLine className="h-4 w-4" />
+              </Button>
+            </div>
+            {isEditing === field ? (
+              <div className="flex flex-col gap-2">
+                {type === 'date' ? (
+                  <Input
+                    type="date"
+                    value={editValue ? formatDateForInput(editValue) : ''}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    className="bg-white/5 border-0 text-white [&::-webkit-calendar-picker-indicator]:invert"
+                  />
+                ) : (
+                  <Input
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    className="bg-white/5 border-0 text-white"
+                  />
+                )}
+                <div className="flex gap-2 justify-end">
+                  <Button onClick={onCancel} size="sm" variant="outline" className="text-white border-white/20 text-blue-500 hover:text-blue-600 hover:bg-white/90">
+                    Batal
+                  </Button>
+                  <Button onClick={() => onSave && onSave(field)} size="sm" className="bg-blue-500 text-white hover:bg-blue-600">
+                    Simpan
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-white">{value}</p>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -290,7 +365,7 @@ export default function ProfileAdminCommunityClient({ profileData }: ProfileAdmi
   const [profile, setProfile] = useState(profileData);
 
   if (!profile) {
-    return <div>Loading...</div>;
+    return <div>Memuat...</div>;
   }
 
   const handleEdit = (field: string, value: string) => {
@@ -301,11 +376,14 @@ export default function ProfileAdminCommunityClient({ profileData }: ProfileAdmi
   const handleSave = async (field: string) => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) throw new Error('No token found');
+      if (!token) throw new Error('Token tidak ditemukan');
 
-      const updateBody = { ...profile, [field]: editValue };
+      const updateBody = { 
+        ...profile, 
+        [field]: editValue || null // Set ke null jika string kosong
+      };
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin-community/${profile.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user/${profile.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -320,8 +398,8 @@ export default function ProfileAdminCommunityClient({ profileData }: ProfileAdmi
       setIsEditing(null);
       setProfile(responseData);
     } catch (error) {
-      console.error('Error updating field:', error);
-      alert('Failed to update field. Please try again.');
+      console.error('Error memperbarui field:', error);
+      alert('Gagal memperbarui field. Silakan coba lagi.');
     }
   };
 
@@ -337,7 +415,7 @@ export default function ProfileAdminCommunityClient({ profileData }: ProfileAdmi
   const handleSaveBio = async () => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) throw new Error('No token found');
+      if (!token) throw new Error('Token tidak ditemukan');
 
       const requestBody = {
         keterangan: bioValue,
@@ -352,7 +430,7 @@ export default function ProfileAdminCommunityClient({ profileData }: ProfileAdmi
         github: profile.github
       };
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin-community/${profile.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user/${profile.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -367,8 +445,8 @@ export default function ProfileAdminCommunityClient({ profileData }: ProfileAdmi
       setIsEditingBio(false);
       setProfile(responseData);
     } catch (error) {
-      console.error('Error updating bio:', error);
-      alert('Failed to update bio. Please try again.');
+      console.error('Error memperbarui bio:', error);
+      alert('Gagal memperbarui bio. Silakan coba lagi.');
     }
   };
 
@@ -382,7 +460,7 @@ export default function ProfileAdminCommunityClient({ profileData }: ProfileAdmi
 
     try {
       const token = localStorage.getItem('token');
-      if (!token) throw new Error('No token found');
+      if (!token) throw new Error('Token tidak ditemukan');
 
       const formData = new FormData();
       formData.append('profilePicture', file);
@@ -398,7 +476,7 @@ export default function ProfileAdminCommunityClient({ profileData }: ProfileAdmi
       formData.append('email', profile.email);
       formData.append('github', profile.github);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin-community/${profile.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user/${profile.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -411,8 +489,8 @@ export default function ProfileAdminCommunityClient({ profileData }: ProfileAdmi
 
       setProfile(responseData);
     } catch (error) {
-      console.error('Error uploading image:', error);
-      alert('Failed to upload image. Please try again.');
+      console.error('Error mengunggah gambar:', error);
+      alert('Gagal mengunggah gambar. Silakan coba lagi.');
     }
   };
 
@@ -452,7 +530,15 @@ export default function ProfileAdminCommunityClient({ profileData }: ProfileAdmi
             setEditValue={setEditValue}
           />
 
-          <CommunityDetails />
+          <CommunityDetails
+            profileData={profile}
+            isEditing={isEditing}
+            editValue={editValue}
+            onEdit={handleEdit}
+            onSave={handleSave}
+            onCancel={handleCancel}
+            setEditValue={setEditValue}
+          />
         </div>
       </div>
     </main>

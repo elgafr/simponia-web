@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface DashboardHeaderProps {
   title: string;
@@ -100,111 +101,14 @@ interface PortfolioItem {
   };
 }
 
-interface Profile {
-  id: string;
-  user: {
-    id: string;
-    nim: string;
-    password: string;
-    role: string;
-    remember_token: string | null;
-    created_at: string;
-    updated_at: string;
-  };
-  nama: string;
-  noHandphone: string;
-  gender: string;
-  tanggalLahir: string;
-  kota: string;
-  keterangan: string;
-  linkedin: string;
-  instagram: string;
-  email: string;
-  github: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 const HeroSection1Dashboard = () => {
   const [portfolios, setPortfolios] = useState<PortfolioItem[]>([]);
-  const [userProfiles, setUserProfiles] = useState<Profile[]>([]);
-  const [adminCommunityProfiles, setAdminCommunityProfiles] = useState<Profile[]>([]);
-  const [superAdminProfiles, setSuperAdminProfiles] = useState<Profile[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Fetch profiles from backend
-  useEffect(() => {
-    const fetchProfiles = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setError("No token found. Please log in.");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        // Fetch user profiles (role 3)
-        const userResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!userResponse.ok) {
-          const errorText = await userResponse.text();
-          throw new Error(`Failed to fetch user profiles: ${userResponse.status} - ${errorText}`);
-        }
-
-        const userData = await userResponse.json();
-        setUserProfiles(Array.isArray(userData) ? userData : [userData]);
-
-        // Fetch admin community profiles (role 2)
-        const adminCommunityResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin-community`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!adminCommunityResponse.ok) {
-          const errorText = await adminCommunityResponse.text();
-          throw new Error(`Failed to fetch admin community profiles: ${adminCommunityResponse.status} - ${errorText}`);
-        }
-
-        const adminCommunityData = await adminCommunityResponse.json();
-        setAdminCommunityProfiles(Array.isArray(adminCommunityData) ? adminCommunityData : [adminCommunityData]);
-
-        // Fetch super admin profiles (role 1)
-        const superAdminResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!superAdminResponse.ok) {
-          const errorText = await superAdminResponse.text();
-          throw new Error(`Failed to fetch super admin profiles: ${superAdminResponse.status} - ${errorText}`);
-        }
-
-        const superAdminData = await superAdminResponse.json();
-        setSuperAdminProfiles(Array.isArray(superAdminData) ? superAdminData : [superAdminData]);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred while fetching profiles.");
-      }
-    };
-
-    fetchProfiles();
-  }, []);
 
   // Fetch portfolios from backend
   useEffect(() => {
@@ -241,12 +145,6 @@ const HeroSection1Dashboard = () => {
 
     fetchPortfolios();
   }, []);
-
-  // Create a mapping of user.id to nama (though not used for creator name directly)
-  const userIdToNameMap = new Map<string, string>();
-  [...userProfiles, ...adminCommunityProfiles, ...superAdminProfiles].forEach((profile) => {
-    userIdToNameMap.set(profile.user.id, profile.nama);
-  });
 
   // Get unique categories from portfolios
   const uniqueCategories = Array.from(new Set(portfolios.map((item) => item.kategori)));
@@ -297,6 +195,91 @@ const HeroSection1Dashboard = () => {
     setCurrentPage(1); // Reset to first page after filtering
   };
 
+  const renderTableContent = () => {
+    if (filteredPortfolios.length === 0) {
+      return (
+        <div className="w-full py-8">
+          <EmptyState
+            title="Belum ada Data Portofolio"
+            description="Tidak ada portofolio yang ditemukan !"
+            actionLabel="Buat Portofolio"
+            actionHref="/portfolio"
+            showAction={false}
+          />
+        </div>
+      );
+    }
+
+    return (
+      <>
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-gray-700">
+              <th className="px-6 py-4 text-left text-sm font-semibold text-white">No.</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-white">Nama</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-white">Nama Projek</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-white">Kategori</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-white">Status</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-white">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {currentItems.map((portfolio, index) => (
+              <tr key={portfolio.id} className="border-b border-gray-700/50 hover:bg-white/5">
+                <td className="px-6 py-4 text-gray-300 text-left">{indexOfFirstItem + index + 1}</td>
+                <td className="px-6 py-4 text-gray-300 text-left">
+                  {portfolio.creator ? portfolio.creator.name : "Unknown"}
+                </td>
+                <td className="px-6 py-4 text-gray-300 text-left">{portfolio.nama_projek}</td>
+                <td className="px-6 py-4 text-gray-300 text-left">{portfolio.kategori}</td>
+                <td className="px-6 py-4 text-gray-300 text-left">
+                  <span
+                    className={`px-3 py-1 rounded-full text-left text-base font-semibold text-black ${getStatusColor(portfolio.status)}`}
+                  >
+                    {mapStatusToIndonesian(portfolio.status)}
+                  </span>
+                </td>
+                <td className="p-3">
+                  <div className="flex flex-col md:flex-row items-center justify-start gap-4">
+                    <Link href={`/detail-super-admin/portfolio/view/${portfolio.id}-${portfolio.nama_projek.toLowerCase().replace(/[^\w\s]/g, '-').replace(/\s+/g, '-')}`}>
+                      <IoEyeSharp
+                        size={35}
+                        className="cursor-pointer hover:text-blue-300 transition hover:scale-120 transition"
+                      />
+                    </Link>
+                    <Link href={`/detail-super-admin/portfolio/edit/${portfolio.id}-${portfolio.nama_projek.toLowerCase().replace(/[^\w\s]/g, '-').replace(/\s+/g, '-')}`}>
+                      <HiOutlinePencil
+                        size={35}
+                        className="cursor-pointer hover:text-red-400 transition hover:scale-120 transition"
+                      />
+                    </Link>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div className="flex justify-end items-center gap-2 mt-4 pr-6">
+          <button
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
+            className="px-4 py-2 text-white text-2xl"
+          >
+            {"<"}
+          </button>
+          <span className="text-white">Halaman {currentPage} dari {totalPages}</span>
+          <button
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 text-white text-2xl"
+          >
+            {">"}
+          </button>
+        </div>
+      </>
+    );
+  };
+
   if (loading) return <div className="text-white text-center py-10">Loading...</div>;
   if (error) return <div className="text-red-500 text-center py-10">{error}</div>;
 
@@ -305,7 +288,7 @@ const HeroSection1Dashboard = () => {
       <div className="max-w-7xl text-left mx-auto px-5 sm:px-6 lg:px-2 mt-10">
         <DashboardHeader
           title="Dashboard"
-          description="Lorem ipsum dolor sit amet consectetur. Quisque purus risus in purus at et. Tincidunt et sapien donec id integer pulvinar. Scelerisque accumsan a ornare dictum massa media. Suspendisse at dolor."
+          description="Dashboad Super Admin untuk melihat Portfolio dari Mahasiswa Informatika Universitas Muhammadiyah Malang. Lakukanlah Penilaian untuk Portfolio dengan Teliti agar tidak terjadi kesalahan."
         />
       </div>
 
@@ -363,70 +346,7 @@ const HeroSection1Dashboard = () => {
       </div>
 
       <div className="bg-white/5 backdrop-blur-sm rounded-3xl overflow-hidden mb-20 w-full max-w-7xl px-8 py-4">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-700">
-              <th className="px-6 py-4 text-left text-sm font-semibold text-white">No.</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-white">Nama</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-white">Nama Projek</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-white">Kategori</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-white">Status</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-white">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentItems.map((portfolio, index) => (
-              <tr key={portfolio.id} className="border-b border-gray-700/50 hover:bg-white/5">
-                <td className="px-6 py-4 text-gray-300 text-left">{indexOfFirstItem + index + 1}</td>
-                <td className="px-6 py-4 text-gray-300 text-left">
-                  {portfolio.creator ? portfolio.creator.name : "Unknown"}
-                </td>
-                <td className="px-6 py-4 text-gray-300 text-left">{portfolio.nama_projek}</td>
-                <td className="px-6 py-4 text-gray-300 text-left">{portfolio.kategori}</td>
-                <td className="px-6 py-4 text-gray-300 text-left">
-                  <span
-                    className={`px-3 py-1 rounded-full text-left text-base font-semibold text-black ${getStatusColor(portfolio.status)}`}
-                  >
-                    {mapStatusToIndonesian(portfolio.status)}
-                  </span>
-                </td>
-                <td className="p-3">
-                  <div className="flex flex-col md:flex-row items-center justify-center gap-4">
-                    <Link href={`/detail-super-admin/portfolio/view/${portfolio.id}-${portfolio.nama_projek.toLowerCase().replace(/[^\w\s]/g, '-').replace(/\s+/g, '-')}`}>
-                      <IoEyeSharp
-                        size={35}
-                        className="cursor-pointer hover:text-blue-300 transition hover:scale-120 transition"
-                      />
-                    </Link>
-                    <Link href={`/detail-super-admin/portfolio/edit/${portfolio.id}-${portfolio.nama_projek.toLowerCase().replace(/[^\w\s]/g, '-').replace(/\s+/g, '-')}`}>
-                      <HiOutlinePencil
-                        size={35}
-                        className="cursor-pointer hover:text-red-400 transition hover:scale-120 transition"
-                      />
-                    </Link>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div className="flex justify-end items-center gap-2 mt-4 pr-6">
-          <button
-            onClick={handlePrevPage}
-            disabled={currentPage === 1}
-            className="px-4 py-2 text-white text-2xl"
-          >
-            {"<"}
-          </button>
-          <span className="text-white">Halaman {currentPage} dari {totalPages}</span>
-          <button
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages}
-            className="px-4 py-2 text-white text-2xl"
-          >
-            {">"}
-          </button>
-        </div>
+        {renderTableContent()}
       </div>
     </section>
   );

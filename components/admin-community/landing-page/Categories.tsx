@@ -4,27 +4,27 @@ import Image from 'next/image';
 const categories = [
   {
     icon: '/Source Code.svg',
-    title: 'Software\nEngineering',
-    description: 'Lorem ipsum dolor sit amet, consectetur. Tellus aliquet amet tortor ut donec. Suscipit, tortor cursus est ac.',
-    link: '/category/software'
+    title: 'Rekayasa\nPerangkat Lunak',
+    description: 'Kembangkan aplikasi dan sistem perangkat lunak yang inovatif. Pelajari pengembangan web, mobile, dan desktop dengan teknologi terkini.',
+    link: ''
   },
   {
     icon: '/Game Controller.svg',
-    title: 'Game\nIntelligence',
-    description: 'Lorem ipsum dolor sit amet, consectetur. Tellus aliquet amet tortor ut donec. Suscipit, tortor cursus est ac.',
-    link: '/category/game'
+    title: 'Kecerdasan\nGame',
+    description: 'Eksplorasi dunia game development dan kecerdasan buatan dalam gaming. Buat game yang menarik dengan AI dan mekanik gameplay yang unik.',
+    link: ''
   },
   {
     icon: '/Slice.svg',
-    title: 'Data\nScience',
-    description: 'Lorem ipsum dolor sit amet, consectetur. Tellus aliquet amet tortor ut donec. Suscipit, tortor cursus est ac.',
-    link: '/category/data'
+    title: 'Data\nSains',
+    description: 'Analisis dan visualisasi data untuk pengambilan keputusan yang lebih baik. Kuasai machine learning, data mining, dan big data analytics.',
+    link: ''
   },
   {
     icon: '/Network.svg',
-    title: 'Network\nand Security',
-    description: 'Lorem ipsum dolor sit amet, consectetur. Tellus aliquet amet tortor ut donec. Suscipit, tortor cursus est ac.',
-    link: '/category/network'
+    title: 'Jaringan\ndan Keamanan',
+    description: 'Pelajari keamanan siber dan manajemen jaringan. Kembangkan solusi keamanan dan infrastruktur jaringan yang handal dan aman.',
+    link: ''
   }
 ];
 
@@ -34,7 +34,7 @@ export default function Categories() {
       <div className="rounded-3xl mx-4 sm:mx-8 lg:mx-16 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center text-white mb-16">
-            KATEGORI PORTFOLIO
+            KATEGORI PORTOFOLIO
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {categories.map((category, index) => (

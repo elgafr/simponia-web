@@ -23,6 +23,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { EmptyState } from '@/components/ui/empty-state';
 import { PortfolioItem } from '@/types/portfolio';
+import { useEditPortfolioStore } from '@/store/editPortfolioStore';
 
 interface DashboardTableProps {
   portfolioData: PortfolioItem[];
@@ -55,6 +56,7 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [userPortfolios, setUserPortfolios] = useState<PortfolioItem[]>([]);
+  const [timeRemaining, setTimeRemaining] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -96,14 +98,98 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
     fetchUserData();
   }, [portfolioData]);
 
+  // Add useEffect for countdown timer
+  useEffect(() => {
+    const calculateTimeRemaining = (updatedAt: string) => {
+      const updatedDate = new Date(updatedAt);
+      const deadline = new Date(updatedDate.getTime() + (3 * 24 * 60 * 60 * 1000)); // 3 days from updated_at
+      const now = new Date();
+
+      if (now >= deadline) {
+        return 'Waktu habis';
+      }
+
+      const diff = deadline.getTime() - now.getTime();
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+      return `${days} hari ${hours} jam ${minutes} menit`;
+    };
+
+    const updateTimeRemaining = () => {
+      const newTimeRemaining: { [key: string]: string } = {};
+      let needsUpdate = false;
+
+      userPortfolios.forEach(portfolio => {
+        if (portfolio.status === 'Perlu Perubahan' && portfolio.updated_at) {
+          const remaining = calculateTimeRemaining(portfolio.updated_at);
+          newTimeRemaining[portfolio.id] = remaining;
+
+          // Check if deadline has passed
+          const updatedDate = new Date(portfolio.updated_at);
+          const deadline = new Date(updatedDate.getTime() + (3 * 24 * 60 * 60 * 1000));
+          if (new Date() >= deadline) {
+            needsUpdate = true;
+          }
+        }
+      });
+
+      setTimeRemaining(newTimeRemaining);
+
+      // If any portfolio has passed its deadline, update its status
+      if (needsUpdate) {
+        const updateStatus = async () => {
+          try {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            const updatePromises = userPortfolios
+              .filter(portfolio => {
+                if (portfolio.status !== 'Perlu Perubahan' || !portfolio.updated_at) return false;
+                const updatedDate = new Date(portfolio.updated_at);
+                const deadline = new Date(updatedDate.getTime() + (3 * 24 * 60 * 60 * 1000));
+                return new Date() >= deadline;
+              })
+              .map(portfolio =>
+                fetch(`${process.env.NEXT_PUBLIC_API_URL}/portofolio/${portfolio.id}`, {
+                  method: 'PUT',
+                  headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    ...portfolio,
+                    status: "Dihapus"
+                  })
+                })
+              );
+
+            await Promise.all(updatePromises);
+            router.refresh(); // Refresh the page to update the table
+          } catch (error) {
+            console.error('Error updating portfolio statuses:', error);
+          }
+        };
+
+        updateStatus();
+      }
+    };
+
+    const timer = setInterval(updateTimeRemaining, 60000); // Update every minute
+    updateTimeRemaining(); // Initial update
+
+    return () => clearInterval(timer);
+  }, [userPortfolios, router]);
+
   // If no data, show empty state
   if (!userPortfolios || userPortfolios.length === 0) {
     return (
       <div className="bg-[#011B45]/50 backdrop-blur-sm rounded-xl border border-gray-700/50 mt-8 mb-8">
         <EmptyState 
-          title="Belum ada portfolio"
-          description="Anda belum memiliki portfolio. Mulai buat portfolio Anda sekarang!"
-          actionLabel="Buat Portfolio"
+          title="Belum ada portofolio"
+          description="Anda belum memiliki portofolio. Mulai buat portofolio Anda sekarang!"
+          actionLabel="Buat Portofolio"
           actionHref="/portfolio"
         />
       </div>
@@ -156,6 +242,8 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
   };
 
   const handleEdit = (id: string, name: string) => {
+    // Clear the edit portfolio store before navigating
+    useEditPortfolioStore.getState().resetStore();
     router.push(`/portfolio/${id}`);
   };
 
@@ -189,7 +277,7 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
         <div className="relative flex-grow">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
-            placeholder="Cari nama project..."
+            placeholder="Cari nama proyek..."
             value={searchQuery}
             onChange={handleSearchChange}
             className="pl-10 bg-white/5 border-0 text-white placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-blue-500"
@@ -198,7 +286,7 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
         <div className="flex gap-4">
           <Select value={categoryFilter} onValueChange={(value) => handleFilterChange(value, 'category')}>
             <SelectTrigger className="w-[180px] bg-white/5 border-0 text-white hover:bg-white/10 transition-colors">
-              <SelectValue placeholder="Kategori Portfolio" />
+              <SelectValue placeholder="Kategori Portofolio" />
             </SelectTrigger>
             <SelectContent className="bg-[#001233] border-[#001B45]">
               <SelectItem value="all" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Semua Kategori</SelectItem>
@@ -210,7 +298,7 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
           </Select>
           <Select value={statusFilter} onValueChange={(value) => handleFilterChange(value, 'status')}>
             <SelectTrigger className="w-[180px] bg-white/5 border-0 text-white hover:bg-white/10 transition-colors">
-              <SelectValue placeholder="Status Portfolio" />
+              <SelectValue placeholder="Status Portofolio" />
             </SelectTrigger>
             <SelectContent className="bg-[#001233] border-[#001B45]">
               <SelectItem value="all" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">Semua Status</SelectItem>
@@ -229,7 +317,7 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
           <thead>
             <tr className="border-b border-gray-700">
               <th className="px-6 py-4 text-left text-sm font-semibold text-white w-12">No.</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-white w-64">Nama Project</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-white w-64">Nama Proyek</th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-white w-40">Kategori</th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-white w-24">Tahun</th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-white w-40">Status</th>
@@ -244,9 +332,18 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
                 <td className="px-6 py-4 text-gray-300 w-40 truncate">{item.kategori}</td>
                 <td className="px-6 py-4 text-gray-300 w-24">{item.tahun}</td>
                 <td className="px-6 py-4 w-40">
-                  <span className={`px-3 py-1 rounded-full text-xs text-white ${getStatusColor(item.status)}`}>
-                    {item.status}
-                  </span>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex">
+                      <span className={`px-3 py-1 rounded-full text-xs text-white ${getStatusColor(item.status)} whitespace-nowrap inline-block`}>
+                        {item.status}
+                      </span>
+                    </div>
+                    {item.status === 'Perlu Perubahan' && timeRemaining[item.id] && (
+                      <span className="text-xs text-yellow-500">
+                        Sisa waktu: {timeRemaining[item.id]}
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-6 py-4 w-32">
                   <div className="flex gap-2">
@@ -254,6 +351,7 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
                       <button 
                         onClick={() => handleView(item.id)}
                         className="p-1 text-gray-400 hover:text-white hover:bg-transparent"
+                        title="Lihat"
                       >
                         <Eye className="h-4 w-4" />
                       </button>
@@ -262,6 +360,7 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
                       <button 
                         onClick={() => handleEdit(item.id, item.nama_projek)}
                         className="p-1 text-gray-400 hover:text-white hover:bg-transparent"
+                        title="Edit"
                       >
                         <PenLine className="h-4 w-4" />
                       </button>
@@ -272,6 +371,7 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
                           <button 
                             className="p-1 text-gray-400 hover:text-white hover:bg-transparent"
                             disabled={isDeleting}
+                            title="Hapus"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -280,7 +380,7 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
                           <AlertDialogHeader>
                             <AlertDialogTitle className="text-white">Konfirmasi Hapus</AlertDialogTitle>
                             <AlertDialogDescription className="text-gray-400">
-                              Apakah Anda yakin ingin menghapus portfolio ini? Tindakan ini tidak dapat dibatalkan.
+                              Apakah Anda yakin ingin menghapus portofolio ini? Tindakan ini tidak dapat dibatalkan.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
@@ -307,13 +407,14 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-6 py-4 border-t border-gray-700/50">
             <div className="text-sm text-gray-400">
-              Showing {startIndex + 1} to {Math.min(endIndex, filteredData.length)} of {filteredData.length} entries
+              Menampilkan {startIndex + 1} sampai {Math.min(endIndex, filteredData.length)} dari {filteredData.length} entri
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
                 className="p-2 text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Halaman Sebelumnya"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
@@ -336,6 +437,7 @@ export function DashboardTable({ portfolioData }: DashboardTableProps) {
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
                 className="p-2 text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Halaman Selanjutnya"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>

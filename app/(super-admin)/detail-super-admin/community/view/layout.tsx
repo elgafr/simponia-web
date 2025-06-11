@@ -8,11 +8,11 @@ interface DetailCommunityViewLayoutProps {
 
 const DetailCommunityViewLayout = ({ children }: DetailCommunityViewLayoutProps) => {
   return (
-    <div className="bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] text-white min-h-screen">
+    <>
       <Navbar />
       <main>{children}</main>
       <Footer />
-    </div>
+    </>
   );
 };
 

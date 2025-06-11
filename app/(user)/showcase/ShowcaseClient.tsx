@@ -27,7 +27,7 @@ export default function ShowcaseClient({ initialData }: ShowcaseClientProps) {
   // If no data or filtered data is empty, show empty state
   if (!initialData || initialData.length === 0 || filteredItems.length === 0) {
     return (
-      <main className="flex-grow bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-16 pb-16">
+      <main className="flex-grow bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-12 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ShowcaseHeader />
           <ShowcaseSearch
@@ -40,9 +40,9 @@ export default function ShowcaseClient({ initialData }: ShowcaseClientProps) {
           />
           <div className="bg-[#011B45]/50 backdrop-blur-sm rounded-xl border border-gray-700/50 mt-8 mb-8">
             <EmptyState 
-              title={!initialData || initialData.length === 0 ? "Belum ada portfolio" : "Tidak ada hasil ditemukan"}
+              title={!initialData || initialData.length === 0 ? "Belum ada portofolio" : "Tidak ada hasil ditemukan"}
               description={!initialData || initialData.length === 0 
-                ? "Belum ada portfolio yang ditampilkan. Coba lagi nanti!" 
+                ? "Belum ada portofolio yang ditampilkan. Coba lagi nanti!" 
                 : "Coba ubah filter atau kata kunci pencarian Anda."}
               showAction={false}
             />
@@ -53,7 +53,7 @@ export default function ShowcaseClient({ initialData }: ShowcaseClientProps) {
   }
 
   return (
-    <main className="flex-grow bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-24 pb-16">
+    <main className="flex-grow bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-16 pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ShowcaseHeader />
         <ShowcaseSearch
