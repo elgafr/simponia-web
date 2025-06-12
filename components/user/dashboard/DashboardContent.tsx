@@ -63,7 +63,7 @@ export default function DashboardContent({ portfolioData, userData }: DashboardC
           description="Selamat datang di dashboard Anda. Di sini Anda dapat melihat dan mengelola portofolio Anda. Jelajahi berbagai kategori dan lihat proyek-proyek yang telah Anda buat."
         />
         <DashboardTable portfolioData={filteredPortfolioData} />
-        <CategoryCards categories={categories} portfolioData={filteredPortfolioData} />
+        <CategoryCards categories={categories} portfolioData={portfolioData} />
       </div>
     </main>
   );

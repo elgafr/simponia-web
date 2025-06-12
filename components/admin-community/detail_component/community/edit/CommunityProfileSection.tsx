@@ -7,67 +7,40 @@ interface AnggotaAcara {
   acara: {
     id: string;
   };
-  profile_id: {
-    id: string;
-  };
   created_by: {
     id: string;
     nim: string;
     role: string;
   };
+  id_user: string;
   nama: string;
   nim: string;
+  gender: string;
+  email: string;
+  nama_komunitas: string | null;
+  join_komunitas: string | null;
+  divisi: string | null;
+  posisi: string | null;
   jabatan: string;
   status: string;
   kerjasama: number | null;
   kedisiplinan: number | null;
   komunikasi: number | null;
   tanggung_jawab: number | null;
-  nilai_rata_rata: number | null;
-  grade: string | null;
+  nilai_rata_rata: number;
+  grade: string;
   catatan: string | null;
   created_at: string;
   updated_at: string;
 }
 
-interface ProfilPengguna {
-  id: string;
-  user: {
-    id: string;
-    nim: string;
-    role: string;
-  };
-  nama: string;
-  noHandphone: string;
-  gender: string;
-  tanggalLahir: string;
-  kota: string;
-  keterangan: string;
-  linkedin: string;
-  instagram: string;
-  email: string;
-  github: string;
-  profilePicture: string | null;
-  namaKomunitas: string;
-  joinKomunitas: string;
-  divisi: string;
-  posisi: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 interface PropsBagianProfilKomunitas {
-  userProfile: ProfilPengguna;
   anggotaData: AnggotaAcara;
 }
 
 const BagianProfilKomunitas: React.FC<PropsBagianProfilKomunitas> = ({
-  userProfile,
   anggotaData,
 }) => {
-  // ID profil pengguna default jika tidak disediakan dalam respons
-  const profileUserId = anggotaData.profile_id?.id;
-
   const getStatusBg = (status: string) => {
     switch (status) {
       case "PRESENT":
@@ -81,7 +54,7 @@ const BagianProfilKomunitas: React.FC<PropsBagianProfilKomunitas> = ({
     }
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null) => {
     if (!dateString) return "-";
     return new Date(dateString).toLocaleDateString("id-ID", {
       day: "2-digit",
@@ -108,27 +81,23 @@ const BagianProfilKomunitas: React.FC<PropsBagianProfilKomunitas> = ({
           <div className="bg-white/10 rounded-xl shadow p-6 flex flex-col gap-2 flex-1">
             <div className="flex">
               <span className="w-40 text-gray-300">Nama Lengkap</span>:{" "}
-              {userProfile.nama}
+              {anggotaData.nama}
             </div>
             <div className="flex">
               <span className="w-40 text-gray-300">NIM</span>:{" "}
-              {userProfile.user.nim}
+              {anggotaData.nim}
             </div>
             <div className="flex">
               <span className="w-40 text-gray-300">Email</span>:{" "}
-              {userProfile.email}
+              {anggotaData.email}
             </div>
             <div className="flex">
               <span className="w-40 text-gray-300">Jenis Kelamin</span>:{" "}
-              {userProfile.gender === "-"
+              {anggotaData.gender === "-"
                 ? "-"
-                : userProfile.gender === "L"
+                : anggotaData.gender === "L"
                 ? "Laki-laki"
                 : "Perempuan"}
-            </div>
-            <div className="flex">
-              <span className="w-40 text-gray-300">No. Handphone</span>:{" "}
-              {userProfile.noHandphone}
             </div>
           </div>
           
@@ -136,19 +105,19 @@ const BagianProfilKomunitas: React.FC<PropsBagianProfilKomunitas> = ({
           <div className="bg-white/10 rounded-xl shadow p-6 mt-6 md:mt-0 flex-1">
             <span className="font-bold text-lg mb-2 block">Komunitas</span>
             <div className="font-semibold ml-2">
-              {userProfile.namaKomunitas}
+              {anggotaData.nama_komunitas || "-"}
             </div>
             <div className="flex">
               <span className="ml-2 w-40 text-gray-300">Tanggal Bergabung</span>
-              : {formatDate(userProfile.joinKomunitas)}
+              : {formatDate(anggotaData.join_komunitas)}
             </div>
             <div className="flex">
               <span className="ml-2 w-40 text-gray-300">Divisi</span>:{" "}
-              {userProfile.divisi}
+              {anggotaData.divisi || "-"}
             </div>
             <div className="flex">
               <span className="ml-2 w-40 text-gray-300">Posisi</span>:{" "}
-              {userProfile.posisi}
+              {anggotaData.posisi || "-"}
             </div>
           </div>
         </div>

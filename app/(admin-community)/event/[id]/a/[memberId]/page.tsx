@@ -16,20 +16,23 @@ interface AnggotaAcara {
     nim: string;
     role: string;
   };
-  profile_id: {
-    id: string;
-  };
   id_user: string;
   nama: string;
   nim: string;
+  gender: string;
+  email: string;
+  nama_komunitas: string | null;
+  join_komunitas: string | null;
+  divisi: string | null;
+  posisi: string | null;
   jabatan: string;
   status: string;
   kerjasama: number | null;
   kedisiplinan: number | null;
   komunikasi: number | null;
   tanggung_jawab: number | null;
-  nilai_rata_rata: number | null;
-  grade: string | null;
+  nilai_rata_rata: number;
+  grade: string;
   catatan: string | null;
   created_at: string;
   updated_at: string;
@@ -105,7 +108,6 @@ const MemberDetailPage = () => {
   const eventId = params.id;
   const memberId = params.memberId;
   const [anggotaData, setAnggotaData] = useState<AnggotaAcara | null>(null);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [eventData, setEventData] = useState<EventData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -146,58 +148,6 @@ const MemberDetailPage = () => {
 
       const eventData = await eventResponse.json();
       setEventData(eventData);
-
-      // Try to fetch user profile data from profile-user first
-      let profileResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user/${anggotaData.profile_id?.id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      // If profile-user fetch fails, try profile-admin-community
-      if (!profileResponse.ok) {
-        profileResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin-community/${anggotaData.profile_id?.id}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-      }
-
-      let profileData;
-      if (!profileResponse.ok) {
-        // If both fetches fail, create a fallback profile using anggotaData
-        profileData = {
-          id: anggotaData.profile_id?.id || "-",
-          user: {
-            id: anggotaData.id_user || "-",
-            nim: anggotaData.nim || "-",
-            role: "-"
-          },
-          nama: anggotaData.nama || "-",
-          noHandphone: "-",
-          gender: "-",
-          tanggalLahir: "-",
-          kota: "-",
-          keterangan: "-",
-          linkedin: "-",
-          instagram: "-",
-          email: "-",
-          github: "-",
-          profilePicture: null,
-          namaKomunitas: "-",
-          joinKomunitas: "-",
-          divisi: "-",
-          posisi: "-",
-          createdAt: "-",
-          updatedAt: "-"
-        };
-      } else {
-        profileData = await profileResponse.json();
-      }
-
-      setUserProfile(profileData);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to fetch data');
@@ -218,7 +168,7 @@ const MemberDetailPage = () => {
     );
   }
 
-  if (!anggotaData || !userProfile || !eventData) {
+  if (!anggotaData || !eventData) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] flex items-center justify-center">
         <div className="text-white text-xl">Data tidak ditemukan</div>
@@ -230,7 +180,6 @@ const MemberDetailPage = () => {
     <div className="min-h-screen bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C]">
       <div className="w-full px-2 md:px-6">
         <CommunityProfileSection 
-          userProfile={userProfile}
           anggotaData={anggotaData}
         />
         <CommunityActivitySection 

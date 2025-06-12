@@ -24,7 +24,10 @@ export function CategoryCards({ categories, portfolioData }: CategoryCardsProps)
         'Keamanan Jaringan': 'Keamanan Jaringan'
       };
       
-      return project.kategori === categoryMapping[categoryTitle];
+      // Filter out portfolios with status 'Perlu Perubahan' or 'Dihapus'
+      return project.kategori === categoryMapping[categoryTitle] && 
+             project.status !== 'Perlu Perubahan' && 
+             project.status !== 'Dihapus';
     }).length;
   };
 
