@@ -104,7 +104,7 @@ export function ShowcaseHeader() {
         Portfolio Showcase
       </h1>
       <p className="text-gray-300 max-w-3xl mx-auto">
-        Lorem ipsum dolor sit amet consectetur. Quisque purus risus in purus at a. Tincidunt et sapien donec id integer pulvinar. Eu purus accumsan a ornare dictum massa mattis. Suspendisse at dolor
+      Jelajahi berbagai portofolio proyek yang telah dibuat oleh mahasiswa. Temukan inspirasi dan lihat hasil karya mereka dalam berbagai kategori seperti Rekayasa Perangkat Lunak, Game Cerdas, Data Sains, dan Keamanan Jaringan.
       </p>
     </div>
   );

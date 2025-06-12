@@ -64,33 +64,34 @@ export function FAQList({ items }: FAQListProps) {
 const faqItems: FAQItem[] = [
   {
     id: "item-1",
-    question: "Lorem ipsum dolor sit amet consectetur. Porttitor euismod",
-    answer: "Lorem ipsum dolor sit amet consectetur. Et libero viverra velit augue sit neque id faucibus. Cras sed nisi massa maecenas netus magnis dignissim eget lorem. Augue tempor sapien ipsum tristique pellentesque. Sit senectus facilisis tempor non augmentum dolor."
+    question: "Apa Itu Dashboard ?",
+    answer: "Dashboard yang ada di Super Admin berguna untuk melihat Portfolio yang dibuat oleh User atau Mahasiswa dari Informatika Universitas Muhammadiyah Malang."
   },
   {
     id: "item-2",
-    question: "Lorem ipsum dolor sit amet consectetur. Porttitor euismod",
-    answer: "Lorem ipsum dolor sit amet consectetur. Et libero viverra velit augue sit neque id faucibus. Cras sed nisi massa maecenas netus magnis dignissim eget lorem. Augue tempor sapien ipsum tristique pellentesque. Sit senectus facilisis tempor non augmentum dolor."
+    question: "Bagaimana cara menilai Portfolio dari Dashboard ?",
+    answer: "Admin bisa melakukan penilaian atau mengubah status dari Portfolio dengan mengklik icon 'Pensil' lalu akan diarahkan ke Detail Portfolio, dan untuk mengubah status nya bisa dipilih pojok kanan atas pada Detail Portfolio. Selain bisa mengubah status dari Portfolio, Super Admin bisa menambahkan catatan jika ada yang harus di revisi pada Portfolio."
+
   },
   {
     id: "item-3",
-    question: "Lorem ipsum dolor sit amet consectetur. Porttitor euismod",
-    answer: "Lorem ipsum dolor sit amet consectetur. Et libero viverra velit augue sit neque id faucibus. Cras sed nisi massa maecenas netus magnis dignissim eget lorem. Augue tempor sapien ipsum tristique pellentesque. Sit senectus facilisis tempor non augmentum dolor."
+    question: "Apa saja status untuk penilaian pada Portfolio ?",
+    answer: "Ada 3 Status yaitu yang pertama adalah 'Belum di Verifikasi' yang dimana status Portfolio menunggu untuk di Verifikasi. Yang kedua adalah 'Perlu Perubahan' yang dimana Portfolio memerlukan beberapa revisi. Yang Ketiga adalah 'Terverifikasi' yang dimana Porfolio User sudah di Acc oleh Admin"
   },
   {
     id: "item-4",
-    question: "Lorem ipsum dolor sit amet consectetur. Porttitor euismod",
-    answer: "Lorem ipsum dolor sit amet consectetur. Et libero viverra velit augue sit neque id faucibus. Cras sed nisi massa maecenas netus magnis dignissim eget lorem. Augue tempor sapien ipsum tristique pellentesque. Sit senectus facilisis tempor non augmentum dolor."
+    question: "Icon 'Mata' yang ada di Dashboard berguna untuk apa ?",
+    answer: "Icon 'Mata' berfungsi untuk melihat Detail dari Portofolio yang dibuat oleh Mahasiswa UMM. Berbeda dengan icon 'Pensil', icon 'Mata' hanya melihat detail dari Portfolio saja dan tidak bisa mengubah status dari Portfolio nya."
   },
   {
     id: "item-5",
-    question: "Lorem ipsum dolor sit amet consectetur. Porttitor euismod",
-    answer: "Lorem ipsum dolor sit amet consectetur. Et libero viverra velit augue sit neque id faucibus. Cras sed nisi massa maecenas netus magnis dignissim eget lorem. Augue tempor sapien ipsum tristique pellentesque. Sit senectus facilisis tempor non augmentum dolor."
+    question: "Apa itu Showcase Portfolio ?",
+    answer: "Showcase Portfolio digunakan untuk melihat Portfolio yang sudah memiliki status 'Terverifikasi', dengan kata lain, Showcase Portfolio berfungsi untuk melihat Portfolio yang sudah di Acc oleh Admin"
   },
   {
     id: "item-6",
-    question: "Lorem ipsum dolor sit amet consectetur. Porttitor euismod",
-    answer: "Lorem ipsum dolor sit amet consectetur. Et libero viverra velit augue sit neque id faucibus. Cras sed nisi massa maecenas netus magnis dignissim eget lorem. Augue tempor sapien ipsum tristique pellentesque. Sit senectus facilisis tempor non augmentum dolor."
+    question: "Apa itu Showcase Community ?",
+    answer: "Showcase Community merupakan Event atau acara yang dibuat oleh Mahasiswa, namun hanya menampilkan data dari Anggota Panitia yang sudah di nilai."
   }
 ];
 

@@ -59,7 +59,7 @@ export default function ProfileDropdown() {
     setUserRole(null);
     localStorage.removeItem('userRole');
     // Redirect to home page
-    router.push('/');
+    router.push('/auth/login-admin');
   };
 
   // Buat URL untuk gambar

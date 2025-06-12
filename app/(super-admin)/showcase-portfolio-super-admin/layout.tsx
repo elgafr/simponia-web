@@ -3,7 +3,7 @@
 
 import { ReactNode } from "react";
 import Navbar from "@/components/navbar/SuperAdminNavbar";
-import Footer from "@/components/user/landing-page/Footer";
+import Footer from "@/components/landing-page/Footer";
 
 interface ShowcaseLayoutPortfolioProps {
   children: ReactNode;
@@ -12,7 +12,7 @@ interface ShowcaseLayoutPortfolioProps {
 const ShowcaseLayoutPortfolio = ({ children }: ShowcaseLayoutPortfolioProps) => {
   return (
     <html lang="id">
-      <body className="bg-gray-950 text-white min-h-screen">
+      <body className="min-h-screen">
         <Navbar />
         <main>{children}</main>
         <Footer />

@@ -7,6 +7,7 @@ import { FormEvent, useState } from 'react';
 import { useAuthSuperAdmin } from '@/hooks/useAuthSuperAdmin';
 
 export default function LoginPage() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const router = useRouter();
   const { login, error, isLoading } = useAuthSuperAdmin();
   const [credentials, setCredentials] = useState({ nim: '', password: '', rememberMe: false });
@@ -69,20 +70,20 @@ export default function LoginPage() {
           />
         </div>
         <div className="text-center">
-          <h2 className="text-2xl font-semibold mb-4">Showcase your project and skill;</h2>
-          <p className="text-gray-300">Your Portfolio, Our Expertise</p>
+          <h2 className="text-2xl font-semibold mb-4">Tampilkan proyek dan keahlian Anda</h2>
+          <p className="text-gray-300">Portofolio Anda, Keahlian Kami</p>
         </div>
       </div>
 
       {/* Right Side - White Background */}
       <div className="w-full md:w-1/2 bg-white p-8 flex items-center justify-center">
         <div className="max-w-md w-full">
-          <h1 className="text-2xl font-bold text-gray-900 mb-8">Log in to Simponia!</h1>
+          <h1 className="text-3xl font-bold text-center text-gray-900 mb-8">Login Ke Simponia!</h1>
           
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="nim" className="block text-sm font-medium text-gray-700 mb-2">
-                NIM / Username
+                NIM
               </label>
               <input
                 type="text"
@@ -90,14 +91,14 @@ export default function LoginPage() {
                 name="nim"
                 value={credentials.nim}
                 onChange={handleInputChange}
-                placeholder="Input your NIM/Username"
+                placeholder="Masukkan NIM Anda"
                 className="w-full px-4 py-2 border text-black border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Password
+                Kata Sandi
               </label>
               <input
                 type="password"
@@ -105,7 +106,7 @@ export default function LoginPage() {
                 name="password"
                 value={credentials.password}
                 onChange={handleInputChange}
-                placeholder="Input your password"
+                placeholder="Masukkan Kata Sandi Anda"
                 className="w-full px-4 py-2 border text-black border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -120,16 +121,16 @@ export default function LoginPage() {
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
               <label htmlFor="remember" className="ml-2 block text-sm text-gray-700">
-                remember me!
+                Ingat Saya !
               </label>
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200"
+              className="w-full bg-[#001B45] text-white py-2 px-4 rounded-md hover:bg-blue-800 transition-colors duration-200"
             >
-              {isLoading ? 'Logging in...' : 'Login'}
+              {isLoading ? 'Logging in...' : 'Masuk'}
             </button>
 
             {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
@@ -139,7 +140,7 @@ export default function LoginPage() {
                 href="/forgot-password" 
                 className="text-sm text-blue-600 hover:text-blue-800 transition-colors duration-200"
               >
-                Forgot Password?
+                Lupa Kata Sandi?
               </Link>
             </div>
           </form>

@@ -17,25 +17,25 @@ const HeroSection2Dashboard: React.FC<CategoryCardsProps> = ({ categories = [
     icon: '/Source Code.svg',
     number: '50',
     title: 'Rekayasa\nPerangkat Lunak',
-    description: 'Lorem ipsum dolor sit amet consectetur. Tellus aliquet amet tortor ut donec. Suscipit, tortor cursus est ac.',
+    description: 'Pengembangan dan pembuatan perangkat lunak berkualitas tinggi dengan fokus pada desain, pengujian, dan pemeliharaan sistem.',
   },
   {
     icon: '/Game Controller.svg',
     number: '35',
-    title: 'Game\nIntelligence',
-    description: 'Lorem ipsum dolor sit amet consectetur. Tellus aliquet amet tortor ut donec. Suscipit, tortor cursus est ac.',
+    title: 'Game\nCerdas',
+    description: 'Pengembangan game dengan integrasi kecerdasan buatan dan teknologi interaktif untuk pengalaman bermain yang lebih menarik.',
   },
   {
     icon: '/Slice.svg',
     number: '20',
-    title: 'Data\nScience',
-    description: 'Lorem ipsum dolor sit amet consectetur. Tellus aliquet amet tortor ut donec. Suscipit, tortor cursus est ac.',
+    title: 'Data\nSains',
+    description: 'Analisis dan pengolahan data untuk mendapatkan wawasan berharga dan pengambilan keputusan berbasis data.',
   },
   {
     icon: '/Network.svg',
     number: '15',
-    title: 'Network\nand Security',
-    description: 'Lorem ipsum dolor sit amet consectetur. Tellus aliquet amet tortor ut donec. Suscipit, tortor cursus est ac.',
+    title: 'Keamanan\ndan Jaringan',
+    description: 'Implementasi dan pengelolaan sistem keamanan jaringan untuk melindungi infrastruktur digital dari ancaman siber.',
   }
 ] }) => {
   return (
