@@ -61,8 +61,6 @@ const getStatusColor = (status: string) => {
   }
 };
 
-const ITEMS_PER_PAGE = 10;
-
 interface PortfolioItem {
   id: string;
   nama_projek: string;
@@ -101,16 +99,74 @@ interface PortfolioItem {
   };
 }
 
+interface ProfileAdmin {
+  id: string;
+  user: {
+    id: string;
+    nim: string;
+    password: string;
+    role: string;
+    remember_token: string | null;
+    created_at: string;
+    updated_at: string;
+  };
+  nama: string;
+  noHandphone: string;
+  gender: string;
+  tanggalLahir: string;
+  kota: string;
+  keterangan: string;
+  linkedin: string;
+  instagram: string;
+  email: string;
+  github: string;
+  profilePicture: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ProfileUser {
+  id: string;
+  user: {
+    id: string;
+    nim: string;
+    password: string;
+    role: string;
+    remember_token: string | null;
+    created_at: string;
+    updated_at: string;
+  };
+  nama: string;
+  noHandphone: string;
+  gender: string;
+  tanggalLahir: string;
+  kota: string;
+  keterangan: string;
+  linkedin: string;
+  instagram: string;
+  email: string;
+  github: string;
+  profilePicture: string;
+  namaKomunitas: string;
+  joinKomunitas: string;
+  divisi: string;
+  posisi: string;
+  verifiedPortfolioCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 const HeroSection1Dashboard = () => {
   const [portfolios, setPortfolios] = useState<PortfolioItem[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [totalVerifiedCount, setTotalVerifiedCount] = useState<number>(0);
 
-  // Fetch portfolios from backend
   useEffect(() => {
     const fetchPortfolios = async () => {
       const token = localStorage.getItem("token");
@@ -121,7 +177,48 @@ const HeroSection1Dashboard = () => {
       }
 
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/portofolio`, {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/portofolio`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(
+            `Failed to fetch portfolios: ${response.status} - ${errorText}`
+          );
+        }
+
+        const data = await response.json();
+        setPortfolios(data);
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "An error occurred while fetching portfolios."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPortfolios();
+
+    const fetchTotalVerifiedCount = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          setError("No token found. Please log in.");
+          return;
+        }
+
+        const adminResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-admin`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -129,27 +226,41 @@ const HeroSection1Dashboard = () => {
           },
         });
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Failed to fetch portfolios: ${response.status} - ${errorText}`);
+        if (!adminResponse.ok) {
+          const errorText = await adminResponse.text();
+          throw new Error(`Failed to fetch profile admin: ${adminResponse.status} - ${errorText}`);
         }
 
-        const data = await response.json();
-        setPortfolios(data);
+        const profileAdmin: ProfileAdmin = await adminResponse.json();
+        const userId = profileAdmin.user.id;
+
+        const userResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user?userId=${userId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!userResponse.ok) {
+          const errorText = await userResponse.text();
+          throw new Error(`Failed to fetch profile user: ${userResponse.status} - ${errorText}`);
+        }
+
+        const profileUser: ProfileUser = await userResponse.json();
+        setTotalVerifiedCount(profileUser.verifiedPortfolioCount || 0);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred while fetching portfolios.");
-      } finally {
-        setLoading(false);
+        setError(err instanceof Error ? err.message : "An error occurred while fetching profile data.");
       }
     };
 
-    fetchPortfolios();
+    fetchTotalVerifiedCount();
   }, []);
 
-  // Get unique categories from portfolios
-  const uniqueCategories = Array.from(new Set(portfolios.map((item) => item.kategori)));
+  const uniqueCategories = Array.from(
+    new Set(portfolios.map((item) => item.kategori))
+  );
 
-  // Filtered data based on search, category, and status
   const filteredPortfolios = portfolios.filter((portfolio) => {
     const matchesSearch = portfolio.nama_projek
       .toLowerCase()
@@ -163,10 +274,14 @@ const HeroSection1Dashboard = () => {
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
-  const totalPages = Math.ceil(filteredPortfolios.length / ITEMS_PER_PAGE);
-  const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
-  const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
+  const totalPages = Math.ceil(filteredPortfolios.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredPortfolios.slice(indexOfFirstItem, indexOfLastItem);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCategory, selectedStatus, itemsPerPage]);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
@@ -182,17 +297,18 @@ const HeroSection1Dashboard = () => {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    setCurrentPage(1); // Reset to first page after filtering
   };
 
   const handleCategoryChange = (value: string) => {
-    setSelectedCategory(value === "all" ? "" : value); // Reset if "all" is selected
-    setCurrentPage(1); // Reset to first page after filtering
+    setSelectedCategory(value === "all" ? "" : value);
   };
 
   const handleStatusChange = (value: string) => {
-    setSelectedStatus(value === "all" ? "" : value); // Reset if "all" is selected
-    setCurrentPage(1); // Reset to first page after filtering
+    setSelectedStatus(value === "all" ? "" : value);
+  };
+
+  const handleItemsPerPageChange = (value: string) => {
+    setItemsPerPage(parseInt(value));
   };
 
   const renderTableContent = () => {
@@ -215,39 +331,76 @@ const HeroSection1Dashboard = () => {
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-700">
-              <th className="px-6 py-4 text-left text-sm font-semibold text-white">No.</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-white">Nama</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-white">Nama Projek</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-white">Kategori</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-white">Status</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-white">Aksi</th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-white">
+                No.
+              </th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-white">
+                Nama
+              </th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-white">
+                Nama Projek
+              </th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-white">
+                Kategori
+              </th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-white">
+                Status
+              </th>
+              <th className="px-6 py-4 text-left text-sm font-semibold text-white">
+                Aksi
+              </th>
             </tr>
           </thead>
           <tbody>
             {currentItems.map((portfolio, index) => (
-              <tr key={portfolio.id} className="border-b border-gray-700/50 hover:bg-white/5">
-                <td className="px-6 py-4 text-gray-300 text-left">{indexOfFirstItem + index + 1}</td>
+              <tr
+                key={portfolio.id}
+                className="border-b border-gray-700/50 hover:bg-white/5"
+              >
+                <td className="px-6 py-4 text-gray-300 text-left">
+                  {indexOfFirstItem + index + 1}
+                </td>
                 <td className="px-6 py-4 text-gray-300 text-left">
                   {portfolio.creator ? portfolio.creator.name : "Unknown"}
                 </td>
-                <td className="px-6 py-4 text-gray-300 text-left">{portfolio.nama_projek}</td>
-                <td className="px-6 py-4 text-gray-300 text-left">{portfolio.kategori}</td>
+                <td className="px-6 py-4 text-gray-300 text-left">
+                  {portfolio.nama_projek}
+                </td>
+                <td className="px-6 py-4 text-gray-300 text-left">
+                  {portfolio.kategori}
+                </td>
                 <td className="px-6 py-4 text-gray-300 text-left">
                   <span
-                    className={`px-3 py-1 rounded-full text-left text-base font-semibold text-black ${getStatusColor(portfolio.status)}`}
+                    className={`px-3 py-1 rounded-full text-left text-base font-semibold text-black ${getStatusColor(
+                      portfolio.status
+                    )}`}
                   >
                     {mapStatusToIndonesian(portfolio.status)}
                   </span>
                 </td>
                 <td className="p-3">
                   <div className="flex flex-col md:flex-row items-center justify-start gap-4">
-                    <Link href={`/detail-super-admin/portfolio/view/${portfolio.id}-${portfolio.nama_projek.toLowerCase().replace(/[^\w\s]/g, '-').replace(/\s+/g, '-')}`}>
+                    <Link
+                      href={`/detail-super-admin/portfolio/view/${
+                        portfolio.id
+                      }-${portfolio.nama_projek
+                        .toLowerCase()
+                        .replace(/[^\w\s]/g, "-")
+                        .replace(/\s+/g, "-")}`}
+                    >
                       <IoEyeSharp
                         size={35}
                         className="cursor-pointer hover:text-blue-300 transition hover:scale-120 transition"
                       />
                     </Link>
-                    <Link href={`/detail-super-admin/portfolio/edit/${portfolio.id}-${portfolio.nama_projek.toLowerCase().replace(/[^\w\s]/g, '-').replace(/\s+/g, '-')}`}>
+                    <Link
+                      href={`/detail-super-admin/portfolio/edit/${
+                        portfolio.id
+                      }-${portfolio.nama_projek
+                        .toLowerCase()
+                        .replace(/[^\w\s]/g, "-")
+                        .replace(/\s+/g, "-")}`}
+                    >
                       <HiOutlinePencil
                         size={35}
                         className="cursor-pointer hover:text-red-400 transition hover:scale-120 transition"
@@ -267,7 +420,9 @@ const HeroSection1Dashboard = () => {
           >
             {"<"}
           </button>
-          <span className="text-white">Halaman {currentPage} dari {totalPages}</span>
+          <span className="text-white">
+            Halaman {currentPage} dari {totalPages || 1}
+          </span>
           <button
             onClick={handleNextPage}
             disabled={currentPage === totalPages}
@@ -285,68 +440,96 @@ const HeroSection1Dashboard = () => {
 
   return (
     <section className="flex flex-col items-center justify-center min-h-screen w-full text-center bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] overflow-hidden">
-      <div className="max-w-7xl text-left mx-auto px-5 sm:px-6 lg:px-2 mt-10">
+      <div className="max-w-7xl text-left mx-auto px-5 sm:px-6 lg:px-2 mt-10 w-full">
         <DashboardHeader
           title="Dashboard"
           description="Dashboad Super Admin untuk melihat Portfolio dari Mahasiswa Informatika Universitas Muhammadiyah Malang. Lakukanlah Penilaian untuk Portfolio dengan Teliti agar tidak terjadi kesalahan."
         />
-      </div>
-
-      {/* Filter Section */}
-      <div className="flex flex-col md:flex-row gap-4 mb-8">
-        <div className="relative flex-grow">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            placeholder="Cari"
-            className="w-220 pl-10 bg-white/5 border-0 text-white placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-blue-500"
-            value={searchTerm}
-            onChange={handleSearchChange}
-          />
-        </div>
-        <div className="flex gap-4">
-          <Select onValueChange={handleCategoryChange} value={selectedCategory}>
-            <SelectTrigger className="w-[180px] bg-white/5 border-0 text-white hover:bg-white/10 transition-colors">
-              <SelectValue placeholder="Kategori Portofolio" />
-            </SelectTrigger>
-            <SelectContent className="bg-[#001233] border-[#001B45]">
-              <SelectItem value="all" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">
-                Semua Kategori
-              </SelectItem>
-              {uniqueCategories.map((category) => (
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
+          <div className="relative flex-grow">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="Cari Projek"
+              className="w-170 pl-10 bg-white/5 border-0 text-white placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-blue-500"
+              value={searchTerm}
+              onChange={handleSearchChange}
+            />
+          </div>
+          <div className="flex gap-4">
+            <Select
+              onValueChange={handleCategoryChange}
+              value={selectedCategory}
+            >
+              <SelectTrigger className="w-[180px] bg-white/5 border-0 text-white hover:bg-white/10 transition-colors">
+                <SelectValue placeholder="Kategori Portofolio" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#001233] border-[#001B45]">
                 <SelectItem
-                  key={category}
-                  value={category}
+                  value="all"
                   className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white"
                 >
-                  {category}
+                  Semua Kategori
                 </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select onValueChange={handleStatusChange} value={selectedStatus}>
-            <SelectTrigger className="w-[180px] bg-white/5 border-0 text-white hover:bg-white/10 transition-colors">
-              <SelectValue placeholder="Status Portofolio" />
-            </SelectTrigger>
-            <SelectContent className="bg-[#001233] border-[#001B45]">
-              <SelectItem value="all" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">
-                Semua Status
-              </SelectItem>
-              <SelectItem value="Terverifikasi" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">
-                Terverifikasi
-              </SelectItem>
-              <SelectItem value="Perlu Perubahan" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">
-                Perlu Perubahan
-              </SelectItem>
-              <SelectItem value="Belum di Verifikasi" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">
-                Belum di Verifikasi
-              </SelectItem>
-            </SelectContent>
-          </Select>
+                {uniqueCategories.map((category) => (
+                  <SelectItem
+                    key={category}
+                    value={category}
+                    className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white"
+                  >
+                    {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select onValueChange={handleStatusChange} value={selectedStatus}>
+              <SelectTrigger className="w-[180px] bg-white/5 border-0 text-white hover:bg-white/10 transition-colors">
+                <SelectValue placeholder="Status Portofolio" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#001233] border-[#001B45]">
+                <SelectItem
+                  value="all"
+                  className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white"
+                >
+                  Semua Status
+                </SelectItem>
+                <SelectItem
+                  value="Terverifikasi"
+                  className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white"
+                >
+                  Terverifikasi
+                </SelectItem>
+                <SelectItem
+                  value="Perlu Perubahan"
+                  className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white"
+                >
+                  Perlu Perubahan
+                </SelectItem>
+                <SelectItem
+                  value="Belum di Verifikasi"
+                  className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white"
+                >
+                  Belum di Verifikasi
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
+              <SelectTrigger className="w-[180px] bg-white/5 border-0 text-white hover:bg-white/10 transition-colors">
+                <SelectValue placeholder="Items per Page" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#001233] border-[#001B45]">
+                <SelectItem value="5" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">5</SelectItem>
+                <SelectItem value="10" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">10</SelectItem>
+                <SelectItem value="20" className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white">20</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-      </div>
-
-      <div className="bg-white/5 backdrop-blur-sm rounded-3xl overflow-hidden mb-20 w-full max-w-7xl px-8 py-4">
-        {renderTableContent()}
+        <div className="bg-white/5 backdrop-blur-sm rounded-3xl overflow-hidden mb-10 w-full px-8 py-4 max-h-[500px] overflow-y-auto">
+          {renderTableContent()}
+        </div>
+        <div className="flex justify-start bg-white/5 rounded-3xl px-9 py-4 mb-10 max-w-[200]">
+          <h2 className="font-semibold text-white">Total Review : {totalVerifiedCount}</h2>
+        </div>
       </div>
     </section>
   );

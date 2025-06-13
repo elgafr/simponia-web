@@ -38,6 +38,37 @@ interface PortfolioItem {
   };
 }
 
+interface ProfileUser {
+  id: string;
+  user: {
+    id: string;
+    nim: string;
+    password: string;
+    role: string;
+    remember_token: string | null;
+    created_at: string;
+    updated_at: string;
+  };
+  nama: string;
+  noHandphone: string;
+  gender: string;
+  tanggalLahir: string;
+  kota: string;
+  keterangan: string;
+  linkedin: string;
+  instagram: string;
+  email: string;
+  github: string;
+  profilePicture: string;
+  namaKomunitas: string;
+  joinKomunitas: string;
+  divisi: string;
+  posisi: string;
+  verifiedPortfolioCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 const SocialLinks: React.FC<{ socialLinks?: { [key: string]: string } }> = ({ socialLinks = {} }) => {
   const socialIcons: { icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; name: string; url: string }[] = [
     { icon: MessageCircle, name: 'whatsapp', url: socialLinks.whatsapp || '#' },
@@ -113,8 +144,7 @@ const ProjectContent: React.FC<{ project: PortfolioItem }> = ({ project }) => {
           instagram: contact.instagram.startsWith('http') ? contact.instagram : `https://${contact.instagram}`,
           email: contact.email || '',
           github: contact.github.startsWith('http') ? contact.github : `https://${contact.github}`,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        }).filter(([_, value]) => value !== '')
+        }).filter(([, value]) => value !== '')
       )
     : {};
 
@@ -187,6 +217,20 @@ const ProjectSidebar: React.FC<{ project: PortfolioItem }> = ({ project }) => {
   );
 };
 
+const VerificationStatus: React.FC<{ status: string; note: string }> = ({ status, note }) => {
+  return (
+    <div className="mt-12 bg-white/5 backdrop-blur-sm rounded-xl p-6">
+      <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
+        Verification Status
+      </h2>
+      <div className="text-gray-300">
+        <p><strong>Status:</strong> {status}</p>
+        {note && <p className="mt-2"><strong>Note:</strong> {note}</p>}
+      </div>
+    </div>
+  );
+};
+
 const HeroSection1DetailPortfolio: React.FC = () => {
   const params = useParams();
   const router = useRouter();
@@ -203,6 +247,8 @@ const HeroSection1DetailPortfolio: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string>("Belum di Verifikasi");
   const [note, setNote] = useState<string>("");
+  const [verificationId, setVerificationId] = useState<number | null>(null);
+  const [profileUserId, setProfileUserId] = useState<string | null>(null); // Menyimpan profile_user dari API
 
   useEffect(() => {
     if (!portfolioId) {
@@ -211,7 +257,7 @@ const HeroSection1DetailPortfolio: React.FC = () => {
       return;
     }
 
-    const fetchPortfolioDetails = async () => {
+    const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -219,6 +265,33 @@ const HeroSection1DetailPortfolio: React.FC = () => {
           setLoading(false);
           return;
         }
+
+        // Ambil user_id dari token
+        let userId = null;
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          userId = payload.user_id || payload.sub;
+          console.log("Decoded user_id from token:", userId);
+        } catch (decodeError) {
+          console.error("Failed to decode token:", decodeError);
+        }
+        if (!userId) {
+          throw new Error("User ID not found in token. Please log in again.");
+        }
+
+        // Ambil profile_user dari endpoint /profile-user dengan user_id sebagai parameter
+        const profileResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile-user?user_id=${userId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!profileResponse.ok) {
+          throw new Error(`Failed to fetch profile: ${profileResponse.status} - ${await profileResponse.text()}`);
+        }
+        const profileData: ProfileUser = await profileResponse.json();
+        setProfileUserId(profileData.id); // Simpan profile_user ID
 
         const portfolioUrl = `${process.env.NEXT_PUBLIC_API_URL}/portofolio/${portfolioId}`;
         const response = await fetch(portfolioUrl, {
@@ -258,66 +331,145 @@ const HeroSection1DetailPortfolio: React.FC = () => {
         };
 
         setPortfolioItem(mappedItem);
-        setStatus(data.status || "Belum di Verifikasi"); // Set initial status from API
+        setStatus(data.status || "Belum di Verifikasi");
+
+        // Cek apakah ada status verifikasi yang sudah ada
+        const verificationResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/status-verifikasi/${portfolioId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (verificationResponse.ok) {
+          const verificationData = await verificationResponse.json();
+          setVerificationId(verificationData.UniqueID);
+          setStatus(verificationData.status || "Belum di Verifikasi");
+          setNote(verificationData.note || "");
+        }
+
+        // Jika status bukan "Proses Verifikasi", atur menjadi "Proses Verifikasi" saat dibuka oleh admin
+        if (status !== "Proses Verifikasi") {
+          await updateStatusToInProgress(token, portfolioId, userId, profileUserId);
+        }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred while fetching portfolio details.");
+        setError(err instanceof Error ? err.message : "An error occurred while fetching data.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPortfolioDetails();
+    const updateStatusToInProgress = async (token: string, portfolioId: string, userId: string, profileUserId: string | null) => {
+      try {
+        const payloadData = {
+          id_portofolio: portfolioId,
+          status: "Proses Verifikasi",
+          updated_by: userId,
+          profile_user: profileUserId,
+        };
+
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/status-verifikasi`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payloadData),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Failed to update status to Proses Verifikasi:", errorText);
+          throw new Error(`Failed to update status: ${response.status} - ${errorText}`);
+        }
+
+        const data = await response.json();
+        setVerificationId(data.UniqueID);
+        setStatus("Proses Verifikasi");
+      } catch (err) {
+        console.error("Error updating status to Proses Verifikasi:", err);
+      }
+    };
+
+    fetchData();
   }, [portfolioId]);
 
   const handleSave = async () => {
     const token = localStorage.getItem("token");
-    if (!token || !portfolioId) {
-      alert("No token or portfolio ID found. Please log in and try again.");
+    if (!token || !portfolioId || !profileUserId) {
+      alert("No token, portfolio ID, or profile user ID found. Please log in and try again.");
       return;
     }
 
     try {
-      // Decode JWT token to get user ID
-      let updatedBy = "3d082f6f-ac73-4cf4-8da9-dc98ed61a2d8"; // Fallback hardcoded value
+      let updatedBy = null;
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        updatedBy = payload.user_id || payload.sub || updatedBy; // Try 'sub' as an alternative claim
+        updatedBy = payload.user_id || payload.sub;
         console.log("Decoded user_id from token:", updatedBy);
       } catch (decodeError) {
         console.error("Failed to decode token:", decodeError);
-        console.log("Using hardcoded updated_by:", updatedBy);
+      }
+      if (!updatedBy) {
+        throw new Error("User ID not found in token. Please log in again.");
       }
 
-      const statusVerifikasiUrl = `${process.env.NEXT_PUBLIC_API_URL}/status-verifikasi`;
       const payloadData = {
         id_portofolio: portfolioId,
         status: status,
         note: note || undefined,
         updated_by: updatedBy,
+        profile_user: profileUserId,
       };
-      console.log("Sending payload:", payloadData); // Log payload for debugging
 
-      const response = await fetch(statusVerifikasiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payloadData),
-      });
+      let response;
+      if (!verificationId) {
+        const statusVerifikasiUrl = `${process.env.NEXT_PUBLIC_API_URL}/status-verifikasi`;
+        console.log("Sending POST request with payload:", payloadData);
+        response = await fetch(statusVerifikasiUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payloadData),
+        });
+      } else {
+        const statusVerifikasiUrl = `${process.env.NEXT_PUBLIC_API_URL}/status-verifikasi/${verificationId}`;
+        console.log("Sending PUT request with payload:", payloadData);
+        response = await fetch(statusVerifikasiUrl, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            status: status,
+            updated_by: updatedBy,
+            profile_user: profileUserId,
+            note: note || undefined,
+          }),
+        });
+      }
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("API Error Response:", errorText); // Log full error response
+        console.error("API Error Response:", errorText);
         throw new Error(`Failed to update status verifikasi: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json();
-      console.log("Response:", data); // Log response for debugging
+      console.log("Response:", data);
+
+      if (!verificationId) {
+        setVerificationId(data.UniqueID);
+      }
+
       alert("Portfolio status updated successfully!");
       router.push("/dashboard-super-admin");
     } catch (err) {
-      console.error("Error updating status:", err); // Log error for debugging
+      console.error("Error updating status:", err);
       alert(err instanceof Error ? err.message : "An error occurred while updating the portfolio status.");
     }
   };
@@ -431,6 +583,8 @@ const HeroSection1DetailPortfolio: React.FC = () => {
             <ProjectContent project={portfolioItem} />
             <ProjectSidebar project={portfolioItem} />
           </div>
+
+          <VerificationStatus status={status} note={note} />
 
           <div className="mt-12">
             <label className="text-white text-2xl font-semibold block mb-4">Note</label>

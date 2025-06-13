@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { fetchAcara, AnggotaAcara, fetchProfileUser, fetchProfileAdminCommunity, ProfileUser, ProfileAdminCommunity, fetchAnggotaAcara } from "./fetch";
+import { fetchAcara, AnggotaAcara, fetchAnggotaAcara } from "./fetch";
 import GenerateCertificate from "./GenerateCertificate"; // Adjust the import path as needed
 
 // Utility function to map gender codes to full names
@@ -26,7 +26,6 @@ const HeroSection1DetailCommunity: React.FC = () => {
   const selectedActivity = searchParams.get("activity") || "";
   const selectedYear = searchParams.get("year") || "";
   const [memberData, setMemberData] = useState<AnggotaAcara | null>(null);
-  const [profileData, setProfileData] = useState<ProfileUser | ProfileAdminCommunity | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [acaraDescription, setAcaraDescription] = useState<string>("");
@@ -72,40 +71,12 @@ const HeroSection1DetailCommunity: React.FC = () => {
             setAcaraDescription(matchingAcara.deskripsi || "No description available.");
             setAcaraId(matchingAcara.id);
             setGambar(matchingAcara.gambar || null);
-
-            // Fetch profile based on role
-            const profileId = fullMemberData.profile_id?.id;
-            if (!profileId) {
-              setError("Profile ID is missing in member data");
-              return;
-            }
-            const userRole = fullMemberData.created_by?.role;
-            if (!userRole) {
-              setError("User role is missing in member data");
-              return;
-            }
-            let profileResponse;
-
-            if (userRole === "1" || userRole === "3") {
-              profileResponse = await fetchProfileUser(profileId); // Use for regular users and role 3
-            } else if (userRole === "2") {
-              profileResponse = await fetchProfileAdminCommunity(profileId); // Use for Admin Community
-            }
-
-            if (profileResponse) {
-              setProfileData(profileResponse);
-            } else {
-              setProfileData(null);
-              setError("Failed to fetch profile data");
-            }
           } else {
             setMemberData(null);
-            setProfileData(null);
             setError("No member found for the given ID");
           }
         } else {
           setMemberData(null);
-          setProfileData(null);
           setAcaraDescription("No description available.");
           setAcaraId(null);
           setGambar(null);
@@ -127,7 +98,6 @@ const HeroSection1DetailCommunity: React.FC = () => {
 
   return (
     <section className="text-white p-8 rounded-lg lg:px-100 py-20">
-
       <h2 className="text-3xl font-bold mb-4 flex items-center gap-2">Profile</h2>
       <div className="border-t border-gray-500 my-4"></div>
       <div className="flex flex-col md:flex-row gap-9 mt-9">
@@ -135,18 +105,18 @@ const HeroSection1DetailCommunity: React.FC = () => {
           <div className="text-xl bg-white/9 p-5 rounded-2xl hover:scale-102 transition with-spacing min-h-[250px] space-y-4">
             <p><span className="text-gray-300">Nama Lengkap :</span> {memberData?.nama || "No data"}</p>
             <p><span className="text-gray-300">NIM :</span> {memberData?.nim || "No data"}</p>
-            <p><span className="text-gray-300">Email :</span> {profileData?.email || "No data"}</p>
-            <p><span className="text-gray-300">Gender :</span> {mapGender(profileData?.gender)}</p>
+            <p><span className="text-gray-300">Email :</span> {memberData?.email || "No data"}</p>
+            <p><span className="text-gray-300">Gender :</span> {mapGender(memberData?.gender)}</p>
           </div>
         </div>
 
         <div className="flex-1">
           <div className="text-xl bg-white/9 p-5 rounded-2xl hover:scale-102 transition with-spacing min-h-[250px] space-y-3">
             <h2 className="text-2xl font-semibold">Community</h2>
-            <h3 className="font-semibold">{profileData?.namaKomunitas || "N/A"}</h3>
-            <p><span className="text-gray-300">Join Date :</span> {profileData?.joinKomunitas || "N/A"}</p>
-            <p><span className="text-gray-300">Division :</span> {profileData?.divisi || "N/A"}</p>
-            <p><span className="text-gray-300">Position :</span> {profileData?.posisi || "N/A"}</p>
+            <h3 className="font-semibold">{memberData?.nama_komunitas || "N/A"}</h3>
+            <p><span className="text-gray-300">Tanggal Bergabung :</span> {memberData?.join_komunitas || "N/A"}</p>
+            <p><span className="text-gray-300">Divisi :</span> {memberData?.divisi || "N/A"}</p>
+            <p><span className="text-gray-300">Posisi :</span> {memberData?.posisi || "N/A"}</p>
           </div>
         </div>
       </div>

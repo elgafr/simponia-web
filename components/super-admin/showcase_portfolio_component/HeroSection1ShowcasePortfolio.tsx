@@ -104,7 +104,7 @@ export function ShowcaseHeader() {
         Portfolio Showcase
       </h1>
       <p className="text-gray-300 max-w-3xl mx-auto">
-      Jelajahi berbagai portofolio proyek yang telah dibuat oleh mahasiswa. Temukan inspirasi dan lihat hasil karya mereka dalam berbagai kategori seperti Rekayasa Perangkat Lunak, Game Cerdas, Data Sains, dan Keamanan Jaringan.
+        Jelajahi berbagai portofolio proyek yang telah dibuat oleh mahasiswa. Temukan inspirasi dan lihat hasil karya mereka dalam berbagai kategori seperti Rekayasa Perangkat Lunak, Game Cerdas, Data Sains, dan Keamanan Jaringan.
       </p>
     </div>
   );
@@ -113,9 +113,13 @@ export function ShowcaseHeader() {
 // ShowcaseSearch Component
 interface ShowcaseSearchProps {
   categories: string[];
+  searchTerm: string;
+  setSearchTerm: (value: string) => void;
+  selectedCategory: string;
+  setSelectedCategory: (value: string) => void;
 }
 
-export function ShowcaseSearch({ categories }: ShowcaseSearchProps) {
+export function ShowcaseSearch({ categories, searchTerm, setSearchTerm, selectedCategory, setSelectedCategory }: ShowcaseSearchProps) {
   return (
     <div className="flex flex-col md:flex-row gap-4 mb-12">
       <div className="relative flex-grow">
@@ -123,9 +127,11 @@ export function ShowcaseSearch({ categories }: ShowcaseSearchProps) {
         <Input
           placeholder="Search project or name"
           className="pl-10 bg-white/5 border-0 text-white placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-blue-500"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
-      <Select>
+      <Select value={selectedCategory} onValueChange={setSelectedCategory}>
         <SelectTrigger className="w-[180px] bg-white/5 border-0 text-white hover:bg-white/10 transition-colors">
           <SelectValue placeholder="Category" />
         </SelectTrigger>
@@ -136,7 +142,7 @@ export function ShowcaseSearch({ categories }: ShowcaseSearchProps) {
           {categories.map((category) => (
             <SelectItem
               key={category}
-              value={category.toLowerCase()} // Use lowercase for the value to ensure consistency
+              value={category.toLowerCase()}
               className="text-white hover:bg-[#051F4C] focus:bg-[#051F4C] focus:text-white"
             >
               {category}
@@ -172,7 +178,7 @@ export function ShowcaseCard({ item }: ShowcaseCardProps) {
             className="w-full h-full object-fill"
             onError={(e) => {
               console.error('Image load failed, falling back to default. URL:', imageUrl);
-              e.currentTarget.src = '/default-image.png'; // Fallback image
+              e.currentTarget.src = '/default-image.png';
             }}
           />
         </div>
@@ -225,11 +231,13 @@ export default function HeroSection1ShowcasePortfolio() {
   const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
 
   // Fetch portfolio data from backend
   useEffect(() => {
     const fetchPortfolios = async () => {
-      const token = localStorage.getItem("token"); // Retrieve token from localStorage
+      const token = localStorage.getItem("token");
       if (!token) {
         setError("No token found. Please log in.");
         setLoading(false);
@@ -241,7 +249,7 @@ export default function HeroSection1ShowcasePortfolio() {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Use Bearer token for authentication
+            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -252,7 +260,6 @@ export default function HeroSection1ShowcasePortfolio() {
 
         const data: BackendPortfolioItem[] = await response.json();
 
-        // Map backend response to PortfolioItem interface
         const mappedItems: PortfolioItem[] = data.map((item) => ({
           id: item.id,
           title: item.nama_projek,
@@ -260,7 +267,7 @@ export default function HeroSection1ShowcasePortfolio() {
           category: item.kategori,
           tags: item.tags.map(tag => tag.nama),
           date: item.created_at,
-          subtitle: item.kategori, // Using category as fallback
+          subtitle: item.kategori,
           description: item.deskripsi,
           links: item.detail_project.map(detail => ({
             title: detail.judul_link,
@@ -298,6 +305,16 @@ export default function HeroSection1ShowcasePortfolio() {
   // Extract unique categories from portfolioItems
   const uniqueCategories = Array.from(new Set(portfolioItems.map(item => item.category)));
 
+  // Filter portfolio items based on search term and category
+  const filteredItems = portfolioItems.filter((item) => {
+    const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.teamMembers && item.teamMembers.some(member =>
+        member.name.toLowerCase().includes(searchTerm.toLowerCase())
+      ));
+    const matchesCategory = selectedCategory === "all" || item.category.toLowerCase() === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
   if (loading) return <div className="text-white text-center py-10">Loading...</div>;
   if (error) return <div className="text-red-500 text-center py-10">{error}</div>;
 
@@ -306,8 +323,14 @@ export default function HeroSection1ShowcasePortfolio() {
       <main className="flex-grow bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] pt-24 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ShowcaseHeader />
-          <ShowcaseSearch categories={uniqueCategories} />
-          <ShowcaseGrid items={portfolioItems} />
+          <ShowcaseSearch
+            categories={uniqueCategories}
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
+          />
+          <ShowcaseGrid items={filteredItems} />
         </div>
       </main>
     </div>

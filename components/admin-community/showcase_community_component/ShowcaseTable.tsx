@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useEffect } from "react";
 
 export interface Showcase {
   id: string;
@@ -22,6 +22,16 @@ export interface Showcase {
 
 interface ShowcaseTableProps {
   showcaseData: Showcase[];
+  currentPage: number;
+  setCurrentPage: (page: number) => void;
+  itemsPerPage: number;
+  setItemsPerPage: (items: number) => void;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  selectedYear: string;
+  setSelectedYear: (year: string) => void;
+  selectedPerformance: string;
+  setSelectedPerformance: (performance: string) => void;
 }
 
 const getPerformanceColor = (performance: string) => {
@@ -35,14 +45,19 @@ const getPerformanceColor = (performance: string) => {
   }
 };
 
-const ITEMS_PER_PAGE = 5;
-
-export function ShowcaseTable({ showcaseData }: ShowcaseTableProps) {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedYear, setSelectedYear] = useState('all');
-  const [selectedPerformance, setSelectedPerformance] = useState('all');
-
+export function ShowcaseTable({
+  showcaseData,
+  currentPage,
+  setCurrentPage,
+  itemsPerPage,
+  setItemsPerPage,
+  searchQuery,
+  setSearchQuery,
+  selectedYear,
+  setSelectedYear,
+  selectedPerformance,
+  setSelectedPerformance,
+}: ShowcaseTableProps) {
   // Filter data
   const filteredShowcases = showcaseData.filter(showcase => {
     const yearMatch = selectedYear === 'all' || showcase.year === selectedYear;
@@ -52,13 +67,18 @@ export function ShowcaseTable({ showcaseData }: ShowcaseTableProps) {
   });
 
   // Pagination
-  const totalPages = Math.ceil(filteredShowcases.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const totalPages = Math.ceil(filteredShowcases.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
   const currentItems = filteredShowcases.slice(startIndex, endIndex);
 
   // Get unique years for select
   const yearOptions = Array.from(new Set(showcaseData.map(item => item.year)));
+
+  // Reset currentPage when filters or itemsPerPage change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedYear, selectedPerformance, itemsPerPage, setCurrentPage]);
 
   return (
     <div className="w-full max-w-6xl">
@@ -66,10 +86,10 @@ export function ShowcaseTable({ showcaseData }: ShowcaseTableProps) {
         <div className="relative flex-grow">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
-            placeholder="Search Name..."
+            placeholder="Cari Nama ..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-white/5 border-0 text-white placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-blue-500"
+            className="pl-9 bg-white/5 border-0 text-white placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-blue-500"
           />
         </div>
         <div className="flex gap-4">
@@ -95,6 +115,16 @@ export function ShowcaseTable({ showcaseData }: ShowcaseTableProps) {
               <SelectItem value="C" className="text-white">C</SelectItem>
               <SelectItem value="D" className="text-white">D</SelectItem>
               <SelectItem value="E" className="text-white">E</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={itemsPerPage.toString()} onValueChange={(value) => setItemsPerPage(parseInt(value))}>
+            <SelectTrigger className="w-[140px] bg-white/5 border-0 text-white hover:bg-white/10 transition-colors">
+              <SelectValue placeholder="Items per Page" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#001233] border-[#001B45]">
+              <SelectItem value="5" className="text-white">5</SelectItem>
+              <SelectItem value="10" className="text-white">10</SelectItem>
+              <SelectItem value="20" className="text-white">20</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -148,17 +178,17 @@ export function ShowcaseTable({ showcaseData }: ShowcaseTableProps) {
         <div className="flex justify-end mt-4 pr-4">
           <button
             className="px-4 py-2 text-2xl text-white rounded-md disabled:opacity-50 hover:scale-120 transition"
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))}
             disabled={currentPage === 1}
           >
             {"<"}
           </button>
           <span className="text-lg font-thin mx-3 mt-2.5">
-            Halaman {currentPage} dari {totalPages}
+            Halaman {currentPage} dari {totalPages || 1}
           </span>
           <button
             className="px-4 py-2 text-2xl text-white rounded-md disabled:opacity-50 hover:scale-120 transition"
-            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPages))}
             disabled={currentPage === totalPages}
           >
             {">"}

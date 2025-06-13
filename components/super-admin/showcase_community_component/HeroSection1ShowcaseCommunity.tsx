@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import {
   Select,
@@ -11,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Search, Eye } from 'lucide-react';
-import { EmptyState } from '@/components/ui/empty-state'; // Import the EmptyState component
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface MemberData {
   id: string;
@@ -66,9 +67,46 @@ const getPerformanceColor = (performance: string): string => {
   }
 };
 
+const fetchCommunityData = async (token: string | null) => {
+  if (!token) throw new Error("No token found. Please log in.");
+
+  const acaraResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/acara`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!acaraResponse.ok) {
+    const errorText = await acaraResponse.text();
+    throw new Error(`Failed to fetch data: ${acaraResponse.status} - ${errorText}`);
+  }
+
+  const data: EventData[] = await acaraResponse.json();
+  const communityData: CommunityData[] = [];
+
+  data.forEach(event => {
+    event.anggota
+      .filter(member => member.grade !== null && member.grade !== undefined)
+      .forEach(member => {
+        const performance = member.grade!.charAt(0) as 'A' | 'B' | 'C' | 'D' | 'E';
+        communityData.push({
+          id_user: member.id_user,
+          nama: member.nama,
+          activity: event.judul,
+          year: event.tanggal.split('-')[0],
+          performance: performance,
+        });
+      });
+  });
+
+  return communityData;
+};
+
 const HeroSection1ShowcaseCommunity: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedYear, setSelectedYear] = useState("all");
   const [selectedPerformance, setSelectedPerformance] = useState("all");
@@ -77,50 +115,11 @@ const HeroSection1ShowcaseCommunity: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
-        if (!token) {
-          setError("No token found. Please log in.");
-          setLoading(false);
-          return;
-        }
-
-        const acaraResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/acara`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!acaraResponse.ok) {
-          const errorText = await acaraResponse.text();
-          throw new Error(`Failed to fetch data: ${acaraResponse.status} - ${errorText}`);
-        }
-
-        const data: EventData[] = await acaraResponse.json();
-        const memberMap = new Map<string, CommunityData>();
-        data.forEach(event => {
-          event.anggota
-            .filter(member => member.grade !== null && member.grade !== undefined)
-            .forEach(member => {
-              const key = `${member.id_user}-${event.tanggal.split('-')[0]}`;
-              const performance = member.grade!.charAt(0) as 'A' | 'B' | 'C' | 'D' | 'E';
-              if (!memberMap.has(key) || event.tanggal.split('-')[0] > memberMap.get(key)!.year) {
-                memberMap.set(key, {
-                  id_user: member.id_user,
-                  nama: member.nama,
-                  activity: event.judul,
-                  year: event.tanggal.split('-')[0],
-                  performance: performance,
-                });
-              }
-            });
-        });
-        setCommunityData(Array.from(memberMap.values()));
+        const data = await fetchCommunityData(token);
+        setCommunityData(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred while fetching data.");
       } finally {
@@ -144,6 +143,10 @@ const HeroSection1ShowcaseCommunity: React.FC = () => {
   const currentItems = filteredData.slice(startIndex, endIndex);
 
   const yearOptions = Array.from(new Set(communityData.map(item => item.year)));
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedYear, selectedPerformance, itemsPerPage]);
 
   if (loading) {
     return (
@@ -176,14 +179,12 @@ const HeroSection1ShowcaseCommunity: React.FC = () => {
         </p>
       </div>
       
-      <h2 className="mt-5 text-3xl font-semibold">Results</h2>
-
       <div className="flex flex-col md:flex-row gap-4 mb-4">
         <div className="relative flex-grow">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
-            placeholder="Search Name..."
-            className="w-210 pl-10 bg-white/5 border-0 text-white placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-blue-500"
+            placeholder="Cari Nama ..."
+            className="w-165 pl-10 bg-white/5 border-0 text-white placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-blue-500"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -213,9 +214,18 @@ const HeroSection1ShowcaseCommunity: React.FC = () => {
               <SelectItem value="E" className="text-white">E</SelectItem>
             </SelectContent>
           </Select>
+          <Select value={itemsPerPage.toString()} onValueChange={(value) => setItemsPerPage(parseInt(value))}>
+            <SelectTrigger className="w-[140px] bg-white/5 border-0 text-white hover:bg-white/10 transition-colors">
+              <SelectValue placeholder="Items per Page" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#001233] border-[#001B45]">
+              <SelectItem value="5" className="text-white">5</SelectItem>
+              <SelectItem value="10" className="text-white">10</SelectItem>
+              <SelectItem value="20" className="text-white">20</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
-
 
       <div className="bg-[#011B45]/50 backdrop-blur-sm rounded-xl border border-gray-700/50 overflow-hidden w-full max-w-6xl px-10 py-10 min-h-[350px] mb-20">
         <table className="w-full table-fixed">
@@ -244,7 +254,7 @@ const HeroSection1ShowcaseCommunity: React.FC = () => {
               </tr>
             )}
             {currentItems.map((community, index) => (
-              <tr key={`${community.id_user}-${community.nama}-${community.year}`} className="border-b border-gray-700/50 hover:bg-white/5">
+              <tr key={`${community.id_user}-${community.activity}-${community.year}`} className="border-b border-gray-700/50 hover:bg-white/5">
                 <td className="px-4 py-3 text-gray-300 w-10">{startIndex + index + 1}.</td>
                 <td className="px-4 py-3 text-white w-55 truncate">{community.nama}</td>
                 <td className="px-4 py-3 text-gray-300">{community.activity}</td>
@@ -279,12 +289,12 @@ const HeroSection1ShowcaseCommunity: React.FC = () => {
             {"<"}
           </button>
           <span className="text-lg font-thin mx-3 mt-2.5">
-            Halaman {currentPage} dari {totalPages}
+            Halaman {currentPage} dari {totalPages || 1}
           </span>
           <button
             className="px-4 py-2 text-2xl text-white rounded-md disabled:opacity-50 hover:scale-120 transition"
             onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-            disabled={currentPage === totalPages}
+            disabled={currentPage === totalPages || totalPages === 0}
           >
             {">"}
           </button>

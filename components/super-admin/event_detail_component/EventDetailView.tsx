@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FaArrowLeft } from "react-icons/fa";
 import Image from "next/image";
 import Link from "next/link";
@@ -28,6 +28,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Anggota {
   id: string;
@@ -92,6 +98,7 @@ const EventDetailView: React.FC = () => {
   const router = useRouter();
   const [isEditMode, setIsEditMode] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
+  const [isImageOpen, setIsImageOpen] = useState(false);
 
   const eventId = idParam
     ? typeof idParam === 'string'
@@ -109,6 +116,8 @@ const EventDetailView: React.FC = () => {
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [editedDescription, setEditedDescription] = useState("");
   const [editingJabatan, setEditingJabatan] = useState<{ [key: string]: string }>({});
+  const [isUpdatingImage, setIsUpdatingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const fetchEventDetail = async () => {
@@ -598,12 +607,49 @@ const EventDetailView: React.FC = () => {
     });
   };
 
+  const handleImageUpdate = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !eventId) return;
+
+    try {
+      setIsUpdatingImage(true);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const formData = new FormData();
+      formData.append('gambar', file);
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/acara/${eventId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update event image');
+      }
+
+      const updatedEvent = await response.json();
+      setEventDetail(updatedEvent);
+      toast.success('Gambar acara berhasil diperbarui');
+    } catch (error) {
+      console.error('Error updating event image:', error);
+      toast.error('Gagal memperbarui gambar acara');
+    } finally {
+      setIsUpdatingImage(false);
+    }
+  };
+
   if (loading) {
     return (
       <section className="bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] lg:px-60 py-30">
         <div className="flex justify-start mb-6">
           <Button
-            onClick={() => router.push('/showcase-community-super-admin')}
+            onClick={() => router.push('/dashboard-admin-community')}
             variant="outline"
             className="bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-white"
           >
@@ -624,7 +670,7 @@ const EventDetailView: React.FC = () => {
       <section className="bg-gradient-to-b from-[#001B45] via-[#001233] to-[#051F4C] lg:px-60 py-30">
         <div className="flex justify-start mb-6">
           <Button
-            onClick={() => router.push('/showcase-community-super-admin')}
+            onClick={() => router.push('/dashboard-admin-community')}
             variant="outline"
             className="bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-white"
           >
@@ -646,7 +692,7 @@ const EventDetailView: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-start mb-6">
             <Button
-              onClick={() => router.push('/showcase-community-super-admin')}
+              onClick={() => router.push('/dashboard-admin-community')}
               variant="outline"
               className="bg-white/5 border-white/20 text-white hover:bg-white/10 hover:text-white"
             >
@@ -659,14 +705,51 @@ const EventDetailView: React.FC = () => {
           </div>
           <div className="flex flex-col gap-8">
             <div className="w-full">
-              <div className="rounded-xl overflow-hidden w-[800px] h-[300px] border-4 border-white mb-6 shadow-lg mx-auto">
-                <Image
-                  src={`${process.env.NEXT_PUBLIC_API_URL}${eventDetail.gambar}`}
-                  alt={eventDetail.judul}
-                  width={800}
-                  height={300}
-                  className="w-full h-full object-cover"
-                />
+              <div className="rounded-xl overflow-hidden w-[800px] h-[300px] border-4 border-white mb-6 shadow-lg mx-auto relative">
+                {eventDetail.gambar && (
+                  <Dialog open={isImageOpen} onOpenChange={setIsImageOpen}>
+                    <DialogTrigger asChild>
+                      <div className="cursor-pointer">
+                        <Image
+                          src={`${process.env.NEXT_PUBLIC_API_URL}${eventDetail.gambar}`}
+                          alt={eventDetail.judul}
+                          width={800}
+                          height={300}
+                          className="w-full h-full object-cover hover:opacity-90 transition-opacity"
+                        />
+                      </div>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl bg-[#001233] border-white/10">
+                      <DialogTitle className="sr-only">Pratinjau Gambar</DialogTitle>
+                      <div className="relative max-h-[80vh] overflow-y-auto">
+                        <Image
+                          src={`${process.env.NEXT_PUBLIC_API_URL}${eventDetail.gambar}`}
+                          alt={eventDetail.judul}
+                          width={1200}
+                          height={800}
+                          className="w-full h-auto object-contain"
+                        />
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                )}
+                <div className="absolute top-2 right-2">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleImageUpdate}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                  <Button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUpdatingImage}
+                    variant="outline"
+                    className="bg-white/10 hover:bg-white/20 text-white border-white/20 hover:text-blue-600"
+                  >
+                    {isUpdatingImage ? 'Memperbarui...' : 'Ubah Gambar'}
+                  </Button>
+                </div>
               </div>
               <div className="text-gray-300 text-center space-y-4">
                 {isEditingDescription ? (
@@ -996,7 +1079,7 @@ const EventDetailView: React.FC = () => {
                               </AlertDialogContent>
                             </AlertDialog>
                           ) : (
-                            <Link href={`event-user/${eventId}/a/${member.id}`}>
+                            <Link href={`/event-user/${eventId}/a/${member.id}`}>
                               <button className="bg-white/5 text-white px-3 py-2 text-sm rounded-full hover:bg-white/10 transition flex items-center gap-1">
                                 <Eye className="h-4 w-4" />
                                 Detail

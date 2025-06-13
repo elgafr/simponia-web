@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { ShowcaseHeader } from "./ShowcaseHeader";
 import { ShowcaseTable, Showcase } from "./ShowcaseTable";
-import { EmptyState } from '@/components/ui/empty-state'; // Import the EmptyState component
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface MemberData {
   id: string;
@@ -43,6 +43,11 @@ const HeroSection1ShowcaseCommunity: React.FC = () => {
   const [communityData, setCommunityData] = useState<Showcase[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1); // State for pagination
+  const [itemsPerPage, setItemsPerPage] = useState(10); // State for items per page
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedYear, setSelectedYear] = useState("all");
+  const [selectedPerformance, setSelectedPerformance] = useState("all");
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -81,13 +86,14 @@ const HeroSection1ShowcaseCommunity: React.FC = () => {
           event.anggota
             .filter(member => member.grade !== null && member.grade !== undefined)
             .forEach(member => {
-              const key = `${member.id_user}-${event.tanggal.split('-')[0]}`;
+              const key = `${member.id_user}-${event.id}-${event.tanggal.split('-')[0]}`; // Unique key with event.id
               const performanceMatch = member.grade!.match(/^[A-E][+]?/);
               const performance = performanceMatch
                 ? (performanceMatch[0] as 'A' | 'B' | 'C' | 'D' | 'E')
                 : 'E';
-              console.log("Processing member:", member.nama, "Grade:", member.grade, "Parsed performance:", performance);
-              if (!memberMap.has(key) || event.tanggal.split('-')[0] > memberMap.get(key)!.year) {
+              console.log("Processing member:", member.nama, "Grade:", member.grade, "Parsed performance:", performance, "Event ID:", event.id);
+              // Only set if not present, or update if performance is better (A > B > C > D > E)
+              if (!memberMap.has(key)) {
                 memberMap.set(key, {
                   id: member.id_user,
                   name: member.nama,
@@ -95,6 +101,18 @@ const HeroSection1ShowcaseCommunity: React.FC = () => {
                   year: event.tanggal.split('-')[0],
                   performance: performance,
                 });
+              } else {
+                const existingPerformance = memberMap.get(key)!.performance;
+                const performanceOrder = { 'A': 5, 'B': 4, 'C': 3, 'D': 2, 'E': 1 };
+                if (performanceOrder[performance] > performanceOrder[existingPerformance]) {
+                  memberMap.set(key, {
+                    id: member.id_user,
+                    name: member.nama,
+                    activity: event.judul,
+                    year: event.tanggal.split('-')[0],
+                    performance: performance,
+                  });
+                }
               }
             });
         });
@@ -111,6 +129,10 @@ const HeroSection1ShowcaseCommunity: React.FC = () => {
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1); // Reset to first page when filters or itemsPerPage change
+  }, [searchQuery, selectedYear, selectedPerformance, itemsPerPage]);
 
   if (loading) {
     return (
@@ -158,8 +180,19 @@ const HeroSection1ShowcaseCommunity: React.FC = () => {
         title="Community Showcase"
         description="Kelola dan pantau showcase project dari komunitas. Anda dapat melihat, menambah, mengedit, dan menghapus showcase sesuai kebutuhan."
       />
-      <h2 className="mt-5 text-3xl font-semibold">Results</h2>
-      <ShowcaseTable showcaseData={communityData} />
+      <ShowcaseTable
+        showcaseData={communityData}
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        itemsPerPage={itemsPerPage}
+        setItemsPerPage={setItemsPerPage}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        selectedYear={selectedYear}
+        setSelectedYear={setSelectedYear}
+        selectedPerformance={selectedPerformance}
+        setSelectedPerformance={setSelectedPerformance}
+      />
     </section>
   );
 };
