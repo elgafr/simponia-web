@@ -72,6 +72,35 @@ interface VerificationStatus {
   }>;
 }
 
+interface VerificationNote {
+  UniqueID: number;
+  id_portofolio: string;
+  portofolio: {
+    id: string;
+    nama_projek: string;
+    kategori: string;
+    tahun: number;
+    status: string;
+    gambar: string;
+    deskripsi: string;
+    created_at: string;
+    updated_at: string;
+  };
+  note: string;
+  updated_by: string;
+  updatedBy: {
+    id: string;
+    nim: string;
+    password: string;
+    role: string;
+    remember_token: string | null;
+    created_at: string;
+    updated_at: string;
+  };
+  profile_user: any;
+  updated_at: string;
+}
+
 const menuItems = [
   { id: 'projectName', label: 'Nama Proyek' },
   { id: 'category', label: 'Kategori' },
@@ -337,11 +366,35 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
         const token = localStorage.getItem('token');
         if (!token) {
           console.log('No authentication token found');
-          // Use dummy notes when no token is found
           setReviewerNotes(dummyNotes);
           return;
         }
         
+        // Fetch verification notes
+        const notesResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/status-verifikasi`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
+        });
+
+        if (notesResponse.ok) {
+          const notesData: VerificationNote[] = await notesResponse.json();
+          // Filter notes for current portfolio
+          const portfolioNotes = notesData
+            .filter(note => note.id_portofolio === slug)
+            .map(note => note.note);
+          
+          // Use dummy notes if no notes found for this portfolio
+          setReviewerNotes(portfolioNotes.length > 0 ? portfolioNotes : dummyNotes);
+        } else {
+          // Use dummy notes if API call fails
+          setReviewerNotes(dummyNotes);
+        }
+
+        // Fetch portfolio status
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/portofolio/${slug}`, {
           method: 'GET',
           headers: {
@@ -359,12 +412,9 @@ export default function PortfolioEditClient({ slug }: PortfolioEditClientProps) 
             console.log('Found portfolio data:', data);
             console.log('Portfolio Status:', data.status);
             setVerificationStatus(data);
-            // For now, we'll use dummy notes since the actual notes are not in the response
-            setReviewerNotes(dummyNotes);
           } else {
             console.log('No portfolio data found');
             setVerificationStatus(null);
-            setReviewerNotes(dummyNotes);
           }
         } else if (response.status === 401) {
           console.log('Unauthorized: Please login again');
