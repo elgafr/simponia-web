@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { ROLES, ROUTES } from '@/types/auth';
 
 // Daftar rute yang bisa diakses tanpa login
-const publicRoutes = ['/', '/auth/login'];
+const publicRoutes = ['/', '/auth/login', '/auth/login-admin'];
 
 // Daftar ekstensi file yang diizinkan tanpa login
 const publicFileExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.ico', '.webp'];
